@@ -411,7 +411,7 @@ git commit -m "feat(api): add FastAPI skeleton"
 - Modify: `apps/api/app/db/base.py`
 - Create: `apps/api/tests/test_models.py`
 
-- [ ] **Step 1: Write enum and relationship tests**
+- [x] **Step 1: Write enum and relationship tests**
 
 Create `apps/api/tests/test_models.py`:
 
@@ -431,7 +431,7 @@ def test_discussion_status_has_disputed_marker():
     assert DiscussionKind.AUTHOR_RESPONSE.value == "author_response"
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -442,7 +442,7 @@ python -m pytest tests/test_models.py -v
 
 Expected: FAIL because models do not exist.
 
-- [ ] **Step 3: Create user model**
+- [x] **Step 3: Create user model**
 
 Create `apps/api/app/models/user.py`:
 
@@ -467,7 +467,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 4: Create paper model**
+- [x] **Step 4: Create paper model**
 
 Create `apps/api/app/models/paper.py`:
 
@@ -496,7 +496,7 @@ class Paper(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 5: Create author claim model**
+- [x] **Step 5: Create author claim model**
 
 Create `apps/api/app/models/author_claim.py`:
 
@@ -539,7 +539,7 @@ class PaperAuthorClaim(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 6: Create anchor model**
+- [x] **Step 6: Create anchor model**
 
 Create `apps/api/app/models/anchor.py`:
 
@@ -587,7 +587,7 @@ class Anchor(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 7: Create discussion model**
+- [x] **Step 7: Create discussion model**
 
 Create `apps/api/app/models/discussion.py`:
 
@@ -638,11 +638,11 @@ class DiscussionItem(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 8: Create remaining models**
+- [x] **Step 8: Create remaining models**
 
 Create `apps/api/app/models/reaction.py`, `collection.py`, `moderation.py`, and `notification.py` with focused SQLAlchemy models for reactions, saved items, reports, and notifications. Use the field names from the PRD exactly: `user_id`, `paper_id`, `discussion_item_id`, `anchor_id`, `kind`, `status`, `created_at`.
 
-- [ ] **Step 9: Export model imports through base**
+- [x] **Step 9: Export model imports through base**
 
 Modify `apps/api/app/db/base.py`:
 
@@ -665,7 +665,7 @@ from app.models.reaction import Reaction  # noqa: E402,F401
 from app.models.user import User  # noqa: E402,F401
 ```
 
-- [ ] **Step 10: Run tests**
+- [x] **Step 10: Run tests**
 
 Run:
 
@@ -676,12 +676,14 @@ python -m pytest tests/test_models.py -v
 
 Expected: PASS.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```powershell
 git add apps/api/app/models apps/api/app/db/base.py apps/api/tests/test_models.py
 git commit -m "feat(api): add core data models"
 ```
+
+**Task 3 quality note:** The model field definitions follow the plan plus the concrete remaining model fields from the Task 3 handoff. `db/base.py` keeps `DeclarativeBase` and imports all model classes for metadata discovery, with a guard so direct imports such as `app.models.author_claim` do not circularly re-import a partially initialized module.
 
 ## Task 4: Implement Paper Matching API
 
