@@ -852,6 +852,8 @@ npm test
 
 Expected: PASS.
 
+**Task 6 quality note:** api-client dev test stack audit passes after updating Vitest.
+
 - [x] **Step 5: Commit**
 
 ```powershell
