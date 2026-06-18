@@ -18,6 +18,7 @@ from app.models.anchor import Anchor
 from app.models.author_claim import AuthorClaimStatus, PaperAuthorClaim, PaperAuthorRole
 from app.models.discussion import DiscussionItem, DiscussionKind, DiscussionStatus
 from app.models.paper import Paper
+from app.models.reaction import Reaction, ReactionKind
 from app.models.user import User
 
 
@@ -90,6 +91,7 @@ def create_discussion(
     kind: str = DiscussionKind.QUESTION.value,
     status: str = DiscussionStatus.OPEN.value,
     is_author_response: bool = False,
+    parent_id: UUID | None = None,
     created_at: datetime | None = None,
     updated_at: datetime | None = None,
 ) -> DiscussionItem:
@@ -107,6 +109,7 @@ def create_discussion(
     item = DiscussionItem(
         paper_id=paper.id,
         anchor_id=anchor.id if anchor else None,
+        parent_id=parent_id,
         user_id=user.id,
         kind=kind,
         status=status,
@@ -131,6 +134,25 @@ def approve_claim(session: Session, *, paper: Paper, user: User, role: PaperAuth
         )
     )
     session.commit()
+
+
+def add_reaction(
+    session: Session,
+    *,
+    paper: Paper,
+    user: User,
+    discussion: DiscussionItem,
+    kind: str = ReactionKind.UPVOTE.value,
+) -> Reaction:
+    reaction = Reaction(
+        user_id=user.id,
+        paper_id=paper.id,
+        discussion_item_id=discussion.id,
+        kind=kind,
+    )
+    session.add(reaction)
+    session.commit()
+    return reaction
 
 
 def test_ordinary_logged_in_user_can_create_question_with_text_anchor(
@@ -298,6 +320,120 @@ def test_list_discussions_supports_required_sorts(
         assert [UUID(item["id"]) for item in response.json()] == [newer.id, older.id]
 
 
+def test_sort_votes_orders_by_upvote_count(client: TestClient, paper: Paper, session: Session):
+    user = create_user(session)
+    voter_one = create_user(session, "voter-one@example.org")
+    voter_two = create_user(session, "voter-two@example.org")
+    now = datetime.now(UTC)
+    newer = create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="newer question",
+        created_at=now,
+    )
+    older = create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="older question with more votes",
+        created_at=now - timedelta(days=1),
+    )
+    add_reaction(session, paper=paper, user=voter_one, discussion=older)
+    add_reaction(session, paper=paper, user=voter_two, discussion=older)
+
+    response = client.get(f"/papers/{paper.id}/discussions", params={"sort": "votes"})
+
+    assert response.status_code == 200
+    assert [UUID(item["id"]) for item in response.json()] == [older.id, newer.id]
+
+
+def test_sort_heat_orders_by_replies_and_reactions(
+    client: TestClient, paper: Paper, session: Session
+):
+    user = create_user(session)
+    reactor = create_user(session, "reactor@example.org")
+    now = datetime.now(UTC)
+    newer = create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="newer quiet question",
+        created_at=now,
+        updated_at=now,
+    )
+    older = create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="older active question",
+        created_at=now - timedelta(days=1),
+        updated_at=now - timedelta(days=1),
+    )
+    create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="answer activity",
+        kind=DiscussionKind.ANSWER.value,
+        parent_id=older.id,
+    )
+    create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="comment activity",
+        kind=DiscussionKind.COMMENT.value,
+        parent_id=older.id,
+    )
+    add_reaction(session, paper=paper, user=reactor, discussion=older)
+
+    response = client.get(
+        f"/papers/{paper.id}/discussions",
+        params={"sort": "heat", "kind": "question"},
+    )
+
+    assert response.status_code == 200
+    assert [UUID(item["id"]) for item in response.json()][:2] == [older.id, newer.id]
+
+
+def test_sort_dispute_orders_by_downvotes_and_disputed_status(
+    client: TestClient, paper: Paper, session: Session
+):
+    user = create_user(session)
+    voter = create_user(session, "downvoter@example.org")
+    now = datetime.now(UTC)
+    newer = create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="newer open question",
+        created_at=now,
+        updated_at=now,
+    )
+    older = create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="older disputed question",
+        status=DiscussionStatus.DISPUTED.value,
+        created_at=now - timedelta(days=1),
+        updated_at=now - timedelta(days=1),
+    )
+    add_reaction(
+        session,
+        paper=paper,
+        user=voter,
+        discussion=older,
+        kind=ReactionKind.DOWNVOTE.value,
+    )
+
+    response = client.get(f"/papers/{paper.id}/discussions", params={"sort": "dispute"})
+
+    assert response.status_code == 200
+    assert [UUID(item["id"]) for item in response.json()] == [older.id, newer.id]
+
+
 def test_first_author_with_approved_claim_can_create_author_response(
     client: TestClient, paper: Paper, session: Session
 ):
@@ -317,6 +453,36 @@ def test_first_author_with_approved_claim_can_create_author_response(
     assert response.status_code == 200
     assert response.json()["item"]["is_author_response"] is True
     assert response.json()["item"]["kind"] == "author_response"
+
+
+def test_author_response_kind_sets_author_response_flag(
+    client: TestClient, paper: Paper, session: Session
+):
+    user = create_user(session)
+    approve_claim(session, paper=paper, user=user, role=PaperAuthorRole.FIRST_AUTHOR)
+
+    response = client.post(
+        f"/papers/{paper.id}/discussions",
+        headers=auth_headers(user),
+        json={
+            "kind": "author_response",
+            "body": "Author response canonicalization",
+            "is_author_response": False,
+        },
+    )
+
+    assert response.status_code == 200
+    item = response.json()["item"]
+    item_id = UUID(item["id"])
+    assert item["kind"] == "author_response"
+    assert item["is_author_response"] is True
+
+    filtered = client.get(
+        f"/papers/{paper.id}/discussions",
+        params={"has_author_response": "true"},
+    )
+    assert filtered.status_code == 200
+    assert [UUID(row["id"]) for row in filtered.json()] == [item_id]
 
 
 def test_corresponding_author_with_approved_claim_can_create_author_response(
@@ -377,3 +543,23 @@ def test_first_author_can_create_normal_question_without_author_response_flag(
     assert response.status_code == 200
     assert response.json()["item"]["kind"] == "question"
     assert response.json()["item"]["is_author_response"] is False
+
+
+def test_invalid_reaction_kind_returns_422(
+    client: TestClient, paper: Paper, session: Session
+):
+    user = create_user(session)
+    discussion = create_discussion(
+        session,
+        paper=paper,
+        user=user,
+        body="Question for invalid reaction",
+    )
+
+    response = client.post(
+        f"/discussions/{discussion.id}/reactions",
+        headers=auth_headers(user),
+        json={"kind": "not-a-real-reaction"},
+    )
+
+    assert response.status_code == 422

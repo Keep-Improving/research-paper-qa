@@ -8,6 +8,21 @@ from app.schemas.anchor import AnchorCreate, AnchorRead
 
 
 DiscussionSort = Literal["newest", "active", "votes", "heat", "dispute", "anchor_position"]
+ReactionKindValue = Literal[
+    "upvote",
+    "downvote",
+    "helpful",
+    "thanks",
+    "needs_clarification",
+]
+
+
+class DiscussionFilter(BaseModel):
+    status: str | None = None
+    kind: str | None = None
+    has_author_response: bool | None = None
+    anchor_kind: str | None = None
+    sort: DiscussionSort = "newest"
 
 
 class DiscussionCreate(BaseModel):
@@ -44,7 +59,7 @@ class DiscussionCreateResponse(BaseModel):
 
 
 class ReactionCreate(BaseModel):
-    kind: str
+    kind: ReactionKindValue
 
 
 class ReactionRead(BaseModel):

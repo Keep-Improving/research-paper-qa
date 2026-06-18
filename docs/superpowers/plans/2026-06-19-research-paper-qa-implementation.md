@@ -815,7 +815,7 @@ git add apps/api
 git commit -m "feat(api): add anchored discussions"
 ```
 
-**Task 5 quality note:** Discussion routes use an explicit `X-User-Id` header dependency as the current auth seam until the real authentication system is implemented.
+**Task 5 quality note:** Discussion routes use an explicit `X-User-Id` header dependency as the current auth seam until the real authentication system is implemented. Review fixes made `votes`, `heat`, and `dispute` deterministic count-based sorts, canonicalized author-response `kind`/`is_author_response` storage after permission succeeds, and validated reaction kinds at schema level.
 
 ## Task 6: Implement Shared TypeScript API Client
 

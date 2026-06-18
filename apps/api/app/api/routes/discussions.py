@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.anchor import Anchor
-from app.models.discussion import DiscussionItem
+from app.models.discussion import DiscussionItem, DiscussionKind
 from app.models.paper import Paper
 from app.models.reaction import Reaction
 from app.schemas.anchor import AnchorRead
@@ -95,6 +95,8 @@ def create_paper_discussion(
         session, user_id=user_id, paper_id=paper_id
     ):
         raise HTTPException(status_code=403, detail="Author response permission required")
+    kind = DiscussionKind.AUTHOR_RESPONSE.value if wants_author_response else request.kind
+    is_author_response = True if wants_author_response else request.is_author_response
 
     similar_quote = request.anchor.quote_text if request.anchor else None
     similar_items = find_similar_discussions(
@@ -114,10 +116,10 @@ def create_paper_discussion(
         anchor_id=anchor.id if anchor else None,
         parent_id=request.parent_id,
         user_id=user_id,
-        kind=request.kind,
+        kind=kind,
         status=request.status,
         body=request.body,
-        is_author_response=request.is_author_response,
+        is_author_response=is_author_response,
     )
     session.add(item)
     session.commit()
