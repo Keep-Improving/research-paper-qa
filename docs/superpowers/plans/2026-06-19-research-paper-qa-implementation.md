@@ -927,7 +927,7 @@ git commit -m "feat(extension): add paper detection and anchor capture"
 - Modify: `apps/extension/src/sidebar/Sidebar.tsx`
 - Create: `apps/extension/tests/sidebar.test.tsx`
 
-- [ ] **Step 1: Write sidebar interaction tests**
+- [x] **Step 1: Write sidebar interaction tests**
 
 Test that the sidebar can:
 
@@ -937,19 +937,19 @@ Test that the sidebar can:
 - Create a question from a text anchor draft.
 - Show manual fallback when anchor capture fails.
 
-- [ ] **Step 2: Implement filters**
+- [x] **Step 2: Implement filters**
 
 Create compact segmented controls and menus for content type, state, anchor type, participant, and sort. Use stable dimensions to avoid sidebar layout jumps.
 
-- [ ] **Step 3: Implement discussion list**
+- [x] **Step 3: Implement discussion list**
 
 Render questions, answers, comments, author responses, and anchor previews. Keep typography compact and readable.
 
-- [ ] **Step 4: Implement composer**
+- [x] **Step 4: Implement composer**
 
 Support question body, anchor preview, similar-question prompt, submit, loading, empty, and error states.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -960,12 +960,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add apps/extension
 git commit -m "feat(extension): add discussion sidebar"
 ```
+
+**Task 8 quality note:** Sidebar UI uses restrained academic styling with compact borders, stable filter/button dimensions, author-response filtering, newest/heat sorting, anchored question composition, manual anchor fallback, and loading/empty/error states.
 
 ## Task 9: Implement Website Core Pages
 
