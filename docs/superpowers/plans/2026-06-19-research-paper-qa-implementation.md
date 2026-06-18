@@ -852,7 +852,7 @@ npm test
 
 Expected: PASS.
 
-**Task 6 quality note:** api-client dev test stack audit passes after updating Vitest.
+**Task 6 quality note:** api-client dev test stack audit passes after updating Vitest. Root TypeScript workspace config added so root `npx tsc --noEmit` runs the intended compiler.
 
 - [x] **Step 5: Commit**
 
