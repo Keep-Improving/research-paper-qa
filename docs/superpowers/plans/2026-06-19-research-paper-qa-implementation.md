@@ -747,7 +747,7 @@ git commit -m "feat(api): add paper identification"
 - Modify: `apps/api/app/main.py`
 - Create: `apps/api/tests/test_discussions.py`
 
-- [ ] **Step 1: Write discussion API tests**
+- [x] **Step 1: Write discussion API tests**
 
 Test these behaviors:
 
@@ -756,7 +756,7 @@ Test these behaviors:
 - Discussion list can filter by `status=open`, `kind=question`, `has_author_response=true`, and `anchor_kind=text`.
 - Discussion list can sort by `newest`, `active`, `votes`, `heat`, `dispute`, and `anchor_position`.
 
-- [ ] **Step 2: Write author response permission tests**
+- [x] **Step 2: Write author response permission tests**
 
 Test these behaviors:
 
@@ -765,15 +765,15 @@ Test these behaviors:
 - Co-author claim cannot create `author_response`.
 - First author can still create a normal question without `is_author_response`.
 
-- [ ] **Step 3: Implement anchor schemas**
+- [x] **Step 3: Implement anchor schemas**
 
 Define `AnchorCreate` and `AnchorRead` with fields from `Anchor`.
 
-- [ ] **Step 4: Implement discussion schemas**
+- [x] **Step 4: Implement discussion schemas**
 
 Define `DiscussionCreate`, `DiscussionRead`, `DiscussionFilter`, and `DiscussionSort`.
 
-- [ ] **Step 5: Implement permission service**
+- [x] **Step 5: Implement permission service**
 
 Implement:
 
@@ -784,11 +784,11 @@ def can_publish_author_response(session, *, user_id: UUID, paper_id: UUID) -> bo
 
 Return true only for approved first-author or corresponding-author claims.
 
-- [ ] **Step 6: Implement query service**
+- [x] **Step 6: Implement query service**
 
 Implement filters and sort expressions. For heat and dispute in MVP, use deterministic stored counts or query-time counts from reactions and comments. Do not use random scores.
 
-- [ ] **Step 7: Implement routes**
+- [x] **Step 7: Implement routes**
 
 Add:
 
@@ -797,7 +797,7 @@ Add:
 - `GET /discussions/{discussion_id}`
 - `POST /discussions/{discussion_id}/reactions`
 
-- [ ] **Step 8: Run tests**
+- [x] **Step 8: Run tests**
 
 Run:
 
@@ -808,12 +808,14 @@ python -m pytest tests/test_discussions.py -v
 
 Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add apps/api
 git commit -m "feat(api): add anchored discussions"
 ```
+
+**Task 5 quality note:** Discussion routes use an explicit `X-User-Id` header dependency as the current auth seam until the real authentication system is implemented.
 
 ## Task 6: Implement Shared TypeScript API Client
 
