@@ -75,7 +75,9 @@ Responsibility boundaries:
 - Create: `apps/extension/package.json`
 - Create: `packages/api-client/package.json`
 
-- [ ] **Step 1: Write repository README**
+**Task 1 completion note:** Code-quality review added minimal Next/Vite/API client scaffold files and ESLint config to make the package scripts point to real entries.
+
+- [x] **Step 1: Write repository README**
 
 Create `README.md`:
 
@@ -98,7 +100,7 @@ Research Paper Q&A is a scholarly discussion platform that links questions, comm
 - Shared backend for papers, anchors, discussions, votes, collections, reports, and notifications.
 ```
 
-- [ ] **Step 2: Add ignore rules**
+- [x] **Step 2: Add ignore rules**
 
 Create `.gitignore`:
 
@@ -119,7 +121,7 @@ build/
 *.pyc
 ```
 
-- [ ] **Step 3: Add local services**
+- [x] **Step 3: Add local services**
 
 Create `docker-compose.yml`:
 
@@ -140,7 +142,7 @@ volumes:
   postgres_data:
 ```
 
-- [ ] **Step 4: Add API project metadata**
+- [x] **Step 4: Add API project metadata**
 
 Create `apps/api/pyproject.toml`:
 
@@ -170,7 +172,7 @@ dev = [
 line-length = 100
 ```
 
-- [ ] **Step 5: Add web package metadata**
+- [x] **Step 5: Add web package metadata**
 
 Create `apps/web/package.json`:
 
@@ -198,7 +200,7 @@ Create `apps/web/package.json`:
 }
 ```
 
-- [ ] **Step 6: Add extension package metadata**
+- [x] **Step 6: Add extension package metadata**
 
 Create `apps/extension/package.json`:
 
@@ -227,7 +229,7 @@ Create `apps/extension/package.json`:
 }
 ```
 
-- [ ] **Step 7: Add shared API client package metadata**
+- [x] **Step 7: Add shared API client package metadata**
 
 Create `packages/api-client/package.json`:
 
@@ -245,7 +247,7 @@ Create `packages/api-client/package.json`:
 }
 ```
 
-- [ ] **Step 8: Verify files exist**
+- [x] **Step 8: Verify files exist**
 
 Run:
 
@@ -255,7 +257,7 @@ Get-ChildItem -Recurse README.md,.gitignore,docker-compose.yml,apps,packages | S
 
 Expected: the files listed in this task are present.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add README.md .gitignore docker-compose.yml apps packages
