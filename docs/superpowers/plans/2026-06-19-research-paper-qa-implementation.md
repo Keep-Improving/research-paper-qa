@@ -694,15 +694,15 @@ git commit -m "feat(api): add core data models"
 - Modify: `apps/api/app/main.py`
 - Create: `apps/api/tests/test_paper_matching.py`
 
-- [ ] **Step 1: Write paper matching tests**
+- [x] **Step 1: Write paper matching tests**
 
 Create tests for DOI normalization, arXiv ID matching, PMID matching, and fallback creation for title/URL records. Use FastAPI `TestClient` and a test database fixture.
 
-- [ ] **Step 2: Implement schemas**
+- [x] **Step 2: Implement schemas**
 
 Define `PaperIdentifyRequest`, `PaperRead`, and `PaperCreate` in `schemas/paper.py`.
 
-- [ ] **Step 3: Implement matching service**
+- [x] **Step 3: Implement matching service**
 
 Implement `identify_or_create_paper(session, request)` with this priority:
 
@@ -711,11 +711,11 @@ Implement `identify_or_create_paper(session, request)` with this priority:
 3. Match `Paper.pmid`.
 4. Create paper from title and URL with no stable identifier.
 
-- [ ] **Step 4: Implement route**
+- [x] **Step 4: Implement route**
 
 Add `POST /papers/identify` in `routes/papers.py`.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -726,7 +726,7 @@ python -m pytest tests/test_paper_matching.py -v
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add apps/api
