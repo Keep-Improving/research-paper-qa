@@ -274,7 +274,7 @@ git commit -m "chore: initialize monorepo"
 - Create: `apps/api/app/api/routes/health.py`
 - Create: `apps/api/tests/test_health.py`
 
-- [ ] **Step 1: Write failing health test**
+- [x] **Step 1: Write failing health test**
 
 Create `apps/api/tests/test_health.py`:
 
@@ -292,7 +292,7 @@ def test_health_returns_ok():
     assert response.json() == {"status": "ok"}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -303,7 +303,7 @@ python -m pytest tests/test_health.py -v
 
 Expected: FAIL because `app.main` or `/health` is not implemented.
 
-- [ ] **Step 3: Implement settings**
+- [x] **Step 3: Implement settings**
 
 Create `apps/api/app/core/config.py`:
 
@@ -321,7 +321,7 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
-- [ ] **Step 4: Implement database session**
+- [x] **Step 4: Implement database session**
 
 Create `apps/api/app/db/session.py`:
 
@@ -335,7 +335,7 @@ engine = create_engine(settings.database_url, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 ```
 
-- [ ] **Step 5: Implement declarative base**
+- [x] **Step 5: Implement declarative base**
 
 Create `apps/api/app/db/base.py`:
 
@@ -347,7 +347,7 @@ class Base(DeclarativeBase):
     pass
 ```
 
-- [ ] **Step 6: Implement health route**
+- [x] **Step 6: Implement health route**
 
 Create `apps/api/app/api/routes/health.py`:
 
@@ -362,7 +362,7 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 ```
 
-- [ ] **Step 7: Implement FastAPI app**
+- [x] **Step 7: Implement FastAPI app**
 
 Create `apps/api/app/main.py`:
 
@@ -376,7 +376,7 @@ app = FastAPI(title=settings.app_name)
 app.include_router(health_router)
 ```
 
-- [ ] **Step 8: Run test to verify it passes**
+- [x] **Step 8: Run test to verify it passes**
 
 Run:
 
@@ -387,7 +387,7 @@ python -m pytest tests/test_health.py -v
 
 Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add apps/api
