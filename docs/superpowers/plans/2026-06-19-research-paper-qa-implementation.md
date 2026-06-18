@@ -733,7 +733,7 @@ git add apps/api
 git commit -m "feat(api): add paper identification"
 ```
 
-**Task 4 quality note:** API model timestamp defaults are timezone-aware UTC values, API dev dependencies install the FastAPI `TestClient` `httpx` package, and full API tests pass with `DeprecationWarning` treated as errors.
+**Task 4 quality note:** API model timestamp defaults are timezone-aware UTC values, API dev dependencies use `httpx2` to match the current Starlette `TestClient`, and full API tests pass with `DeprecationWarning` treated as errors.
 
 ## Task 5: Implement Discussion, Anchor, Filter, and Sort APIs
 
