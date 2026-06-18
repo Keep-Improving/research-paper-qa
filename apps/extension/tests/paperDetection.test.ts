@@ -32,6 +32,24 @@ describe("detectPaper", () => {
     expect(result).toMatchObject({ arxivId: "2401.12345", confidence: "high" });
   });
 
+  it("normalizes an arXiv PDF URL without dropping a version suffix", () => {
+    expect(
+      detectPaper(docFrom(""), { href: "https://arxiv.org/pdf/2401.12345.pdf" }).arxivId
+    ).toBe("2401.12345");
+    expect(
+      detectPaper(docFrom(""), { href: "https://arxiv.org/pdf/2401.12345v2.pdf" }).arxivId
+    ).toBe("2401.12345v2");
+  });
+
+  it("does not set high-confidence arXiv IDs for invalid arXiv-like URLs", () => {
+    const result = detectPaper(docFrom("", "Not a paper"), {
+      href: "https://arxiv.org/pdf/not-an-id.pdf"
+    });
+
+    expect(result.arxivId).toBeUndefined();
+    expect(result.confidence).toBe("low");
+  });
+
   it("detects a PubMed paper URL", () => {
     const result = detectPaper(docFrom(""), {
       href: "https://pubmed.ncbi.nlm.nih.gov/12345678/"
@@ -44,6 +62,26 @@ describe("detectPaper", () => {
     const result = detectPaper(docFrom(""), { href: "https://doi.org/10.1000/XYZ" });
 
     expect(result).toMatchObject({ doi: "10.1000/xyz", confidence: "high" });
+  });
+
+  it("normalizes a DOI landing URL with query and hash", () => {
+    const result = detectPaper(docFrom(""), {
+      href: "https://doi.org/10.1000/XYZ?download=1#section"
+    });
+
+    expect(result).toMatchObject({ doi: "10.1000/xyz", confidence: "high" });
+  });
+
+  it("does not overmatch DOI landing paths with trailing punctuation or invalid DOI values", () => {
+    expect(detectPaper(docFrom(""), { href: "https://doi.org/10.1000/xyz)." }).doi).toBe(
+      "10.1000/xyz"
+    );
+
+    const invalid = detectPaper(docFrom("", "Invalid DOI"), {
+      href: "https://doi.org/not-a-doi/10.1000"
+    });
+    expect(invalid.doi).toBeUndefined();
+    expect(invalid.confidence).toBe("low");
   });
 
   it("falls back to document.title with low confidence", () => {

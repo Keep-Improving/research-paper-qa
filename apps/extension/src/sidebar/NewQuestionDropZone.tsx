@@ -1,5 +1,9 @@
 import type { ImageAnchorDraft } from "../content/imageAnchor";
-import { createImageAnchorFromElement } from "../content/imageAnchor";
+import {
+  createImageAnchorFromElement,
+  createImageAnchorFromFile,
+  createUrlOnlyImageAnchor
+} from "../content/imageAnchor";
 import type { TextAnchorDraft } from "../content/selectionAnchor";
 
 export type ManualAnchorDraft = {
@@ -25,9 +29,9 @@ export function NewQuestionDropZone({
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
-        const img = imageFromDrop(event);
-        if (img) {
-          onImageAnchor(createImageAnchorFromElement(img));
+        const imageAnchor = imageAnchorFromDrop(event);
+        if (imageAnchor) {
+          onImageAnchor(imageAnchor);
         }
       }}
       style={styles.zone}
@@ -65,10 +69,15 @@ export function NewQuestionDropZone({
   );
 }
 
-function imageFromDrop(event: React.DragEvent<HTMLElement>): HTMLImageElement | null {
+function imageAnchorFromDrop(event: React.DragEvent<HTMLElement>): ImageAnchorDraft | null {
+  const file = imageFileFromDrop(event.dataTransfer.files);
+  if (file) {
+    return createImageAnchorFromFile(file);
+  }
+
   const element = event.target instanceof HTMLImageElement ? event.target : null;
   if (element) {
-    return element;
+    return createImageAnchorFromElement(element);
   }
 
   const uri = event.dataTransfer.getData("text/uri-list") || event.dataTransfer.getData("text/plain");
@@ -76,9 +85,11 @@ function imageFromDrop(event: React.DragEvent<HTMLElement>): HTMLImageElement | 
     return null;
   }
 
-  const img = new Image();
-  img.src = uri;
-  return img;
+  return createUrlOnlyImageAnchor(uri);
+}
+
+function imageFileFromDrop(files: FileList): File | undefined {
+  return Array.from(files).find((file) => file.type.startsWith("image/"));
 }
 
 const styles = {

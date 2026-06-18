@@ -23,7 +23,7 @@ export function captureSelectionAnchor(win: Window, doc: Document): TextAnchorDr
   return {
     kind: "text",
     quote_text: quoteText,
-    context_text: contextText ? clipText(contextText, MAX_CONTEXT_LENGTH) : undefined,
+    context_text: contextText ? clipTextAroundQuote(contextText, quoteText, MAX_CONTEXT_LENGTH) : undefined,
     source_url: win.location.href,
     dom_path: parentElement ? buildDomPath(parentElement, doc) : undefined
   };
@@ -50,9 +50,26 @@ function buildDomPath(element: Element, doc: Document): string {
   return parts.join(" > ");
 }
 
-function clipText(text: string, maxLength: number): string {
+function clipTextAroundQuote(text: string, quote: string, maxLength: number): string {
   if (text.length <= maxLength) {
     return text;
   }
-  return `${text.slice(0, maxLength - 1).trimEnd()}…`;
+
+  const quoteIndex = text.indexOf(quote);
+  if (quoteIndex === -1) {
+    return `${text.slice(0, maxLength - 3).trimEnd()}...`;
+  }
+
+  const quoteEnd = quoteIndex + quote.length;
+  const markerBudget = 6;
+  const contentBudget = Math.max(maxLength - markerBudget, quote.length);
+  const contextBudget = Math.max(contentBudget - quote.length, 0);
+  const beforeLength = Math.floor(contextBudget / 2);
+  const afterLength = contextBudget - beforeLength;
+  const start = Math.max(quoteIndex - beforeLength, 0);
+  const end = Math.min(quoteEnd + afterLength, text.length);
+  const prefix = start > 0 ? "..." : "";
+  const suffix = end < text.length ? "..." : "";
+
+  return `${prefix}${text.slice(start, end).trim()}${suffix}`;
 }

@@ -8,12 +8,16 @@ export type DetectedPaper = {
 };
 
 export function normalizeDoi(value: string): string {
-  return value
+  const cleaned = value
     .trim()
     .replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, "")
     .replace(/^doi:\s*/i, "")
     .replace(/^https?:\/\/doi\.org\//i, "")
+    .replace(/[?#].*$/, "")
+    .replace(/[).,\];:]+$/, "")
     .toLowerCase();
+
+  return isDoi(cleaned) ? cleaned : "";
 }
 
 export function detectPaper(
@@ -62,17 +66,26 @@ function readMeta(document: Document, names: string[]): string | undefined {
 }
 
 function matchDoiUrl(url: string): string | undefined {
-  const doiUrlMatch = url.match(/^https?:\/\/(?:dx\.)?doi\.org\/(.+)$/i);
-  if (doiUrlMatch?.[1]) {
-    return doiUrlMatch[1];
+  const parsedUrl = parseUrl(url);
+  if (parsedUrl && /^(?:dx\.)?doi\.org$/i.test(parsedUrl.hostname)) {
+    const doi = normalizeDoi(decodeURIComponent(parsedUrl.pathname.replace(/^\/+/, "")));
+    return doi || undefined;
   }
 
   const inlineDoiMatch = url.match(/(10\.\d{4,9}\/[^\s?#]+)/i);
-  return inlineDoiMatch?.[1];
+  const inlineDoi = inlineDoiMatch ? normalizeDoi(inlineDoiMatch[1]) : "";
+  return inlineDoi || undefined;
 }
 
 function matchArxivUrl(url: string): string | undefined {
-  return url.match(/^https?:\/\/arxiv\.org\/(?:abs|pdf)\/([^?#/]+)(?:\.pdf)?/i)?.[1];
+  const parsedUrl = parseUrl(url);
+  if (!parsedUrl || parsedUrl.hostname.toLowerCase() !== "arxiv.org") {
+    return undefined;
+  }
+
+  const match = parsedUrl.pathname.match(/^\/(?:abs|pdf)\/([^/]+)$/i);
+  const candidate = match?.[1]?.replace(/\.pdf$/i, "");
+  return candidate && isArxivId(candidate) ? candidate : undefined;
 }
 
 function matchPubMedUrl(url: string): string | undefined {
@@ -83,4 +96,20 @@ function compactPaper(paper: DetectedPaper): DetectedPaper {
   return Object.fromEntries(
     Object.entries(paper).filter(([, value]) => value !== undefined && value !== "")
   ) as DetectedPaper;
+}
+
+function parseUrl(url: string): URL | undefined {
+  try {
+    return new URL(url);
+  } catch {
+    return undefined;
+  }
+}
+
+function isDoi(value: string): boolean {
+  return /^10\.\d{4,9}\/.+$/i.test(value);
+}
+
+function isArxivId(value: string): boolean {
+  return /^(?:\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?\/\d{7})(?:v\d+)?$/i.test(value);
 }

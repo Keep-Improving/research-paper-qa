@@ -915,7 +915,7 @@ git add apps/extension
 git commit -m "feat(extension): add paper detection and anchor capture"
 ```
 
-**Task 7 quality note:** Extension Vitest was upgraded to `^4.1.9`, jsdom was added for DOM-based content-script tests, and `npm audit --audit-level=moderate` reports 0 vulnerabilities.
+**Task 7 quality note:** Extension Vitest was upgraded to `^4.1.9`, jsdom was added for DOM-based content-script tests, and `npm audit --audit-level=moderate` reports 0 vulnerabilities. Review hardening now covers DOI/arXiv normalization, centered selection context clipping, and file-backed image anchors including URL-only image drops that do not claim an article `source_url`.
 
 ## Task 8: Implement Extension Sidebar Discussion UI
 

@@ -39,4 +39,33 @@ describe("captureSelectionAnchor", () => {
       dom_path: "html > body > article > p#target"
     });
   });
+
+  it("clips long context around the selected quote", () => {
+    const doc = document.implementation.createHTMLDocument("selection");
+    const prefix = "A".repeat(700);
+    const quote = "selected mechanistic quote";
+    const suffix = "B".repeat(700);
+    doc.body.innerHTML = `<article><p id="target">${prefix} ${quote} ${suffix}</p></article>`;
+    const paragraph = doc.getElementById("target")!;
+    const text = paragraph.firstChild!;
+    const quoteStart = text.textContent!.indexOf(quote);
+    const range = doc.createRange();
+    range.setStart(text, quoteStart);
+    range.setEnd(text, quoteStart + quote.length);
+    const selection = {
+      rangeCount: 1,
+      isCollapsed: false,
+      toString: () => quote,
+      getRangeAt: () => range
+    } as unknown as Selection;
+    const win = {
+      getSelection: () => selection,
+      location: { href: "https://publisher.example/paper" }
+    } as unknown as Window;
+
+    const anchor = captureSelectionAnchor(win, doc);
+
+    expect(anchor?.context_text).toContain(quote);
+    expect(anchor?.context_text?.length).toBeLessThanOrEqual(500);
+  });
 });
