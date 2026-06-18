@@ -825,7 +825,7 @@ git commit -m "feat(api): add anchored discussions"
 - Create: `packages/api-client/src/index.ts`
 - Create: `packages/api-client/src/client.test.ts`
 
-- [ ] **Step 1: Write client tests**
+- [x] **Step 1: Write client tests**
 
 Test that the client calls:
 
@@ -833,15 +833,15 @@ Test that the client calls:
 - `GET /papers/{paperId}/discussions`
 - `POST /papers/{paperId}/discussions`
 
-- [ ] **Step 2: Implement shared types**
+- [x] **Step 2: Implement shared types**
 
 Define `Paper`, `Anchor`, `DiscussionItem`, `DiscussionFilter`, `DiscussionSort`, and request types matching backend schema names.
 
-- [ ] **Step 3: Implement API client**
+- [x] **Step 3: Implement API client**
 
 Implement a small `PaperQaClient` class with `fetch` injection for testability.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run:
 
@@ -852,7 +852,7 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add packages/api-client
