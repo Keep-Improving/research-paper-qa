@@ -683,7 +683,7 @@ git add apps/api/app/models apps/api/app/db/base.py apps/api/tests/test_models.p
 git commit -m "feat(api): add core data models"
 ```
 
-**Task 3 quality note:** The model field definitions follow the plan plus the concrete remaining model fields from the Task 3 handoff. `db/base.py` keeps `DeclarativeBase` and imports all model classes for metadata discovery, with a guard so direct imports such as `app.models.author_claim` do not circularly re-import a partially initialized module.
+**Task 3 quality note:** Model imports moved to `app.models`, leaving `db/base.py` as only the `DeclarativeBase` definition. Metadata table registration is regression-tested after importing `app.models.author_claim` before `app.models`.
 
 ## Task 4: Implement Paper Matching API
 

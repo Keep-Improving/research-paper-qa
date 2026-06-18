@@ -28,7 +28,7 @@ class ModerationReport(Base):
     __tablename__ = "moderation_reports"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    reporter_user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
     paper_id: Mapped[UUID | None] = mapped_column(ForeignKey("papers.id"), nullable=True, index=True)
     discussion_item_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("discussion_items.id"), nullable=True, index=True
