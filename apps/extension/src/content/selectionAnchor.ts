@@ -62,12 +62,13 @@ function clipTextAroundQuote(text: string, quote: string, maxLength: number): st
 
   const quoteEnd = quoteIndex + quote.length;
   const markerBudget = 6;
-  const contentBudget = Math.max(maxLength - markerBudget, quote.length);
-  const contextBudget = Math.max(contentBudget - quote.length, 0);
+  const contentBudget = maxLength - markerBudget;
+  const clippedQuoteLength = Math.min(quote.length, contentBudget);
+  const contextBudget = Math.max(contentBudget - clippedQuoteLength, 0);
   const beforeLength = Math.floor(contextBudget / 2);
   const afterLength = contextBudget - beforeLength;
   const start = Math.max(quoteIndex - beforeLength, 0);
-  const end = Math.min(quoteEnd + afterLength, text.length);
+  const end = Math.min(quoteIndex + clippedQuoteLength + afterLength, text.length);
   const prefix = start > 0 ? "..." : "";
   const suffix = end < text.length ? "..." : "";
 

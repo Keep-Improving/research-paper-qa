@@ -26,6 +26,30 @@ describe("detectPaper", () => {
     expect(detectPaper(doc, { href: "https://publisher.example/article" }).doi).toBe("10.1000/abc");
   });
 
+  it("falls back with low confidence when a DOI meta tag contains trailing content", () => {
+    const doc = docFrom('<meta name="doi" content="10.1000/foo bar">', "Fallback Title");
+
+    expect(detectPaper(doc, { href: "https://publisher.example/article" })).toEqual({
+      title: "Fallback Title",
+      url: "https://publisher.example/article",
+      confidence: "low"
+    });
+  });
+
+  it("does not normalize DOI meta values or URLs that contain whitespace", () => {
+    const metaResult = detectPaper(docFrom('<meta name="doi" content="10.1000/foo bar">'), {
+      href: "https://publisher.example/article"
+    });
+    const urlResult = detectPaper(docFrom(""), {
+      href: "https://doi.org/10.1000/foo%20bar"
+    });
+
+    expect(metaResult.doi).toBeUndefined();
+    expect(metaResult.confidence).toBe("low");
+    expect(urlResult.doi).toBeUndefined();
+    expect(urlResult.confidence).toBe("low");
+  });
+
   it("detects an arXiv paper URL", () => {
     const result = detectPaper(docFrom(""), { href: "https://arxiv.org/abs/2401.12345" });
 

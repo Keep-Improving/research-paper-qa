@@ -32,7 +32,10 @@ export function detectPaper(
   const title = document.title.trim() || undefined;
 
   if (metaDoi) {
-    return compactPaper({ doi: normalizeDoi(metaDoi), title, url, confidence: "high" });
+    const normalizedMetaDoi = normalizeDoi(metaDoi);
+    if (normalizedMetaDoi) {
+      return compactPaper({ doi: normalizedMetaDoi, title, url, confidence: "high" });
+    }
   }
 
   if (doiFromUrl) {
@@ -107,7 +110,7 @@ function parseUrl(url: string): URL | undefined {
 }
 
 function isDoi(value: string): boolean {
-  return /^10\.\d{4,9}\/.+$/i.test(value);
+  return /^10\.\d{4,9}\/\S+$/i.test(value);
 }
 
 function isArxivId(value: string): boolean {

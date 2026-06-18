@@ -68,4 +68,31 @@ describe("captureSelectionAnchor", () => {
     expect(anchor?.context_text).toContain(quote);
     expect(anchor?.context_text?.length).toBeLessThanOrEqual(500);
   });
+
+  it("keeps a full long selected quote while capping context text", () => {
+    const doc = document.implementation.createHTMLDocument("selection");
+    const quote = "Q".repeat(700);
+    doc.body.innerHTML = `<article><p id="target">Before ${quote} after</p></article>`;
+    const paragraph = doc.getElementById("target")!;
+    const text = paragraph.firstChild!;
+    const quoteStart = text.textContent!.indexOf(quote);
+    const range = doc.createRange();
+    range.setStart(text, quoteStart);
+    range.setEnd(text, quoteStart + quote.length);
+    const selection = {
+      rangeCount: 1,
+      isCollapsed: false,
+      toString: () => quote,
+      getRangeAt: () => range
+    } as unknown as Selection;
+    const win = {
+      getSelection: () => selection,
+      location: { href: "https://publisher.example/paper" }
+    } as unknown as Window;
+
+    const anchor = captureSelectionAnchor(win, doc);
+
+    expect(anchor?.quote_text).toBe(quote);
+    expect(anchor?.context_text?.length).toBeLessThanOrEqual(500);
+  });
 });
