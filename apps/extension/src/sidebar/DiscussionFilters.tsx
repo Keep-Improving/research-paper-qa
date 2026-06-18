@@ -1,68 +1,146 @@
-import type { DiscussionFilterMode, DiscussionSortMode } from "./Sidebar";
+import type {
+  DiscussionAnchorFilter,
+  DiscussionFiltersState,
+  DiscussionKindFilter,
+  DiscussionParticipantFilter,
+  DiscussionSortMode,
+  DiscussionStatusFilter
+} from "./Sidebar";
 
 type DiscussionFiltersProps = {
-  filter: DiscussionFilterMode;
+  filters: DiscussionFiltersState;
   sort: DiscussionSortMode;
-  onFilterChange: (filter: DiscussionFilterMode) => void;
+  onFiltersChange: (filters: DiscussionFiltersState) => void;
   onSortChange: (sort: DiscussionSortMode) => void;
 };
 
 export function DiscussionFilters({
-  filter,
+  filters,
   sort,
-  onFilterChange,
+  onFiltersChange,
   onSortChange
 }: DiscussionFiltersProps) {
+  function updateFilter<Key extends keyof DiscussionFiltersState>(
+    key: Key,
+    value: DiscussionFiltersState[Key]
+  ) {
+    onFiltersChange({ ...filters, [key]: value });
+  }
+
   return (
     <section aria-label="Discussion filters" style={styles.panel}>
-      <div style={styles.row}>
-        <span style={styles.label}>Participant</span>
-        <div role="group" aria-label="Participant filter" style={styles.segmentGroup}>
-          <button
-            type="button"
-            aria-pressed={filter === "all"}
-            onClick={() => onFilterChange("all")}
-            style={segmentStyle(filter === "all")}
-          >
-            All
-          </button>
-          <button
-            type="button"
-            aria-pressed={filter === "author_response"}
-            onClick={() => onFilterChange("author_response")}
-            style={segmentStyle(filter === "author_response")}
-          >
-            Author responses
-          </button>
-        </div>
-      </div>
-      <div style={styles.row}>
-        <label htmlFor="discussion-sort" style={styles.label}>
-          Sort discussions
-        </label>
-        <select
-          id="discussion-sort"
-          aria-label="Sort discussions"
-          value={sort}
-          onChange={(event) => onSortChange(event.currentTarget.value as DiscussionSortMode)}
-          style={styles.select}
-        >
-          <option value="newest">Newest</option>
-          <option value="heat">Heat</option>
-        </select>
-      </div>
+      <FilterSelect
+        id="discussion-kind"
+        label="Content type"
+        value={filters.kind}
+        onChange={(value) => updateFilter("kind", value)}
+        options={kindOptions}
+      />
+      <FilterSelect
+        id="discussion-status"
+        label="Status"
+        value={filters.status}
+        onChange={(value) => updateFilter("status", value)}
+        options={statusOptions}
+      />
+      <FilterSelect
+        id="discussion-anchor"
+        label="Anchor type"
+        value={filters.anchor}
+        onChange={(value) => updateFilter("anchor", value)}
+        options={anchorOptions}
+      />
+      <FilterSelect
+        id="discussion-participant"
+        label="Participant"
+        value={filters.participant}
+        onChange={(value) => updateFilter("participant", value)}
+        options={participantOptions}
+      />
+      <FilterSelect
+        id="discussion-sort"
+        label="Sort discussions"
+        value={sort}
+        onChange={onSortChange}
+        options={sortOptions}
+      />
     </section>
   );
 }
 
-function segmentStyle(active: boolean) {
-  return {
-    ...styles.segment,
-    background: active ? "#2f3a3f" : "#ffffff",
-    color: active ? "#ffffff" : "#2b2f31",
-    borderColor: active ? "#2f3a3f" : "#b9bdb8"
-  };
+function FilterSelect<Value extends string>({
+  id,
+  label,
+  value,
+  options,
+  onChange
+}: {
+  id: string;
+  label: string;
+  value: Value;
+  options: Array<{ value: Value; label: string }>;
+  onChange: (value: Value) => void;
+}) {
+  return (
+    <div style={styles.row}>
+      <label htmlFor={id} style={styles.label}>
+        {label}
+      </label>
+      <select
+        id={id}
+        aria-label={label}
+        value={value}
+        onChange={(event) => onChange(event.currentTarget.value as Value)}
+        style={styles.select}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 }
+
+const kindOptions: Array<{ value: DiscussionKindFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "question", label: "Question" },
+  { value: "answer", label: "Answer" },
+  { value: "comment", label: "Comment" },
+  { value: "author_response", label: "Author response" }
+];
+
+const statusOptions: Array<{ value: DiscussionStatusFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "open", label: "Open" },
+  { value: "answered", label: "Answered" },
+  { value: "resolved", label: "Resolved" },
+  { value: "author_responded", label: "Author responded" },
+  { value: "disputed", label: "Disputed" }
+];
+
+const anchorOptions: Array<{ value: DiscussionAnchorFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "text", label: "Text" },
+  { value: "image", label: "Image" },
+  { value: "screenshot", label: "Screenshot" },
+  { value: "figure", label: "Figure" },
+  { value: "table", label: "Table" },
+  { value: "formula", label: "Formula" },
+  { value: "reference", label: "Reference" },
+  { value: "manual", label: "Manual" }
+];
+
+const participantOptions: Array<{ value: DiscussionParticipantFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "author_response", label: "Author responses" }
+];
+
+const sortOptions: Array<{ value: DiscussionSortMode; label: string }> = [
+  { value: "newest", label: "Newest" },
+  { value: "heat", label: "Heat" }
+];
 
 const styles = {
   panel: {
@@ -76,27 +154,13 @@ const styles = {
   row: {
     alignItems: "center",
     display: "grid",
-    gridTemplateColumns: "88px minmax(0, 1fr)",
+    gridTemplateColumns: "92px minmax(0, 1fr)",
     gap: 8
   },
   label: {
     color: "#505750",
     fontSize: 12,
     fontWeight: 700
-  },
-  segmentGroup: {
-    display: "grid",
-    gridTemplateColumns: "70px 132px",
-    gap: 4
-  },
-  segment: {
-    border: "1px solid #b9bdb8",
-    borderRadius: 4,
-    cursor: "pointer",
-    fontSize: 12,
-    height: 28,
-    padding: "0 8px",
-    whiteSpace: "nowrap" as const
   },
   select: {
     border: "1px solid #b9bdb8",

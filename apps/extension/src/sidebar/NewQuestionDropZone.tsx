@@ -13,7 +13,7 @@ export type ManualAnchorDraft = {
 };
 
 type NewQuestionDropZoneProps = {
-  onUseSelection: () => void | TextAnchorDraft | null;
+  onUseSelection?: () => void | TextAnchorDraft | null | Promise<void | TextAnchorDraft | null>;
   onImageAnchor: (anchor: ImageAnchorDraft) => void;
   onManualAnchor: (anchor: ManualAnchorDraft) => void;
 };
@@ -23,6 +23,8 @@ export function NewQuestionDropZone({
   onImageAnchor,
   onManualAnchor
 }: NewQuestionDropZoneProps) {
+  const selectionAvailable = Boolean(onUseSelection);
+
   return (
     <section
       aria-label="New question anchor"
@@ -38,11 +40,23 @@ export function NewQuestionDropZone({
     >
       <div style={styles.header}>
         <span style={styles.label}>Anchor draft</span>
-        <button type="button" onClick={() => onUseSelection()} style={styles.button}>
+        <button
+          type="button"
+          aria-label={selectionAvailable ? "Use selection" : "Use selection unavailable"}
+          disabled={!selectionAvailable}
+          onClick={() => {
+            void onUseSelection?.();
+          }}
+          style={selectionAvailable ? styles.button : styles.disabledButton}
+        >
           Use selection
         </button>
       </div>
-      <p style={styles.note}>Drop a paper figure or capture the current passage before asking.</p>
+      <p style={styles.note}>
+        {selectionAvailable
+          ? "Drop a paper figure or capture the current passage before asking."
+          : "Selection capture unavailable"}
+      </p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -138,6 +152,15 @@ const styles = {
     background: "#ffffff",
     color: "#1f1f1a",
     cursor: "pointer",
+    fontSize: 12,
+    padding: "6px 8px"
+  },
+  disabledButton: {
+    border: "1px solid #b8b8ad",
+    borderRadius: 4,
+    background: "#eeeee8",
+    color: "#73736a",
+    cursor: "not-allowed",
     fontSize: 12,
     padding: "6px 8px"
   }

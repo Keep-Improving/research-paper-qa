@@ -53,8 +53,8 @@ const discussions: SidebarDiscussion[] = [
   {
     id: "q-hot",
     paperId: "paper-1",
-    kind: "question",
-    status: "open",
+    kind: "answer",
+    status: "resolved",
     body: "Can the inference be reproduced without the excluded samples?",
     authorName: "M. Patel",
     createdAt: "2026-06-19T07:00:00.000Z",
@@ -62,7 +62,7 @@ const discussions: SidebarDiscussion[] = [
     answerCount: 3,
     commentCount: 5,
     anchor: {
-      kind: "text",
+      kind: "table",
       quoteText: "excluded samples",
       sectionLabel: "Methods"
     }
@@ -83,7 +83,7 @@ describe("Sidebar discussion UI", () => {
   it("filters by author response", async () => {
     render(<Sidebar paper={paper} initialDiscussions={discussions} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Author responses" }));
+    fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "author_response" } });
 
     expect(screen.getByText("We used matched batch controls for the validation run.")).toBeInTheDocument();
     expect(screen.queryByText("How does the perturbation affect the control cohort?")).not.toBeInTheDocument();
@@ -133,6 +133,50 @@ describe("Sidebar discussion UI", () => {
     });
   });
 
+  it("clicking Use selection with callback sets text anchor draft and composer submits with that anchor", async () => {
+    const onCreateDiscussion = vi.fn().mockResolvedValue(undefined);
+    const onUseSelection = vi.fn().mockResolvedValue({
+      kind: "text",
+      quoteText: "IL-6 secretion",
+      contextText: "IL-6 secretion increased after the treatment window.",
+      sourceUrl: "https://example.test/paper#selection"
+    });
+
+    render(
+      <Sidebar
+        paper={paper}
+        initialDiscussions={discussions}
+        onUseSelection={onUseSelection}
+        onCreateDiscussion={onCreateDiscussion}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Use selection" }));
+
+    expect(await screen.findByText("IL-6 secretion")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Question body"), {
+      target: { value: "Is IL-6 sufficient to explain the reported phenotype?" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit question" }));
+
+    expect(onCreateDiscussion).toHaveBeenCalledWith({
+      body: "Is IL-6 sufficient to explain the reported phenotype?",
+      paperId: "paper-1",
+      anchor: expect.objectContaining({
+        kind: "text",
+        quoteText: "IL-6 secretion"
+      })
+    });
+  });
+
+  it("when no selection callback exists, Use selection is disabled and does not silently do nothing", () => {
+    render(<Sidebar paper={paper} initialDiscussions={discussions} />);
+
+    const useSelection = screen.getByRole("button", { name: "Use selection unavailable" });
+    expect(useSelection).toBeDisabled();
+    expect(screen.getByText("Selection capture unavailable")).toBeInTheDocument();
+  });
+
   it("shows manual fallback when anchor capture fails", async () => {
     const onRetryAnchorCapture = vi.fn();
 
@@ -151,6 +195,46 @@ describe("Sidebar discussion UI", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Retry capture" }));
     expect(onRetryAnchorCapture).toHaveBeenCalledTimes(1);
+  });
+
+  it("content type filter hides non-matching rows", () => {
+    render(<Sidebar paper={paper} initialDiscussions={discussions} />);
+
+    fireEvent.change(screen.getByLabelText("Content type"), { target: { value: "answer" } });
+
+    expect(screen.getByText("Can the inference be reproduced without the excluded samples?")).toBeInTheDocument();
+    expect(screen.queryByText("How does the perturbation affect the control cohort?")).not.toBeInTheDocument();
+    expect(screen.queryByText("We used matched batch controls for the validation run.")).not.toBeInTheDocument();
+  });
+
+  it("status filter hides non-matching rows", () => {
+    render(<Sidebar paper={paper} initialDiscussions={discussions} />);
+
+    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "resolved" } });
+
+    expect(screen.getByText("Can the inference be reproduced without the excluded samples?")).toBeInTheDocument();
+    expect(screen.queryByText("How does the perturbation affect the control cohort?")).not.toBeInTheDocument();
+    expect(screen.queryByText("We used matched batch controls for the validation run.")).not.toBeInTheDocument();
+  });
+
+  it("anchor type filter hides non-matching rows", () => {
+    render(<Sidebar paper={paper} initialDiscussions={discussions} />);
+
+    fireEvent.change(screen.getByLabelText("Anchor type"), { target: { value: "figure" } });
+
+    expect(screen.getByText("We used matched batch controls for the validation run.")).toBeInTheDocument();
+    expect(screen.queryByText("How does the perturbation affect the control cohort?")).not.toBeInTheDocument();
+    expect(screen.queryByText("Can the inference be reproduced without the excluded samples?")).not.toBeInTheDocument();
+  });
+
+  it("participant author_response filter still works", () => {
+    render(<Sidebar paper={paper} initialDiscussions={discussions} />);
+
+    fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "author_response" } });
+
+    expect(screen.getByText("We used matched batch controls for the validation run.")).toBeInTheDocument();
+    expect(screen.queryByText("How does the perturbation affect the control cohort?")).not.toBeInTheDocument();
+    expect(screen.queryByText("Can the inference be reproduced without the excluded samples?")).not.toBeInTheDocument();
   });
 
   it("renders loading, empty, and error states", () => {

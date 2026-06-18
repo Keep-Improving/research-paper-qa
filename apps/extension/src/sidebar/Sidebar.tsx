@@ -49,8 +49,27 @@ export type SidebarCreateDiscussionInput = {
   anchor?: SidebarAnchorDraft;
 };
 
-export type DiscussionFilterMode = "all" | "author_response";
+export type DiscussionKindFilter = "all" | "question" | "answer" | "comment" | "author_response";
+export type DiscussionStatusFilter = "all" | "open" | "answered" | "resolved" | "author_responded" | "disputed";
+export type DiscussionAnchorFilter =
+  | "all"
+  | "text"
+  | "image"
+  | "screenshot"
+  | "figure"
+  | "table"
+  | "formula"
+  | "reference"
+  | "manual";
+export type DiscussionParticipantFilter = "all" | "author_response";
 export type DiscussionSortMode = "newest" | "heat";
+
+export type DiscussionFiltersState = {
+  kind: DiscussionKindFilter;
+  status: DiscussionStatusFilter;
+  anchor: DiscussionAnchorFilter;
+  participant: DiscussionParticipantFilter;
+};
 
 type SidebarProps = {
   paper?: SidebarPaper;
@@ -60,6 +79,7 @@ type SidebarProps = {
   loadState?: "loading" | "ready" | "error";
   errorMessage?: string;
   similarQuestionPrompt?: React.ReactNode;
+  onUseSelection?: () => SidebarAnchorDraft | null | void | Promise<SidebarAnchorDraft | null | void>;
   onCreateDiscussion?: (input: SidebarCreateDiscussionInput) => void | Promise<void>;
   onRetryAnchorCapture?: () => void;
 };
@@ -77,18 +97,37 @@ export function Sidebar({
   loadState = "ready",
   errorMessage,
   similarQuestionPrompt,
+  onUseSelection,
   onCreateDiscussion,
   onRetryAnchorCapture
 }: SidebarProps) {
-  const [filter, setFilter] = useState<DiscussionFilterMode>("all");
+  const [filters, setFilters] = useState<DiscussionFiltersState>({
+    kind: "all",
+    status: "all",
+    anchor: "all",
+    participant: "all"
+  });
   const [sort, setSort] = useState<DiscussionSortMode>("newest");
   const [draft, setDraft] = useState<SidebarAnchorDraft | null>(anchorDraft);
 
   const visibleDiscussions = useMemo(() => {
     const filtered = initialDiscussions.filter((discussion) => {
-      if (filter === "author_response") {
+      if (filters.kind !== "all" && discussion.kind !== filters.kind) {
+        return false;
+      }
+
+      if (filters.status !== "all" && discussion.status !== filters.status) {
+        return false;
+      }
+
+      if (filters.anchor !== "all" && discussion.anchor?.kind !== filters.anchor) {
+        return false;
+      }
+
+      if (filters.participant === "author_response") {
         return discussion.isAuthorResponse || discussion.kind === "author_response";
       }
+
       return true;
     });
 
@@ -99,7 +138,14 @@ export function Sidebar({
 
       return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
     });
-  }, [filter, initialDiscussions, sort]);
+  }, [filters, initialDiscussions, sort]);
+
+  async function useSelection() {
+    const anchor = await onUseSelection?.();
+    if (anchor) {
+      setDraft(anchor);
+    }
+  }
 
   return (
     <main style={styles.shell}>
@@ -112,7 +158,7 @@ export function Sidebar({
       </header>
 
       <NewQuestionDropZone
-        onUseSelection={() => null}
+        onUseSelection={onUseSelection ? useSelection : undefined}
         onImageAnchor={(anchor) => setDraft(normalizeImageAnchor(anchor))}
         onManualAnchor={(anchor) => setDraft(normalizeManualAnchor(anchor))}
       />
@@ -127,9 +173,9 @@ export function Sidebar({
       />
 
       <DiscussionFilters
-        filter={filter}
+        filters={filters}
         sort={sort}
-        onFilterChange={setFilter}
+        onFiltersChange={setFilters}
         onSortChange={setSort}
       />
 

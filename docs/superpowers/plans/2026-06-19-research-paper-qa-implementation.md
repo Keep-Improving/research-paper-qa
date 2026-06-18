@@ -967,7 +967,7 @@ git add apps/extension
 git commit -m "feat(extension): add discussion sidebar"
 ```
 
-**Task 8 quality note:** Sidebar UI uses restrained academic styling with compact borders, stable filter/button dimensions, author-response filtering, newest/heat sorting, anchored question composition, manual anchor fallback, and loading/empty/error states.
+**Task 8 quality note:** Sidebar UI uses restrained academic styling with compact borders, stable filter/button dimensions, Use selection is wired through an optional callback with a disabled unavailable fallback, filters cover kind/status/anchor/participant/sort, and anchored question composition, manual anchor fallback, plus loading/empty/error states remain covered.
 
 ## Task 9: Implement Website Core Pages
 
