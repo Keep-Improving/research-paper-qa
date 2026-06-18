@@ -394,6 +394,8 @@ git add apps/api
 git commit -m "feat(api): add FastAPI skeleton"
 ```
 
+**Task 2 quality note:** Added Python package markers, editable-install package discovery, and ignored local agent/install artifacts so the API skeleton imports cleanly from the repository root without committing generated files.
+
 ## Task 3: Implement Core Database Models and Migrations
 
 **Files:**
