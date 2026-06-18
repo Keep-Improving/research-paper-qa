@@ -873,31 +873,31 @@ git commit -m "feat(client): add shared API client"
 - Create: `apps/extension/tests/paperDetection.test.ts`
 - Create: `apps/extension/tests/selectionAnchor.test.ts`
 
-- [ ] **Step 1: Write paper detection tests**
+- [x] **Step 1: Write paper detection tests**
 
 Test DOI meta tag detection, citation DOI detection, arXiv URL detection, PubMed URL detection, DOI landing URL detection, and title fallback.
 
-- [ ] **Step 2: Implement paper detection**
+- [x] **Step 2: Implement paper detection**
 
 Implement `detectPaper(document, location)` returning DOI, arXiv ID, PMID, title, URL, and confidence.
 
-- [ ] **Step 3: Write selection anchor tests**
+- [x] **Step 3: Write selection anchor tests**
 
 Test selected text capture includes quote text, context text, source URL, and optional DOM path.
 
-- [ ] **Step 4: Implement selection anchor capture**
+- [x] **Step 4: Implement selection anchor capture**
 
 Implement `captureSelectionAnchor(window, document)`.
 
-- [ ] **Step 5: Implement image/screenshot anchor input model**
+- [x] **Step 5: Implement image/screenshot anchor input model**
 
 Implement drag handling for images and a screenshot fallback action. Preserve source URL, alt text, nearby caption if available, and image blob reference when accessible.
 
-- [ ] **Step 6: Implement sidebar drop zone**
+- [x] **Step 6: Implement sidebar drop zone**
 
 Create a compact academic-style drop zone that accepts current selection, dragged image, or manual anchor fields.
 
-- [ ] **Step 7: Run extension tests**
+- [x] **Step 7: Run extension tests**
 
 Run:
 
@@ -908,12 +908,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```powershell
 git add apps/extension
 git commit -m "feat(extension): add paper detection and anchor capture"
 ```
+
+**Task 7 quality note:** Extension Vitest was upgraded to `^4.1.9`, jsdom was added for DOM-based content-script tests, and `npm audit --audit-level=moderate` reports 0 vulnerabilities.
 
 ## Task 8: Implement Extension Sidebar Discussion UI
 
