@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -40,4 +40,6 @@ class Anchor(Base):
     dom_path: Mapped[str | None] = mapped_column(Text, nullable=True)
     image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     ocr_text: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, Integer, String, Text
@@ -21,4 +21,6 @@ class Paper(Base):
     publication_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     canonical_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     abstract: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )

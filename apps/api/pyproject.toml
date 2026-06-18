@@ -13,7 +13,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "httpx2>=0.28.0",
+  "httpx>=0.28.0",
   "pytest>=8.0.0",
   "pytest-asyncio>=0.23.0",
   "ruff>=0.7.0"
@@ -29,3 +29,6 @@ include = ["app*"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"

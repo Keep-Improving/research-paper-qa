@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, String
@@ -17,4 +17,6 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(120))
     institution: Mapped[str | None] = mapped_column(String(240), nullable=True)
     orcid: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )

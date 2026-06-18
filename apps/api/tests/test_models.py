@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from app.models.author_claim import PaperAuthorRole
 from app.models.discussion import DiscussionKind, DiscussionStatus
 
@@ -46,3 +48,21 @@ def test_remaining_models_expose_required_status_and_user_fields():
 
     assert "user_id" in ModerationReport.__table__.columns
     assert "reporter_user_id" not in ModerationReport.__table__.columns
+
+
+def test_timestamp_columns_are_timezone_aware_and_use_utc_defaults():
+    import app.models  # noqa: F401
+    from app.db.base import Base
+
+    for table in Base.metadata.tables.values():
+        for column_name in ("created_at", "updated_at"):
+            if column_name not in table.columns:
+                continue
+
+            column = table.columns[column_name]
+
+            assert column.type.timezone is True
+
+            timestamp = column.default.arg(None)
+            assert isinstance(timestamp, datetime)
+            assert timestamp.tzinfo is UTC

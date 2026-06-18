@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -35,4 +35,6 @@ class PaperAuthorClaim(Base):
     role: Mapped[str] = mapped_column(String(32))
     evidence_type: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(32), default=AuthorClaimStatus.PENDING.value)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )

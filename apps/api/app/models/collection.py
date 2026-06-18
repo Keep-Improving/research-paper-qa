@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -30,4 +30,6 @@ class Collection(Base):
     status: Mapped[str] = mapped_column(String(32), default="active", index=True)
     label: Mapped[str | None] = mapped_column(String(120), nullable=True)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
