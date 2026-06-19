@@ -1040,23 +1040,23 @@ git commit -m "feat(web): add core research discussion pages"
 - Create: `apps/web/components/AuthorClaimForm.tsx`
 - Create: `apps/web/components/AuthorWorkbench.tsx`
 
-- [ ] **Step 1: Write backend tests**
+- [x] **Step 1: Write backend tests**
 
 Test claim creation, admin approval, first/corresponding author response permission, and co-author denial.
 
-- [ ] **Step 2: Implement author claim API**
+- [x] **Step 2: Implement author claim API**
 
 Add endpoints for submitting claims, listing current user claims, and admin approval/rejection.
 
-- [ ] **Step 3: Write web tests**
+- [x] **Step 3: Write web tests**
 
 Test claim form role selection, evidence submission, approval state display, and workbench list of high-heat unanswered questions.
 
-- [ ] **Step 4: Implement website pages**
+- [x] **Step 4: Implement website pages**
 
 Add author claim form and workbench. The author response action appears only when the API says the user has permission.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -1069,12 +1069,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add apps/api apps/web
 git commit -m "feat: add author certification workflow"
 ```
+
+**Task 10 quality note:** Backend author-claim endpoints use the existing explicit header auth seam for current users and a separate admin header seam for review decisions until real authentication is implemented. Claim creation, current-user listing, admin approval/rejection, first/corresponding author-response permission, pending claim denial, co-author denial, and missing-paper/missing-claim errors are covered by API tests. Website author certification and workbench pages use local sample UI state only, without fake fetches or mock API responses; the author-response action is visible only for first/corresponding-author eligible state and hidden for co-author state.
 
 ## Task 11: Implement Collections, Notifications, and Moderation Foundations
 

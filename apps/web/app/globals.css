@@ -264,6 +264,46 @@ select {
   gap: 16px;
 }
 
+.form-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.field-label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+.field-label input,
+.field-label select {
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.status-strip {
+  align-items: center;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  padding-top: 12px;
+}
+
+.row-toolbar {
+  justify-content: space-between;
+}
+
 .empty-state,
 .error-state {
   border: 1px dashed var(--border-strong);
@@ -309,6 +349,10 @@ select {
   }
 
   .two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
     grid-template-columns: 1fr;
   }
 }
