@@ -30,5 +30,6 @@ describe("Chrome extension build output", () => {
     expect(existsSync(join(distDir, "src/sidebar/index.html"))).toBe(true);
     expect(existsSync(join(distDir, "assets/background.js"))).toBe(true);
     expect(existsSync(join(distDir, "assets/content.js"))).toBe(true);
+    expect(readFileSync(join(distDir, "assets/content.js"), "utf8")).not.toMatch(/^import/m);
   });
 });

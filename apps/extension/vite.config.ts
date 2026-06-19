@@ -27,6 +27,12 @@ export default defineConfig({
         background: "src/background/index.ts"
       },
       output: {
+        inlineDynamicImports: false,
+        manualChunks: (id) => {
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
+        },
         entryFileNames: (chunkInfo) => {
           if (chunkInfo.name === "content") {
             return "assets/content.js";
