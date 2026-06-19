@@ -33,6 +33,9 @@ class ModerationReport(Base):
     discussion_item_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("discussion_items.id"), nullable=True, index=True
     )
+    duplicate_of_discussion_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("discussion_items.id"), nullable=True, index=True
+    )
     anchor_id: Mapped[UUID | None] = mapped_column(ForeignKey("anchors.id"), nullable=True, index=True)
     kind: Mapped[str] = mapped_column(String(32), index=True)
     status: Mapped[str] = mapped_column(String(32), default=ModerationStatus.OPEN.value, index=True)

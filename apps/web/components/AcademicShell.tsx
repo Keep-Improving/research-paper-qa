@@ -16,6 +16,8 @@ export function AcademicShell({ children }: { children: ReactNode }) {
             <Link href="/anchors/anchor-figure-caption">Anchor detail</Link>
             <Link href="/author/claims">Author claims</Link>
             <Link href="/author/workbench">Workbench</Link>
+            <Link href="/collections">Collections</Link>
+            <Link href="/moderation">Moderation</Link>
           </nav>
         </div>
       </header>

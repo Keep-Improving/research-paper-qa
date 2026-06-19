@@ -1090,27 +1090,27 @@ git commit -m "feat: add author certification workflow"
 - Create: `apps/web/app/moderation/page.tsx`
 - Create: `apps/web/components/ModerationQueue.tsx`
 
-- [ ] **Step 1: Write API tests**
+- [x] **Step 1: Write API tests**
 
 Test saving papers/questions/anchors, report creation, AI-risk suggestion storage, admin hide/restore, duplicate discussion linking, and notification creation.
 
-- [ ] **Step 2: Implement collections API**
+- [x] **Step 2: Implement collections API**
 
 Support saving and unsaving papers, discussions, and anchors with optional user labels.
 
-- [ ] **Step 3: Implement moderation API**
+- [x] **Step 3: Implement moderation API**
 
 Support report queue, hide/restore, disputed marker override, duplicate linking, and admin notes.
 
-- [ ] **Step 4: Implement notification API**
+- [x] **Step 4: Implement notification API**
 
 Create notifications for replies, author responses, and followed-anchor updates.
 
-- [ ] **Step 5: Implement web pages**
+- [x] **Step 5: Implement web pages**
 
 Add collections page and moderation queue with clear status labels and no destructive bulk delete. Any large deletion or removal operation must require user-selected items and explicit confirmation.
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run:
 
@@ -1123,12 +1123,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add apps/api apps/web
 git commit -m "feat: add collections and moderation foundations"
 ```
+
+**Task 11 quality note:** Collections use archive status for non-destructive unsave behavior instead of deletion. Moderation endpoints cover report creation, deterministic AI-risk label suggestions, admin queue listing, hide/restore, disputed marker override, and duplicate discussion linking. Notification endpoints create and list reply, author-response, and followed-anchor updates. Website collections and moderation pages use clearly labeled local sample UI state only, avoid fake API responses, and do not expose delete or bulk-delete controls.
 
 ## Task 12: End-to-End Verification
 
