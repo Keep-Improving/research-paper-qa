@@ -982,11 +982,11 @@ git commit -m "feat(extension): add discussion sidebar"
 - Create: `apps/web/components/AcademicShell.tsx`
 - Create: `apps/web/tests/paper-pages.spec.ts`
 
-- [ ] **Step 1: Write Playwright page tests**
+- [x] **Step 1: Write Playwright page tests**
 
 Test search page, paper detail discussion filters, question detail anchor display, and empty/error states.
 
-- [ ] **Step 2: Implement academic shell**
+- [x] **Step 2: Implement academic shell**
 
 Use a restrained academic tool style:
 
@@ -997,19 +997,19 @@ Use a restrained academic tool style:
 - No marketing hero.
 - No decorative gradients or nested cards.
 
-- [ ] **Step 3: Implement search page**
+- [x] **Step 3: Implement search page**
 
 Search papers, questions, author responses, and anchors. Empty state explains that records appear after papers are collected or detected.
 
-- [ ] **Step 4: Implement paper detail page**
+- [x] **Step 4: Implement paper detail page**
 
 Render metadata, collection action, discussion filters, discussion list, anchor grouping, author responses, hot and unanswered questions.
 
-- [ ] **Step 5: Implement detail pages**
+- [x] **Step 5: Implement detail pages**
 
 Render question detail and anchor detail pages with related discussions.
 
-- [ ] **Step 6: Run Playwright**
+- [x] **Step 6: Run Playwright**
 
 Run:
 
@@ -1020,12 +1020,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add apps/web
 git commit -m "feat(web): add core research discussion pages"
 ```
+
+**Task 9 quality note:** Website uses a restrained academic shell with compact navigation and dense research-tool rows, no marketing hero, no decorative gradients, and no nested cards. Empty and error states are covered by Playwright tests. UI uses clearly labeled sample UI data only; no mock API calls or fake fetch responses were added.
 
 ## Task 10: Implement Author Certification and Author Workbench
 

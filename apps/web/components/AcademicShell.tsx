@@ -1,0 +1,23 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+export function AcademicShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <Link className="brand" href="/">
+            Research Paper Q&A
+          </Link>
+          <nav aria-label="Primary" className="primary-nav">
+            <Link href="/">Search</Link>
+            <Link href="/papers/paper-transformer">Paper detail</Link>
+            <Link href="/discussions/discussion-attention-scale">Question detail</Link>
+            <Link href="/anchors/anchor-figure-caption">Anchor detail</Link>
+          </nav>
+        </div>
+      </header>
+      <main className="shell-content">{children}</main>
+    </div>
+  );
+}

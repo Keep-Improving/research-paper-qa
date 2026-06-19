@@ -1,8 +1,16 @@
-export default function HomePage() {
+import { AcademicShell } from "../components/AcademicShell";
+import { PaperSearch } from "../components/PaperSearch";
+
+export default async function HomePage({
+  searchParams
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q = "" } = await searchParams;
+
   return (
-    <main>
-      <h1>Research Paper Q&A</h1>
-      <p>Ask focused questions and organize answers from your research papers.</p>
-    </main>
+    <AcademicShell>
+      <PaperSearch q={q} />
+    </AcademicShell>
   );
 }
