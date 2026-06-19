@@ -19,3 +19,15 @@ window.paperQaContent = {
   captureSelectionAnchor: () => captureSelectionAnchor(window, document),
   createImageAnchorFromElement
 };
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type !== "paperqa:capture-selection") {
+    return false;
+  }
+
+  sendResponse({
+    ok: true,
+    anchor: captureSelectionAnchor(window, document)
+  });
+  return true;
+});
