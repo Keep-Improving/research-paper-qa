@@ -10,11 +10,32 @@ describe("extension sidebar app", () => {
     vi.unstubAllGlobals();
   });
 
-  it("stores a submitted question and shows it in the discussion list", async () => {
-    const storage: Record<string, unknown> = {};
-    const set = vi.fn(async (items: Record<string, unknown>) => {
-      Object.assign(storage, items);
-    });
+  it("submits a question to the public API and refreshes the discussion list", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        id: "paper-1",
+        title: "Detected paper"
+      }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        id: "discussion-1",
+        paperId: "paper-1",
+        body: "Does the selected evidence support this conclusion?",
+        status: "open",
+        authorName: "Reader",
+        createdAt: "2026-06-20T00:00:00Z"
+      }), { status: 201 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify([
+        {
+          id: "discussion-1",
+          paperId: "paper-1",
+          body: "Does the selected evidence support this conclusion?",
+          status: "open",
+          authorName: "Reader",
+          createdAt: "2026-06-20T00:00:00Z"
+        }
+      ]), { status: 200 }));
 
     vi.stubGlobal("chrome", {
       runtime: {
@@ -22,13 +43,11 @@ describe("extension sidebar app", () => {
       },
       storage: {
         local: {
-          get: vi.fn(async (keys: string[]) => {
-            return Object.fromEntries(keys.map((key) => [key, storage[key]]));
-          }),
-          set
+          get: vi.fn(async () => ({ "paperqa:apiBaseUrl": "https://api.example.test/api" }))
         }
       }
     });
+    vi.stubGlobal("fetch", fetch);
 
     document.body.innerHTML = '<div id="root"></div>';
     await import("../src/sidebar/main");
@@ -39,15 +58,9 @@ describe("extension sidebar app", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit question" }));
 
     expect(await screen.findByText("Does the selected evidence support this conclusion?")).toBeInTheDocument();
-    expect(set).toHaveBeenCalledWith({
-      "paperqa:discussions:detected-paper": expect.arrayContaining([
-        expect.objectContaining({
-          body: "Does the selected evidence support this conclusion?",
-          kind: "question",
-          paperId: "detected-paper",
-          status: "open"
-        })
-      ])
-    });
+    expect(fetch).toHaveBeenCalledWith("https://api.example.test/api/papers/paper-1/discussions", expect.objectContaining({
+      method: "POST",
+      headers: expect.objectContaining({ "X-User-Id": "user-reader" })
+    }));
   });
 });

@@ -76,6 +76,8 @@ export type PaperIdentifyRequest = {
   url?: string | null;
 };
 
+export type PaperMatchRequest = PaperIdentifyRequest;
+
 export type AnchorCreate = {
   kind: string;
   quote_text?: string | null;
@@ -104,4 +106,29 @@ export type DiscussionCreate = {
 export type DiscussionCreateResponse = {
   item: DiscussionItem;
   similar_discussions: DiscussionItem[];
+};
+
+export type ReplyCreate = {
+  kind: "answer" | "comment" | "author_response" | "correction" | "replication_note";
+  body: string;
+  parentReplyId?: string | null;
+  isAuthorResponse?: boolean;
+};
+
+export type VoteCreate = {
+  discussionId?: string | null;
+  replyId?: string | null;
+  value: "up" | "down" | "helpful";
+};
+
+export type CollectionCreate = {
+  targetType: "paper" | "discussion" | "anchor";
+  targetId: string;
+  note?: string | null;
+};
+
+export type ReportCreate = {
+  targetType: "discussion" | "reply" | "anchor" | "paper";
+  targetId: string;
+  reason: string;
 };

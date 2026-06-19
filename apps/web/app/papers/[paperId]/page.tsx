@@ -1,12 +1,8 @@
 import { AcademicShell } from "../../../components/AcademicShell";
-import { AnchorPanel } from "../../../components/AnchorPanel";
+import { CollectionButton } from "../../../components/DiscussionActions";
 import { DiscussionPanel } from "../../../components/DiscussionPanel";
-import {
-  getPaper,
-  getPaperAnchors,
-  getPaperDiscussions,
-  SAMPLE_UI_LABEL
-} from "../../../components/sampleData";
+import { prisma } from "../../../lib/prisma";
+import { listPaperDiscussions } from "../../../lib/repositories/discussions";
 
 export default async function PaperDetailPage({
   params
@@ -14,49 +10,50 @@ export default async function PaperDetailPage({
   params: Promise<{ paperId: string }>;
 }) {
   const { paperId } = await params;
-  const paper = getPaper(paperId);
+  const paper = await prisma.paper.findUnique({
+    where: { id: paperId },
+    include: {
+      anchors: true
+    }
+  });
 
   if (!paper) {
     return (
       <AcademicShell>
         <section className="error-state">
           <h1 className="page-title">Paper not found</h1>
-          <p>We could not find sample UI data for this paper.</p>
+          <p>We could not find this paper in the shared database.</p>
         </section>
       </AcademicShell>
     );
   }
 
-  const discussions = getPaperDiscussions(paper.id);
-  const anchors = getPaperAnchors(paper.id);
-  const authorResponses = discussions.filter((discussion) => discussion.hasAuthorResponse);
+  const discussions = await listPaperDiscussions(prisma, paper.id);
+  const anchors = paper.anchors;
+  const authorResponses = discussions.filter((discussion) => discussion.isAuthorResponse);
   const hotDiscussions = [...discussions].sort((a, b) => b.heat - a.heat).slice(0, 2);
-  const unanswered = discussions.filter((discussion) => discussion.isUnresolved || discussion.answers.length === 0);
+  const unanswered = discussions.filter((discussion) => discussion.status === "open" && discussion.answerCount === 0);
   const textAnchors = anchors.filter((anchor) => anchor.kind === "text");
-  const figureAnchors = anchors.filter((anchor) => anchor.kind === "figure");
+  const figureAnchors = anchors.filter((anchor) => anchor.kind === "figure" || anchor.kind === "image");
 
   return (
     <AcademicShell>
       <div className="stack">
         <section className="panel stack">
           <div>
-            <p className="page-kicker">{SAMPLE_UI_LABEL}</p>
+            <p className="page-kicker">Shared paper discussion</p>
             <h1 className="page-title">{paper.title}</h1>
-            <p className="page-summary">{paper.abstract}</p>
+            <p className="page-summary">{paper.abstract ?? "No abstract has been stored for this paper yet."}</p>
             <div className="meta-row">
               <span>{paper.authors.join(", ")}</span>
-              <span>{paper.venue}</span>
-              <span>{paper.year}</span>
-              <span>{paper.doi}</span>
+              {paper.venue ? <span>{paper.venue}</span> : null}
+              {paper.year ? <span>{paper.year}</span> : null}
+              {paper.doi ? <span>{paper.doi}</span> : null}
             </div>
           </div>
           <div className="toolbar">
-            <button className="button button-primary" type="button">
-              Add to collection
-            </button>
-            <button className="button" type="button">
-              Follow paper
-            </button>
+            <CollectionButton label="Add to collection" targetId={paper.id} targetType="paper" />
+            <CollectionButton label="Follow paper" targetId={paper.id} targetType="paper" />
           </div>
         </section>
 
@@ -67,7 +64,7 @@ export default async function PaperDetailPage({
               <h2 className="section-title">Author responses</h2>
               <ul className="compact-list">
                 {authorResponses.map((discussion) => (
-                  <li key={discussion.id}>{discussion.authorResponse}</li>
+                  <li key={discussion.id}>{discussion.title}</li>
                 ))}
               </ul>
             </section>
@@ -79,13 +76,13 @@ export default async function PaperDetailPage({
               <h3>Text anchors</h3>
               <ul className="compact-list">
                 {textAnchors.map((anchor) => (
-                  <li key={anchor.id}>{anchor.title}</li>
+                  <li key={anchor.id}>{anchor.title ?? anchor.quoteText ?? anchor.id}</li>
                 ))}
               </ul>
               <h3>Figure anchors</h3>
               <ul className="compact-list">
                 {figureAnchors.map((anchor) => (
-                  <li key={anchor.id}>{anchor.title}</li>
+                  <li key={anchor.id}>{anchor.title ?? anchor.imageAlt ?? anchor.id}</li>
                 ))}
               </ul>
             </section>
@@ -109,8 +106,6 @@ export default async function PaperDetailPage({
             </section>
           </aside>
         </div>
-
-        {anchors[0] ? <AnchorPanel anchor={anchors[0]} showRelated={false} /> : null}
       </div>
     </AcademicShell>
   );

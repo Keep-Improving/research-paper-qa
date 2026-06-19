@@ -81,6 +81,9 @@ type SidebarProps = {
   similarQuestionPrompt?: React.ReactNode;
   onUseSelection?: () => SidebarAnchorDraft | null | void | Promise<SidebarAnchorDraft | null | void>;
   onCreateDiscussion?: (input: SidebarCreateDiscussionInput) => void | Promise<void>;
+  onCreateReply?: (discussionId: string, body: string, kind: "answer" | "comment") => void | Promise<void>;
+  onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
+  onReportDiscussion?: (discussionId: string) => void | Promise<void>;
   onRetryAnchorCapture?: () => void;
 };
 
@@ -99,6 +102,9 @@ export function Sidebar({
   similarQuestionPrompt,
   onUseSelection,
   onCreateDiscussion,
+  onCreateReply,
+  onVoteDiscussion,
+  onReportDiscussion,
   onRetryAnchorCapture
 }: SidebarProps) {
   const [filters, setFilters] = useState<DiscussionFiltersState>({
@@ -110,6 +116,7 @@ export function Sidebar({
   const [sort, setSort] = useState<DiscussionSortMode>("newest");
   const [draft, setDraft] = useState<SidebarAnchorDraft | null>(anchorDraft);
   const [selectionError, setSelectionError] = useState<string | undefined>(anchorCaptureError);
+  const [selectedDiscussion, setSelectedDiscussion] = useState<SidebarDiscussion | null>(null);
 
   const visibleDiscussions = useMemo(() => {
     const filtered = initialDiscussions.filter((discussion) => {
@@ -191,8 +198,90 @@ export function Sidebar({
         discussions={visibleDiscussions}
         loadState={loadState}
         errorMessage={errorMessage}
+        onSelectDiscussion={setSelectedDiscussion}
       />
+
+      {selectedDiscussion ? (
+        <DiscussionDetail
+          discussion={selectedDiscussion}
+          onBack={() => setSelectedDiscussion(null)}
+          onCreateReply={onCreateReply}
+          onReportDiscussion={onReportDiscussion}
+          onVoteDiscussion={onVoteDiscussion}
+        />
+      ) : null}
     </main>
+  );
+}
+
+function DiscussionDetail({
+  discussion,
+  onBack,
+  onCreateReply,
+  onVoteDiscussion,
+  onReportDiscussion
+}: {
+  discussion: SidebarDiscussion;
+  onBack: () => void;
+  onCreateReply?: (discussionId: string, body: string, kind: "answer" | "comment") => void | Promise<void>;
+  onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
+  onReportDiscussion?: (discussionId: string) => void | Promise<void>;
+}) {
+  const [body, setBody] = useState("");
+  const [kind, setKind] = useState<"answer" | "comment">("answer");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+
+  async function submitReply(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedBody = body.trim();
+    if (!trimmedBody || !onCreateReply) return;
+
+    setStatus("submitting");
+    try {
+      await onCreateReply(discussion.id, trimmedBody, kind);
+      setBody("");
+      setStatus("idle");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <section aria-label="Discussion detail" style={styles.detailPanel}>
+      <button onClick={onBack} style={styles.secondaryButton} type="button">
+        Back to list
+      </button>
+      <h2 style={styles.detailTitle}>{discussion.body}</h2>
+      {discussion.anchor?.quoteText ? <q style={styles.detailQuote}>{discussion.anchor.quoteText}</q> : null}
+      <div style={styles.detailToolbar}>
+        <button onClick={() => onVoteDiscussion?.(discussion.id)} style={styles.secondaryButton} type="button">
+          Helpful
+        </button>
+        <button onClick={() => onReportDiscussion?.(discussion.id)} style={styles.secondaryButton} type="button">
+          Report
+        </button>
+        <a href={`http://localhost:3000/discussions/${discussion.id}`} style={styles.detailLink} target="_blank">
+          Open web
+        </a>
+      </div>
+      <form onSubmit={submitReply} style={styles.detailForm}>
+        <select onChange={(event) => setKind(event.target.value as "answer" | "comment")} style={styles.detailSelect} value={kind}>
+          <option value="answer">Answer</option>
+          <option value="comment">Comment</option>
+        </select>
+        <textarea
+          aria-label="Reply body"
+          onChange={(event) => setBody(event.currentTarget.value)}
+          rows={3}
+          style={styles.detailTextarea}
+          value={body}
+        />
+        {status === "error" ? <div role="alert" style={styles.submitError}>Reply could not be submitted.</div> : null}
+        <button disabled={status === "submitting" || body.trim().length === 0} style={styles.primaryButton} type="submit">
+          {status === "submitting" ? "Submitting..." : "Submit reply"}
+        </button>
+      </form>
+    </section>
   );
 }
 
@@ -274,5 +363,85 @@ const styles = {
     padding: "0 6px",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap" as const
+  },
+  detailPanel: {
+    background: "#ffffff",
+    border: "1px solid #cfd3cc",
+    borderRadius: 6,
+    display: "grid",
+    gap: 8,
+    padding: 10
+  },
+  detailTitle: {
+    color: "#1f2421",
+    fontSize: 14,
+    lineHeight: 1.35,
+    margin: 0
+  },
+  detailQuote: {
+    color: "#4f554e",
+    fontSize: 12,
+    lineHeight: 1.3
+  },
+  detailToolbar: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: 6
+  },
+  detailLink: {
+    color: "#2f3a3f",
+    fontSize: 12,
+    fontWeight: 700,
+    lineHeight: "28px"
+  },
+  detailForm: {
+    display: "grid",
+    gap: 6
+  },
+  detailSelect: {
+    border: "1px solid #b9bdb8",
+    borderRadius: 4,
+    color: "#1f2421",
+    fontSize: 12,
+    height: 30,
+    padding: "0 8px"
+  },
+  detailTextarea: {
+    border: "1px solid #b9bdb8",
+    borderRadius: 4,
+    color: "#1f2421",
+    fontSize: 13,
+    lineHeight: 1.35,
+    minHeight: 72,
+    padding: 8,
+    resize: "vertical" as const
+  },
+  primaryButton: {
+    border: "1px solid #2f3a3f",
+    borderRadius: 4,
+    background: "#2f3a3f",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: 12,
+    fontWeight: 700,
+    height: 30,
+    justifySelf: "start",
+    minWidth: 110,
+    padding: "0 10px"
+  },
+  secondaryButton: {
+    border: "1px solid #c4c8c0",
+    borderRadius: 4,
+    background: "#ffffff",
+    color: "#3f4842",
+    cursor: "pointer",
+    fontSize: 12,
+    fontWeight: 700,
+    minHeight: 28,
+    padding: "0 8px"
+  },
+  submitError: {
+    color: "#7a2727",
+    fontSize: 12
   }
 };

@@ -40,7 +40,8 @@ a {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -279,11 +280,18 @@ select {
 }
 
 .field-label input,
-.field-label select {
+.field-label select,
+.field-label textarea {
   border: 1px solid var(--border-strong);
   color: var(--text);
   min-height: 38px;
   padding: 8px 10px;
+}
+
+.text-area {
+  min-height: 104px;
+  resize: vertical;
+  width: 100%;
 }
 
 .field-wide {

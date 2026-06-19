@@ -5,9 +5,10 @@ type DiscussionListProps = {
   discussions: SidebarDiscussion[];
   loadState: "loading" | "ready" | "error";
   errorMessage?: string;
+  onSelectDiscussion?: (discussion: SidebarDiscussion) => void;
 };
 
-export function DiscussionList({ discussions, loadState, errorMessage }: DiscussionListProps) {
+export function DiscussionList({ discussions, loadState, errorMessage, onSelectDiscussion }: DiscussionListProps) {
   if (loadState === "loading") {
     return <StatusMessage>Loading discussions...</StatusMessage>;
   }
@@ -27,7 +28,18 @@ export function DiscussionList({ discussions, loadState, errorMessage }: Discuss
   return (
     <section aria-label="Discussion list" style={styles.list}>
       {discussions.map((discussion) => (
-        <article key={discussion.id} style={styles.item}>
+        <article
+          aria-label={onSelectDiscussion ? `Open discussion ${discussion.body}` : undefined}
+          key={discussion.id}
+          onClick={() => onSelectDiscussion?.(discussion)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              onSelectDiscussion?.(discussion);
+            }
+          }}
+          style={styles.item}
+          tabIndex={onSelectDiscussion ? 0 : undefined}
+        >
           <span data-testid="discussion-id" hidden>
             {discussion.id}
           </span>

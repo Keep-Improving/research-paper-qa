@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { captureActiveTabSelection } from "../src/sidebar/sidebarClient";
+import {
+  captureActiveTabSelection,
+  createRemoteDiscussion,
+  getApiBaseUrl,
+  listRemoteDiscussions,
+  matchRemotePaper
+} from "../src/sidebar/sidebarClient";
 
 describe("captureActiveTabSelection", () => {
   it("requests selection capture from the extension background", async () => {
@@ -49,5 +55,80 @@ describe("captureActiveTabSelection", () => {
     });
 
     await expect(captureActiveTabSelection()).rejects.toThrow("Open a paper tab");
+  });
+});
+
+describe("remote sidebar API client", () => {
+  it("uses configured API base URL from chrome storage", async () => {
+    vi.stubGlobal("chrome", {
+      storage: {
+        local: {
+          get: vi.fn().mockResolvedValue({ "paperqa:apiBaseUrl": "https://paperqa.example/api/" })
+        }
+      }
+    });
+
+    await expect(getApiBaseUrl()).resolves.toBe("https://paperqa.example/api");
+  });
+
+  it("matches a detected paper through the public API", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      id: "paper-1",
+      title: "Matched paper",
+      doi: "10.1000/example"
+    }), { status: 200 }));
+
+    await expect(matchRemotePaper("https://api.example.test/api", {
+      title: "Matched paper",
+      doi: "10.1000/example",
+      url: "https://example.test/paper"
+    }, fetchImpl)).resolves.toMatchObject({
+      id: "paper-1",
+      title: "Matched paper"
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/api/papers/match", expect.objectContaining({
+      method: "POST"
+    }));
+  });
+
+  it("lists and creates discussions through the public API", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify([
+        {
+          id: "discussion-1",
+          paperId: "paper-1",
+          title: "Question",
+          body: "Question body",
+          status: "open",
+          authorName: "Reader",
+          createdAt: "2026-06-20T00:00:00Z",
+          anchor: null,
+          answerCount: 0,
+          commentCount: 0,
+          heat: 0
+        }
+      ]), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        id: "discussion-2",
+        paperId: "paper-1",
+        body: "New question",
+        status: "open"
+      }), { status: 201 }));
+
+    await expect(listRemoteDiscussions("https://api.example.test/api", "paper-1", fetchImpl)).resolves.toHaveLength(1);
+    await expect(createRemoteDiscussion("https://api.example.test/api", {
+      paperId: "paper-1",
+      body: "New question"
+    }, fetchImpl)).resolves.toMatchObject({
+      id: "discussion-2"
+    });
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(1, "https://api.example.test/api/papers/paper-1/discussions", { method: "GET" });
+    expect(fetchImpl).toHaveBeenNthCalledWith(2, "https://api.example.test/api/papers/paper-1/discussions", expect.objectContaining({
+      method: "POST",
+      headers: expect.objectContaining({ "X-User-Id": "user-reader" })
+    }));
   });
 });

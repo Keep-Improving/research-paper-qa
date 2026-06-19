@@ -3,8 +3,13 @@ import type {
   DiscussionCreateResponse,
   DiscussionFilter,
   DiscussionItem,
+  CollectionCreate,
   Paper,
   PaperIdentifyRequest,
+  PaperMatchRequest,
+  ReplyCreate,
+  ReportCreate,
+  VoteCreate,
 } from "./types.js";
 
 type FetchImpl = (input: string, init?: RequestInit) => Promise<Response>;
@@ -24,7 +29,11 @@ export class PaperQaClient {
   }
 
   async identifyPaper(input: PaperIdentifyRequest): Promise<Paper> {
-    return this.request<Paper>("/papers/identify", {
+    return this.matchPaper(input);
+  }
+
+  async matchPaper(input: PaperMatchRequest): Promise<Paper> {
+    return this.request<Paper>("/papers/match", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -65,6 +74,56 @@ export class PaperQaClient {
         body: JSON.stringify(input),
       },
     );
+  }
+
+  async getDiscussion(discussionId: string): Promise<unknown> {
+    return this.request<unknown>(`/discussions/${encodeURIComponent(discussionId)}`, {
+      method: "GET",
+    });
+  }
+
+  async createReply(discussionId: string, userId: string, input: ReplyCreate): Promise<unknown> {
+    return this.request<unknown>(`/discussions/${encodeURIComponent(discussionId)}/replies`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": userId,
+      },
+      body: JSON.stringify(input),
+    });
+  }
+
+  async createVote(userId: string, input: VoteCreate): Promise<unknown> {
+    return this.request<unknown>("/votes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": userId,
+      },
+      body: JSON.stringify(input),
+    });
+  }
+
+  async addCollectionItem(userId: string, input: CollectionCreate): Promise<unknown> {
+    return this.request<unknown>("/collections", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": userId,
+      },
+      body: JSON.stringify(input),
+    });
+  }
+
+  async createReport(userId: string, input: ReportCreate): Promise<unknown> {
+    return this.request<unknown>("/reports", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": userId,
+      },
+      body: JSON.stringify(input),
+    });
   }
 
   private async request<T>(path: string, init: RequestInit): Promise<T> {

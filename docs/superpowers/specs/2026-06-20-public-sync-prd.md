@@ -497,3 +497,12 @@
 ## 16. 下一步建议
 
 按照本 PRD 改代码前，建议进一步细化每个任务的内容和代码架构设计，保证目标实现，各部分之间逻辑完整、链接而不冲突，并把实现细节拆到可执行任务级别。
+
+## 17. Implementation Status Update - 2026-06-20
+
+- M1 shared data/API layer: partial. Prisma schema/seed exists; Next.js API routes now cover paper matching, paper discussions, discussion detail, replies, votes, collections, and moderation reports.
+- M2 website real-data wiring: partial. Paper detail and discussion detail pages now read Prisma-backed data and use real API-backed controls for collection, reply, vote, and report. Other pages still need migration from runtime sample data.
+- M3 extension real sync: partial. Sidebar now uses the public API for paper match, discussion list, question create, reply, vote, and report. `chrome.storage.local` is no longer the formal discussion source.
+- P0-1 / P0-3 / P0-4 / P0-5: partial. Core API sync path and extension detail interactions are implemented; public deployed server verification remains pending.
+- P0-2 / P0-6 / P0-7: partial. Core paper/discussion pages and basic buttons are connected; search, moderation UI, collections page, author pages, and full status UI still need migration.
+- Browser smoke status: blocked by local environment. Current dev server lacks `DATABASE_URL`, causing Prisma to return `Environment variable not found: DATABASE_URL`; Docker is not available on this machine, so local Postgres could not be started. Playwright CLI also lacks the installed browser binary (`chrome-for-testing`).

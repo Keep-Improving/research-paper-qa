@@ -2,11 +2,27 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { getAnchorForDiscussion, type DiscussionRecord } from "./sampleData";
 
 type DiscussionPanelProps = {
   discussions: DiscussionRecord[];
   showFilters?: boolean;
+};
+
+export type DiscussionRecord = {
+  id: string;
+  paperId: string;
+  anchorId: string | null;
+  title: string;
+  body: string;
+  status: string;
+  authorName: string;
+  createdAt: string;
+  updatedAt: string;
+  anchor: { kind?: string; title?: string | null; quoteText?: string | null } | null;
+  answerCount: number;
+  commentCount: number;
+  isAuthorResponse: boolean;
+  heat: number;
 };
 
 type DiscussionFilter = "all" | "author_response" | "unanswered" | "disputed";
@@ -19,21 +35,21 @@ const filterOptions: { label: string; value: DiscussionFilter }[] = [
   { label: "Disputed", value: "disputed" }
 ];
 
-function statusLabel(status: DiscussionRecord["status"]) {
+function statusLabel(status: string) {
   return status.replace("_", " ");
 }
 
 function matchesFilter(discussion: DiscussionRecord, filter: DiscussionFilter) {
   if (filter === "author_response") {
-    return discussion.hasAuthorResponse;
+    return discussion.isAuthorResponse;
   }
 
   if (filter === "unanswered") {
-    return discussion.isUnresolved === true || (discussion.status === "open" && discussion.answers.length === 0);
+    return discussion.status === "open" && discussion.answerCount === 0;
   }
 
   if (filter === "disputed") {
-    return discussion.isDisputed === true || discussion.status === "disputed";
+    return discussion.status === "disputed";
   }
 
   return true;
@@ -48,13 +64,13 @@ function compareDiscussions(a: DiscussionRecord, b: DiscussionRecord, sort: Disc
 }
 
 export function DiscussionBadges({ discussion }: { discussion: DiscussionRecord }) {
-  const anchor = getAnchorForDiscussion(discussion);
+  const anchor = discussion.anchor;
 
   return (
     <div className="badge-row" aria-label={`Badges for ${discussion.title}`}>
-      {discussion.hasAuthorResponse ? <span className="badge badge-author">Author response</span> : null}
-      {discussion.isDisputed ? <span className="badge badge-disputed">Disputed</span> : null}
-      {discussion.isUnresolved ? <span className="badge badge-unresolved">Unresolved</span> : null}
+      {discussion.isAuthorResponse ? <span className="badge badge-author">Author response</span> : null}
+      {discussion.status === "disputed" ? <span className="badge badge-disputed">Disputed</span> : null}
+      {discussion.status === "open" && discussion.answerCount === 0 ? <span className="badge badge-unresolved">Unresolved</span> : null}
       {anchor ? <span className="badge badge-anchor">{anchor.kind} anchor</span> : null}
       <span className="badge">{statusLabel(discussion.status)}</span>
     </div>
@@ -104,7 +120,7 @@ export function DiscussionPanel({ discussions, showFilters = true }: DiscussionP
       ) : (
         <ul className="discussion-list" data-testid="discussion-list">
           {visibleDiscussions.map((discussion) => {
-            const anchor = getAnchorForDiscussion(discussion);
+            const anchor = discussion.anchor;
 
             return (
               <li className="discussion-row" data-testid={`discussion-row-${discussion.id}`} key={discussion.id}>
@@ -112,18 +128,13 @@ export function DiscussionPanel({ discussions, showFilters = true }: DiscussionP
                 <p className="row-copy">{discussion.body}</p>
                 <DiscussionBadges discussion={discussion} />
                 <div className="meta-row">
-                  <span>{discussion.author}</span>
+                  <span>{discussion.authorName}</span>
                   <span>{discussion.createdAt}</span>
-                  <span>{discussion.votes} votes</span>
+                  <span>{discussion.answerCount} answers</span>
+                  <span>{discussion.commentCount} comments</span>
                   <span>Heat {discussion.heat}</span>
-                  {anchor ? <span>Anchor: {anchor.title}</span> : null}
+                  {anchor ? <span>Anchor: {anchor.title ?? anchor.quoteText ?? anchor.kind}</span> : null}
                 </div>
-                {discussion.authorResponse ? (
-                  <p className="row-copy">
-                    <strong>Author response note:</strong>{" "}
-                    {discussion.authorResponse.replace("Verified author response: ", "")}
-                  </p>
-                ) : null}
               </li>
             );
           })}

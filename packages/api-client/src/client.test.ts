@@ -12,7 +12,7 @@ function jsonResponse(body: unknown, init: ResponseInit = {}) {
 }
 
 describe("PaperQaClient", () => {
-  it("posts JSON to identify a paper", async () => {
+  it("posts JSON to match a paper", async () => {
     const paper = {
       id: "paper-1",
       title: "Reliable paper matching",
@@ -33,9 +33,9 @@ describe("PaperQaClient", () => {
       url: "https://example.test/paper",
     };
 
-    await expect(client.identifyPaper(input)).resolves.toEqual(paper);
+    await expect(client.matchPaper(input)).resolves.toEqual(paper);
 
-    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/papers/identify", {
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/papers/match", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -136,6 +136,102 @@ describe("PaperQaClient", () => {
         "X-User-Id": "user-1",
       },
       body: JSON.stringify(input),
+    });
+  });
+
+  it("gets a discussion detail", async () => {
+    const detail = {
+      id: "discussion-1",
+      replies: [],
+    };
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(detail));
+    const client = new PaperQaClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.getDiscussion("discussion-1")).resolves.toEqual(detail);
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/discussions/discussion-1", {
+      method: "GET",
+    });
+  });
+
+  it("creates a reply with X-User-Id", async () => {
+    const reply = { id: "reply-1", body: "Answer" };
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(reply, { status: 201 }));
+    const client = new PaperQaClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.createReply("discussion-1", "user-1", {
+      kind: "answer",
+      body: "Answer",
+    })).resolves.toEqual(reply);
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/discussions/discussion-1/replies", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": "user-1",
+      },
+      body: JSON.stringify({ kind: "answer", body: "Answer" }),
+    });
+  });
+
+  it("creates a vote for a discussion", async () => {
+    const vote = { id: "vote-1", value: "helpful" };
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(vote, { status: 201 }));
+    const client = new PaperQaClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.createVote("user-1", {
+      discussionId: "discussion-1",
+      value: "helpful",
+    })).resolves.toEqual(vote);
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/votes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": "user-1",
+      },
+      body: JSON.stringify({ discussionId: "discussion-1", value: "helpful" }),
+    });
+  });
+
+  it("adds a collection item", async () => {
+    const item = { id: "collection-1", targetType: "paper", targetId: "paper-1" };
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(item, { status: 201 }));
+    const client = new PaperQaClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.addCollectionItem("user-1", {
+      targetType: "paper",
+      targetId: "paper-1",
+    })).resolves.toEqual(item);
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/collections", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": "user-1",
+      },
+      body: JSON.stringify({ targetType: "paper", targetId: "paper-1" }),
+    });
+  });
+
+  it("reports a discussion", async () => {
+    const report = { id: "report-1", status: "open" };
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(report, { status: 201 }));
+    const client = new PaperQaClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.createReport("user-1", {
+      targetType: "discussion",
+      targetId: "discussion-1",
+      reason: "Needs review",
+    })).resolves.toEqual(report);
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/reports", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": "user-1",
+      },
+      body: JSON.stringify({ targetType: "discussion", targetId: "discussion-1", reason: "Needs review" }),
     });
   });
 
