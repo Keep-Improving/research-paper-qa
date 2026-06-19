@@ -11,13 +11,8 @@ type CaptureSelectionResponse =
     };
 
 export async function captureActiveTabSelection(): Promise<TextAnchorDraft | null> {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id === undefined) {
-    return null;
-  }
-
-  const response = (await chrome.tabs.sendMessage(tab.id, {
-    type: "paperqa:capture-selection"
+  const response = (await chrome.runtime.sendMessage({
+    type: "paperqa:capture-active-tab-selection"
   })) as CaptureSelectionResponse;
 
   if (!response.ok) {

@@ -169,6 +169,44 @@ describe("Sidebar discussion UI", () => {
     });
   });
 
+  it("normalizes captured content-script text anchors before showing and submitting them", async () => {
+    const onCreateDiscussion = vi.fn().mockResolvedValue(undefined);
+    const onUseSelection = vi.fn().mockResolvedValue({
+      kind: "text",
+      quote_text: "NF-kB signaling",
+      context_text: "The authors report NF-kB signaling in treated cells.",
+      source_url: "https://example.test/paper#selection"
+    });
+
+    render(
+      <Sidebar
+        paper={paper}
+        initialDiscussions={discussions}
+        onUseSelection={onUseSelection}
+        onCreateDiscussion={onCreateDiscussion}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Use selection" }));
+
+    expect(await screen.findByText("NF-kB signaling")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Question body"), {
+      target: { value: "Is this pathway activation causal or correlative?" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit question" }));
+
+    expect(onCreateDiscussion).toHaveBeenCalledWith({
+      body: "Is this pathway activation causal or correlative?",
+      paperId: "paper-1",
+      anchor: expect.objectContaining({
+        kind: "text",
+        quoteText: "NF-kB signaling",
+        contextText: "The authors report NF-kB signaling in treated cells.",
+        sourceUrl: "https://example.test/paper#selection"
+      })
+    });
+  });
+
   it("when no selection callback exists, Use selection is disabled and does not silently do nothing", () => {
     render(<Sidebar paper={paper} initialDiscussions={discussions} />);
 
@@ -195,6 +233,22 @@ describe("Sidebar discussion UI", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Retry capture" }));
     expect(onRetryAnchorCapture).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows selection capture errors from the side panel callback", async () => {
+    const onUseSelection = vi.fn().mockRejectedValue(new Error("Open a paper tab, select text, then try Use selection again."));
+
+    render(
+      <Sidebar
+        paper={paper}
+        initialDiscussions={discussions}
+        onUseSelection={onUseSelection}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Use selection" }));
+
+    expect(await screen.findByText("Open a paper tab, select text, then try Use selection again.")).toBeInTheDocument();
   });
 
   it("content type filter hides non-matching rows", () => {

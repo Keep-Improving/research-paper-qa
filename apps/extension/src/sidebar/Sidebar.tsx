@@ -109,6 +109,7 @@ export function Sidebar({
   });
   const [sort, setSort] = useState<DiscussionSortMode>("newest");
   const [draft, setDraft] = useState<SidebarAnchorDraft | null>(anchorDraft);
+  const [selectionError, setSelectionError] = useState<string | undefined>(anchorCaptureError);
 
   const visibleDiscussions = useMemo(() => {
     const filtered = initialDiscussions.filter((discussion) => {
@@ -141,9 +142,16 @@ export function Sidebar({
   }, [filters, initialDiscussions, sort]);
 
   async function useSelection() {
-    const anchor = await onUseSelection?.();
-    if (anchor) {
-      setDraft(anchor);
+    try {
+      setSelectionError(undefined);
+      const anchor = await onUseSelection?.();
+      if (anchor) {
+        setDraft(normalizeSelectionAnchor(anchor));
+        return;
+      }
+      setSelectionError("No selected text was captured. Select text in the paper tab, then try again.");
+    } catch (error) {
+      setSelectionError(error instanceof Error ? error.message : "Selection capture failed.");
     }
   }
 
@@ -166,7 +174,7 @@ export function Sidebar({
       <DiscussionComposer
         paper={paper}
         anchorDraft={draft}
-        anchorCaptureError={anchorCaptureError}
+        anchorCaptureError={selectionError}
         similarQuestionPrompt={similarQuestionPrompt}
         onCreateDiscussion={onCreateDiscussion}
         onRetryAnchorCapture={onRetryAnchorCapture}
@@ -208,6 +216,18 @@ function normalizeManualAnchor(anchor: ManualAnchorDraft): SidebarAnchorDraft {
     kind: "manual",
     note: anchor.note,
     sourceUrl: anchor.source_url
+  };
+}
+
+function normalizeSelectionAnchor(anchor: SidebarAnchorDraft | (TextAnchorDraft & Record<string, unknown>)): SidebarAnchorDraft {
+  return {
+    kind: anchor.kind,
+    quoteText: "quoteText" in anchor ? anchor.quoteText : anchor.quote_text,
+    contextText: "contextText" in anchor ? anchor.contextText : anchor.context_text,
+    sectionLabel: "sectionLabel" in anchor ? anchor.sectionLabel : undefined,
+    sourceUrl: "sourceUrl" in anchor ? anchor.sourceUrl : anchor.source_url,
+    imageUrl: "imageUrl" in anchor ? anchor.imageUrl : undefined,
+    note: "note" in anchor ? anchor.note : undefined
   };
 }
 

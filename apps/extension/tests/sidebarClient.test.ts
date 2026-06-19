@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { captureActiveTabSelection } from "../src/sidebar/sidebarClient";
 
 describe("captureActiveTabSelection", () => {
-  it("requests the current active tab selection from the content script", async () => {
+  it("requests selection capture from the extension background", async () => {
     const sendMessage = vi.fn().mockResolvedValue({
       ok: true,
       anchor: {
@@ -14,8 +14,7 @@ describe("captureActiveTabSelection", () => {
       }
     });
     vi.stubGlobal("chrome", {
-      tabs: {
-        query: vi.fn().mockResolvedValue([{ id: 42 }]),
+      runtime: {
         sendMessage
       }
     });
@@ -26,17 +25,29 @@ describe("captureActiveTabSelection", () => {
       context_text: "context around selected passage",
       source_url: "https://example.test/paper"
     });
-    expect(sendMessage).toHaveBeenCalledWith(42, { type: "paperqa:capture-selection" });
+    expect(sendMessage).toHaveBeenCalledWith({ type: "paperqa:capture-active-tab-selection" });
   });
 
   it("returns null when there is no selected text", async () => {
     vi.stubGlobal("chrome", {
-      tabs: {
-        query: vi.fn().mockResolvedValue([{ id: 42 }]),
+      runtime: {
         sendMessage: vi.fn().mockResolvedValue({ ok: true, anchor: null })
       }
     });
 
     await expect(captureActiveTabSelection()).resolves.toBeNull();
+  });
+
+  it("throws a useful error when background capture fails", async () => {
+    vi.stubGlobal("chrome", {
+      runtime: {
+        sendMessage: vi.fn().mockResolvedValue({
+          ok: false,
+          error: "Open a paper tab, then try Use selection again."
+        })
+      }
+    });
+
+    await expect(captureActiveTabSelection()).rejects.toThrow("Open a paper tab");
   });
 });
