@@ -24,8 +24,38 @@ test("paper detail page shows metadata, filters, discussions, anchors, and prior
   await expect(page.getByRole("button", { name: "Add to collection" })).toBeVisible();
   await expect(page.getByRole("group", { name: "Discussion filters" })).toBeVisible();
 
+  const discussionList = page.getByTestId("discussion-list");
+  const authorResponseRow = page.getByTestId("discussion-row-discussion-attention-scale");
+  const unansweredRow = page.getByTestId("discussion-row-discussion-figure-residual");
+  const disputedRow = page.getByTestId("discussion-row-discussion-bleu-dispute");
+
+  await expect(unansweredRow).toBeVisible();
+  await expect(page.getByRole("link", { name: "Are the residual paths in Figure 1 applied before or after normalization?" })).toBeVisible();
+
   await page.getByRole("button", { name: "Author responses" }).click();
-  await expect(page.getByText("Verified author response")).toBeVisible();
+  await expect(authorResponseRow).toBeVisible();
+  await expect(authorResponseRow.getByText("Author response note:")).toBeVisible();
+  await expect(unansweredRow).toBeHidden();
+  await expect(disputedRow).toBeHidden();
+
+  await page.getByRole("button", { name: "Unanswered" }).click();
+  await expect(unansweredRow).toBeVisible();
+  await expect(authorResponseRow).toBeHidden();
+  await expect(disputedRow).toBeHidden();
+
+  await page.getByRole("button", { name: "Disputed" }).click();
+  await expect(disputedRow).toBeVisible();
+  await expect(authorResponseRow).toBeHidden();
+  await expect(unansweredRow).toBeHidden();
+
+  await page.getByRole("button", { name: "All" }).click();
+  await page.getByLabel("Sort discussions").selectOption("heat");
+  await expect(discussionList.getByRole("link")).toHaveText([
+    "Are the residual paths in Figure 1 applied before or after normalization?",
+    "Why does scaled dot-product attention divide by sqrt(dk)?",
+    "BLEU comparison needs clearer tokenizer settings"
+  ]);
+
   await expect(page.getByText("Anchor groups")).toBeVisible();
   await expect(page.getByText("Text anchors")).toBeVisible();
   await expect(page.getByText("Figure anchors")).toBeVisible();

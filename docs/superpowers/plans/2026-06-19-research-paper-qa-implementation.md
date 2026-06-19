@@ -1027,7 +1027,7 @@ git add apps/web
 git commit -m "feat(web): add core research discussion pages"
 ```
 
-**Task 9 quality note:** Website uses a restrained academic shell with compact navigation and dense research-tool rows, no marketing hero, no decorative gradients, and no nested cards. Empty and error states are covered by Playwright tests. UI uses clearly labeled sample UI data only; no mock API calls or fake fetch responses were added.
+**Task 9 quality note:** Website uses a restrained academic shell with compact navigation and dense research-tool rows, no marketing hero, no decorative gradients, and no nested cards. Empty/error states and paper detail discussion filters/sort are covered by Playwright tests. Discussion filters and newest/heat sorting are stateful in the web UI. UI uses clearly labeled sample UI data only; no mock API calls or fake fetch responses were added.
 
 ## Task 10: Implement Author Certification and Author Workbench
 

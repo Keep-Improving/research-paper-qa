@@ -134,7 +134,7 @@ export const sampleDiscussions: DiscussionRecord[] = [
     author: "L. Chen",
     createdAt: "2026-06-17",
     votes: 9,
-    heat: 64,
+    heat: 104,
     hasAuthorResponse: false,
     isUnresolved: true,
     answers: [],
