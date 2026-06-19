@@ -1027,7 +1027,7 @@ git add apps/web
 git commit -m "feat(web): add core research discussion pages"
 ```
 
-**Task 9 quality note:** Website uses a restrained academic shell with compact navigation and dense research-tool rows, no marketing hero, no decorative gradients, and no nested cards. Empty/error states and paper detail discussion filters/sort are covered by Playwright tests. Discussion filters and newest/heat sorting are stateful in the web UI. UI uses clearly labeled sample UI data only; no mock API calls or fake fetch responses were added.
+**Task 9 quality note:** Website uses a restrained academic shell with compact navigation and dense research-tool rows, no marketing hero, no decorative gradients, and no nested cards. Empty/error states and paper detail discussion filters/sort are covered by Playwright tests, including an initial newest-order assertion before switching to heat order. Discussion filters and newest/heat sorting are stateful in the web UI. UI uses clearly labeled sample UI data only; no mock API calls or fake fetch responses were added. `npm audit --audit-level=moderate` reports the known `postcss <8.5.10` advisory through `next@16.2.9`; `npm audit fix --force` proposes a breaking downgrade to `next@9.3.3`, and a direct override would replace a Next-managed transitive dependency, so this task records the exception instead of applying an unsupported dependency rewrite.
 
 ## Task 10: Implement Author Certification and Author Workbench
 

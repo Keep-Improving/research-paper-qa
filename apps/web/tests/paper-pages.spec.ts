@@ -49,6 +49,12 @@ test("paper detail page shows metadata, filters, discussions, anchors, and prior
   await expect(unansweredRow).toBeHidden();
 
   await page.getByRole("button", { name: "All" }).click();
+  await expect(discussionList.getByRole("link")).toHaveText([
+    "Why does scaled dot-product attention divide by sqrt(dk)?",
+    "Are the residual paths in Figure 1 applied before or after normalization?",
+    "BLEU comparison needs clearer tokenizer settings"
+  ]);
+
   await page.getByLabel("Sort discussions").selectOption("heat");
   await expect(discussionList.getByRole("link")).toHaveText([
     "Are the residual paths in Figure 1 applied before or after normalization?",
