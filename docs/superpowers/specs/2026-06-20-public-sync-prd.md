@@ -524,3 +524,11 @@
 - Anchor detail: improved. Anchor detail now reads Prisma-backed anchors, paper metadata, and related discussions instead of runtime sample data.
 - Collections: improved. Collections now reads the current user's real collection items and displays `Saved papers`, `Saved questions`, and `Saved anchors`; seed data initializes one real item of each type for local testing.
 - Verification: Playwright covers merged responses, reply form expansion, real anchor detail, navigation links, and `Saved questions`; browser smoke confirmed a nested reply POST returns 201 and renders after reload.
+
+## 20. Implementation Status Update - 2026-06-20 Browse and Thread Clarity Fix
+
+- Response form: improved. Ordinary users no longer choose between `answer` and `comment`; the UI exposes one `Response` concept and posts a standard response through the existing reply API.
+- Thread clarity: improved. Nested responses now show `Replying to <author>` metadata so readers can see who is responding to whom.
+- Thread depth: improved. Response rendering is capped to two visible levels; deeper replies are flattened into the second level while preserving their `Replying to <author>` context.
+- Browse pages: improved. `Papers`, `Questions`, and `Anchors` are now separate routes with focused lists instead of aliases of the generic search page.
+- Verification: Playwright covers unified response forms and separate browse pages; web and extension builds/tests pass locally.

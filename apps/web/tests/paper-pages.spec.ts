@@ -89,7 +89,26 @@ test("discussion detail page displays question detail, anchor, answers, comments
   await page.getByRole("button", { name: "Reply to response" }).first().click();
   await expect(page.getByRole("heading", { name: "Reply to Reader" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Submit reply" })).toBeVisible();
+  await expect(page.getByLabel("Type")).toHaveCount(0);
+  await expect(page.getByText("Replying to Reader")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Author response area" })).toBeVisible();
+});
+
+test("browse pages separate papers, questions, and anchors", async ({ page }) => {
+  await page.goto("/papers");
+  await expect(page.getByRole("heading", { name: "Papers" })).toBeVisible();
+  await expect(page.getByText("Browse stored papers only.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Attention Is All You Need" })).toBeVisible();
+
+  await page.goto("/questions");
+  await expect(page.getByRole("heading", { name: "Questions" })).toBeVisible();
+  await expect(page.getByText("Browse discussion questions only.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Why does scaled dot-product attention divide/ })).toBeVisible();
+
+  await page.goto("/anchors");
+  await expect(page.getByRole("heading", { name: "Anchors" })).toBeVisible();
+  await expect(page.getByText("Browse quote, figure, and manual anchors only.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Equation 1 attention scaling" })).toBeVisible();
 });
 
 test("anchor detail page displays quote, image, position info, and related discussions", async ({ page }) => {

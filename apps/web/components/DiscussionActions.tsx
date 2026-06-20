@@ -86,16 +86,17 @@ export function ReplyForm({
   parentReplyId,
   title = "Add a response",
   submitLabel = "Submit response",
-  compact = false
+  compact = false,
+  replyTargetName
 }: {
   discussionId: string;
   parentReplyId?: string | null;
   title?: string;
   submitLabel?: string;
   compact?: boolean;
+  replyTargetName?: string;
 }) {
   const [body, setBody] = useState("");
-  const [kind, setKind] = useState("answer");
   const [status, setStatus] = useState<ActionStatus>("idle");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -104,7 +105,7 @@ export function ReplyForm({
 
     setStatus("saving");
     try {
-      await postJson(`/api/discussions/${encodeURIComponent(discussionId)}/replies`, { kind, body, parentReplyId });
+      await postJson(`/api/discussions/${encodeURIComponent(discussionId)}/replies`, { kind: "answer", body, parentReplyId });
       setBody("");
       setStatus("saved");
       window.location.reload();
@@ -116,13 +117,7 @@ export function ReplyForm({
   return (
     <form className={compact ? "stack response-reply-form" : "panel stack"} onSubmit={submit}>
       {compact ? <h4>{title}</h4> : <h2 className="section-title">{title}</h2>}
-      <label className="field-label">
-        Type
-        <select onChange={(event) => setKind(event.target.value)} value={kind}>
-          <option value="answer">Answer</option>
-          <option value="comment">Comment</option>
-        </select>
-      </label>
+      {replyTargetName ? <p className="row-copy">Replying to {replyTargetName}</p> : null}
       <label className="field-label">
         Response
         <textarea
@@ -157,9 +152,27 @@ type ResponseItem = {
 export function ResponseThread({ discussionId, replies }: { discussionId: string; replies: ResponseItem[] }) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const roots = replies.filter((reply) => !reply.parentReplyId);
+  const replyById = new Map(replies.map((reply) => [reply.id, reply]));
 
   function childrenOf(replyId: string) {
     return replies.filter((reply) => reply.parentReplyId === replyId);
+  }
+
+  function displayChildrenOf(replyId: string, depth: number) {
+    const children = childrenOf(replyId);
+    if (depth < 1) {
+      return children;
+    }
+
+    return children.flatMap((child) => [child, ...collectDescendants(child.id)]);
+  }
+
+  function collectDescendants(replyId: string): ResponseItem[] {
+    return childrenOf(replyId).flatMap((child) => [child, ...collectDescendants(child.id)]);
+  }
+
+  function authorName(replyId: string | null) {
+    return replyId ? replyById.get(replyId)?.authorName ?? "a response" : null;
   }
 
   return (
@@ -171,7 +184,9 @@ export function ResponseThread({ discussionId, replies }: { discussionId: string
         <ul className="response-list">
           {roots.map((reply) => (
             <ResponseRow
-              childrenOf={childrenOf}
+              authorName={authorName}
+              childrenOf={displayChildrenOf}
+              depth={0}
               discussionId={discussionId}
               key={reply.id}
               onReply={setReplyingTo}
@@ -186,19 +201,25 @@ export function ResponseThread({ discussionId, replies }: { discussionId: string
 }
 
 function ResponseRow({
+  authorName,
   childrenOf,
+  depth,
   discussionId,
   onReply,
   reply,
   replyingTo
 }: {
-  childrenOf: (replyId: string) => ResponseItem[];
+  authorName: (replyId: string | null) => string | null;
+  childrenOf: (replyId: string, depth: number) => ResponseItem[];
+  depth: number;
   discussionId: string;
   onReply: (replyId: string | null) => void;
   reply: ResponseItem;
   replyingTo: string | null;
 }) {
-  const children = childrenOf(reply.id);
+  const children = childrenOf(reply.id, depth);
+  const replyTarget = authorName(reply.parentReplyId);
+  const nextDepth = Math.min(depth + 1, 1);
 
   return (
     <li className="response-item">
@@ -207,6 +228,7 @@ function ResponseRow({
           <strong>{reply.authorName}</strong>
           <div className="meta-row">
             <span>{responseKindLabel(reply)}</span>
+            {replyTarget ? <span>Replying to {replyTarget}</span> : null}
             <span>{reply.createdAt}</span>
           </div>
         </div>
@@ -220,6 +242,7 @@ function ResponseRow({
           compact
           discussionId={discussionId}
           parentReplyId={reply.id}
+          replyTargetName={reply.authorName}
           submitLabel="Submit reply"
           title={`Reply to ${reply.authorName}`}
         />
@@ -228,7 +251,9 @@ function ResponseRow({
         <ul className="response-children">
           {children.map((child) => (
             <ResponseRow
+              authorName={authorName}
               childrenOf={childrenOf}
+              depth={nextDepth}
               discussionId={discussionId}
               key={child.id}
               onReply={onReply}
