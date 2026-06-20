@@ -66,6 +66,25 @@ enum AuthorClaimStatus {
   rejected
 }
 
+enum AuthorIdentityRole {
+  first_author
+  corresponding_author
+}
+
+enum AuthorIdentitySource {
+  pdf_text
+  publisher_page
+  crossref
+  openalex
+  manual_seed
+  imported_file
+}
+
+enum AuthorIdentityStatus {
+  verified
+  needs_verification
+}
+
 enum ModerationTargetType {
   discussion
   reply
@@ -121,6 +140,7 @@ model Paper {
   anchors      Anchor[]
   discussions  Discussion[]
   authorClaims PaperAuthorClaim[]
+  authorIdentities PaperAuthorIdentity[]
 
   @@index([title])
 }
@@ -245,6 +265,26 @@ model PaperAuthorClaim {
 
   @@index([paperId])
   @@index([userId])
+}
+
+model PaperAuthorIdentity {
+  id              String               @id @default(cuid())
+  paperId         String
+  role            AuthorIdentityRole
+  name            String?
+  email           String
+  normalizedEmail String
+  source          AuthorIdentitySource
+  status          AuthorIdentityStatus @default(verified)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@unique([paperId, normalizedEmail, role])
+  @@index([paperId])
+  @@index([normalizedEmail])
+  @@index([role, status])
 }
 
 model ModerationReport {

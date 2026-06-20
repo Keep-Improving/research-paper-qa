@@ -167,6 +167,32 @@ async function main() {
     }
   });
 
+  await prisma.paperAuthorIdentity.upsert({
+    where: {
+      paperId_normalizedEmail_role: {
+        paperId: transformer.id,
+        normalizedEmail: "author@example.test",
+        role: "corresponding_author"
+      }
+    },
+    update: {
+      email: "author@example.test",
+      name: "A. Vaswani",
+      source: "manual_seed",
+      status: "verified"
+    },
+    create: {
+      id: "identity-author-transformer-corresponding",
+      paperId: transformer.id,
+      role: "corresponding_author",
+      name: "A. Vaswani",
+      email: "author@example.test",
+      normalizedEmail: "author@example.test",
+      source: "manual_seed",
+      status: "verified"
+    }
+  });
+
   await prisma.collectionItem.upsert({
     where: {
       userId_targetType_targetId: {

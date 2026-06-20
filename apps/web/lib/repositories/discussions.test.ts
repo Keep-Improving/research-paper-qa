@@ -259,6 +259,42 @@ describe("discussion repository", () => {
     }));
   });
 
+  it("does not let normal replies self-label as author responses", async () => {
+    const prisma = {
+      discussionReply: {
+        create: vi.fn().mockResolvedValue({
+          id: "reply-1",
+          discussionId: "discussion-1",
+          parentReplyId: null,
+          kind: "answer",
+          body: "This is still a normal answer.",
+          authorUserId: "user-2",
+          isAuthorResponse: false,
+          isHidden: false,
+          createdAt: new Date("2026-06-20T01:00:00Z"),
+          updatedAt: new Date("2026-06-20T01:00:00Z"),
+          author: { displayName: "Responder" },
+          votes: []
+        })
+      }
+    };
+
+    await createDiscussionReply(prisma, {
+      discussionId: "discussion-1",
+      userId: "user-2",
+      kind: "answer",
+      body: "This is still a normal answer.",
+      isAuthorResponse: true
+    });
+
+    expect(prisma.discussionReply.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        kind: "answer",
+        isAuthorResponse: false
+      })
+    }));
+  });
+
   it("upserts one vote for a user and discussion", async () => {
     const prisma = {
       vote: {

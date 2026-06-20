@@ -540,3 +540,13 @@
 - Extension response form: improved. The sidebar no longer exposes an `Answer`/`Comment` selector; response creation posts a standard `answer` kind behind the scenes.
 - Extension reply threading: improved. Sidebar responses show `Replying to <author>`, support replying to a specific response with `parentReplyId`, and cap visible nesting to two levels.
 - Verification: Added regression coverage for duplicate web nested response rendering and extension threaded response submission; web and extension tests/builds pass locally.
+
+## 22. Implementation Status Update - 2026-06-21 Author Email Identity Automation
+
+- M4 author certification policy: updated. Full manual author certification is no longer the first operational path. The primary automatic path is verified corresponding-author email identity for a paper.
+- First-author policy: clarified. A first author can create an `author_response` only when the system has an explicit verified first-author email identity for that paper. Name-only first-author matching is not accepted.
+- Data model: added `PaperAuthorIdentity` for script-ingestable paper-author email identities. It stores paper, role, email, normalized email, source, and verification status beside the existing heavier `PaperAuthorClaim` workflow.
+- API permission: improved. `POST /api/discussions/:discussionId/replies` now rejects `author_response` unless the current user's email matches a verified first-author or corresponding-author identity for the discussion's paper. Normal responses remain available to ordinary users.
+- Spoofing protection: improved. Clients can no longer mark a normal reply as an author response by sending `isAuthorResponse`; only `kind: author_response` after permission checking creates the author-response label.
+- Script path: added `apps/web/scripts/import-author-identities.ts` for JSON-based identity ingestion and conservative text extraction of corresponding-author email candidates. It does not infer first-author identity from name alone.
+- Current status: partial. Lightweight email identity authorization is implemented locally; production use still needs the real login provider to supply verified user email and a deployed database migration.

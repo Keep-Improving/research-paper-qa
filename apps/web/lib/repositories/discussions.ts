@@ -141,7 +141,7 @@ export async function createDiscussionReply(prisma: DiscussionPrisma, input: Cre
       authorUserId: input.userId,
       kind: input.kind,
       body: input.body,
-      isAuthorResponse: input.kind === "author_response" || Boolean(input.isAuthorResponse)
+      isAuthorResponse: input.kind === "author_response"
     },
     include: replyInclude
   });

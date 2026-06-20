@@ -12,14 +12,15 @@ export function jsonError(message: string, status = 400) {
 
 export async function resolveRequestUser(prisma: UserPrisma, request: Request) {
   const userId = request.headers.get("x-user-id")?.trim() || "user-reader";
+  const userEmail = request.headers.get("x-user-email")?.trim();
 
   await prisma.user.upsert({
     where: { id: userId },
-    update: {},
+    update: userEmail ? { email: userEmail } : {},
     create: {
       id: userId,
       displayName: userId === "user-reader" ? "Reader" : userId,
-      email: `${userId}@local.paperqa`
+      email: userEmail || `${userId}@local.paperqa`
     }
   });
 
