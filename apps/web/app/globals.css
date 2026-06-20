@@ -346,6 +346,38 @@ textarea {
   padding-top: 8px;
 }
 
+.response-list,
+.response-children {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.response-item {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.response-children {
+  border-left: 2px solid var(--border);
+  margin-left: 12px;
+  padding-left: 12px;
+}
+
+.response-reply-form {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  padding: 12px;
+}
+
+.response-reply-form h4 {
+  margin: 0;
+}
+
 @media (max-width: 760px) {
   .topbar-inner {
     align-items: flex-start;

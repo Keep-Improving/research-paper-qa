@@ -81,7 +81,19 @@ export function ReportButton({ targetType, targetId }: { targetType: string; tar
   );
 }
 
-export function ReplyForm({ discussionId }: { discussionId: string }) {
+export function ReplyForm({
+  discussionId,
+  parentReplyId,
+  title = "Add a response",
+  submitLabel = "Submit response",
+  compact = false
+}: {
+  discussionId: string;
+  parentReplyId?: string | null;
+  title?: string;
+  submitLabel?: string;
+  compact?: boolean;
+}) {
   const [body, setBody] = useState("");
   const [kind, setKind] = useState("answer");
   const [status, setStatus] = useState<ActionStatus>("idle");
@@ -92,7 +104,7 @@ export function ReplyForm({ discussionId }: { discussionId: string }) {
 
     setStatus("saving");
     try {
-      await postJson(`/api/discussions/${encodeURIComponent(discussionId)}/replies`, { kind, body });
+      await postJson(`/api/discussions/${encodeURIComponent(discussionId)}/replies`, { kind, body, parentReplyId });
       setBody("");
       setStatus("saved");
       window.location.reload();
@@ -102,8 +114,8 @@ export function ReplyForm({ discussionId }: { discussionId: string }) {
   }
 
   return (
-    <form className="panel stack" onSubmit={submit}>
-      <h2 className="section-title">Add a response</h2>
+    <form className={compact ? "stack response-reply-form" : "panel stack"} onSubmit={submit}>
+      {compact ? <h4>{title}</h4> : <h2 className="section-title">{title}</h2>}
       <label className="field-label">
         Type
         <select onChange={(event) => setKind(event.target.value)} value={kind}>
@@ -122,11 +134,118 @@ export function ReplyForm({ discussionId }: { discussionId: string }) {
       </label>
       <div className="toolbar">
         <button className="button button-primary" disabled={status === "saving"} type="submit">
-          {status === "saving" ? "Submitting..." : "Submit response"}
+          {status === "saving" ? "Submitting..." : submitLabel}
         </button>
         {status === "saved" ? <span className="row-copy">Saved</span> : null}
         {status === "error" ? <span className="row-copy">Submit failed</span> : null}
       </div>
     </form>
   );
+}
+
+type ResponseItem = {
+  id: string;
+  discussionId: string;
+  parentReplyId: string | null;
+  kind: string;
+  body: string;
+  authorName: string;
+  isAuthorResponse: boolean;
+  createdAt: string;
+};
+
+export function ResponseThread({ discussionId, replies }: { discussionId: string; replies: ResponseItem[] }) {
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const roots = replies.filter((reply) => !reply.parentReplyId);
+
+  function childrenOf(replyId: string) {
+    return replies.filter((reply) => reply.parentReplyId === replyId);
+  }
+
+  return (
+    <section className="panel stack">
+      <h2 className="section-title">Responses</h2>
+      {roots.length === 0 ? (
+        <p className="row-copy">No responses yet.</p>
+      ) : (
+        <ul className="response-list">
+          {roots.map((reply) => (
+            <ResponseRow
+              childrenOf={childrenOf}
+              discussionId={discussionId}
+              key={reply.id}
+              onReply={setReplyingTo}
+              reply={reply}
+              replyingTo={replyingTo}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function ResponseRow({
+  childrenOf,
+  discussionId,
+  onReply,
+  reply,
+  replyingTo
+}: {
+  childrenOf: (replyId: string) => ResponseItem[];
+  discussionId: string;
+  onReply: (replyId: string | null) => void;
+  reply: ResponseItem;
+  replyingTo: string | null;
+}) {
+  const children = childrenOf(reply.id);
+
+  return (
+    <li className="response-item">
+      <div className="toolbar row-toolbar">
+        <div>
+          <strong>{reply.authorName}</strong>
+          <div className="meta-row">
+            <span>{responseKindLabel(reply)}</span>
+            <span>{reply.createdAt}</span>
+          </div>
+        </div>
+        <button className="button" onClick={() => onReply(replyingTo === reply.id ? null : reply.id)} type="button">
+          Reply to response
+        </button>
+      </div>
+      <p className="row-copy">{reply.body}</p>
+      {replyingTo === reply.id ? (
+        <ReplyForm
+          compact
+          discussionId={discussionId}
+          parentReplyId={reply.id}
+          submitLabel="Submit reply"
+          title={`Reply to ${reply.authorName}`}
+        />
+      ) : null}
+      {children.length > 0 ? (
+        <ul className="response-children">
+          {children.map((child) => (
+            <ResponseRow
+              childrenOf={childrenOf}
+              discussionId={discussionId}
+              key={child.id}
+              onReply={onReply}
+              reply={child}
+              replyingTo={replyingTo}
+            />
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+function responseKindLabel(reply: ResponseItem) {
+  if (reply.isAuthorResponse || reply.kind === "author_response") {
+    return "Author response";
+  }
+
+  return reply.kind === "answer" ? "Answer" : "Comment";
 }

@@ -515,3 +515,12 @@
 - M3 extension reply sync: improved. After submitting an answer/comment in the sidebar, the extension re-fetches discussion detail so newly posted replies and existing replies stay visible.
 - P0-1 / P0-2 / P0-4 / P0-5 / P0-10: local implementation verified. Browser smoke created a real discussion through the shared API and confirmed it appears on search, paper detail, and discussion detail pages with its reply.
 - Remaining: public HTTPS deployment verification, full collections page migration, author-claim workflow completion, moderation action UI completion, and production API base URL packaging for the extension.
+
+## 19. Implementation Status Update - 2026-06-20 Response Navigation Fix
+
+- Discussion detail: improved. Answers and comments are now merged into one chronological `Responses` section with response type labels.
+- Reply threading: improved. Each response exposes an inline `Reply to response` form that posts `parentReplyId` through the existing reply API, and nested replies render under their parent response.
+- Detail navigation: improved. Fixed sample-style top navigation labels by replacing fixed `Paper detail`, `Question detail`, and `Anchor detail` links with real browse entry points for papers, questions, and anchors. Discussion and anchor detail pages now include `Back to paper` and browse links.
+- Anchor detail: improved. Anchor detail now reads Prisma-backed anchors, paper metadata, and related discussions instead of runtime sample data.
+- Collections: improved. Collections now reads the current user's real collection items and displays `Saved papers`, `Saved questions`, and `Saved anchors`; seed data initializes one real item of each type for local testing.
+- Verification: Playwright covers merged responses, reply form expansion, real anchor detail, navigation links, and `Saved questions`; browser smoke confirmed a nested reply POST returns 201 and renders after reload.

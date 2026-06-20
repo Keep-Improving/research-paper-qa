@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("collections page shows saved papers, discussions, anchors, and archived state", async ({
+test("collections page shows saved papers, questions, anchors, and archived state", async ({
   page
 }) => {
   await page.goto("/collections");
@@ -8,13 +8,13 @@ test("collections page shows saved papers, discussions, anchors, and archived st
   await expect(page.getByRole("heading", { name: "Collections" })).toBeVisible();
   await expect(page.getByText("Saved papers")).toBeVisible();
   await expect(page.getByRole("link", { name: "Attention Is All You Need" })).toBeVisible();
-  await expect(page.getByText("Saved discussions")).toBeVisible();
+  await expect(page.getByText("Saved questions")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Why does scaled dot-product attention divide by sqrt(dk)?" })
   ).toBeVisible();
   await expect(page.getByText("Saved anchors")).toBeVisible();
   await expect(page.getByRole("link", { name: "Equation 1 attention scaling" })).toBeVisible();
-  await expect(page.getByText("Archived", { exact: true })).toBeVisible();
+  await expect(page.getByText("Saved discussions")).toHaveCount(0);
 });
 
 test("moderation page shows queue, risk labels, and non-destructive actions", async ({ page }) => {

@@ -78,10 +78,17 @@ test("discussion detail page displays question detail, anchor, answers, comments
   await expect(
     page.getByRole("heading", { name: "Why does scaled dot-product attention divide by sqrt(dk)?" })
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to paper" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "All questions for this paper" })).toBeVisible();
   await expect(page.getByText("Equation 1 attention scaling")).toBeVisible();
   await expect(page.getByText(/softmax gradients in a usable range/)).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Answers" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Comments" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Responses" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Answers" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Comments" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reply to response" }).first()).toBeVisible();
+  await page.getByRole("button", { name: "Reply to response" }).first().click();
+  await expect(page.getByRole("heading", { name: "Reply to Reader" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Submit reply" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Author response area" })).toBeVisible();
 });
 
@@ -89,6 +96,8 @@ test("anchor detail page displays quote, image, position info, and related discu
   await page.goto("/anchors/anchor-figure-caption");
 
   await expect(page.getByRole("heading", { name: "Figure 1 model architecture" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to paper" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Browse anchors" })).toBeVisible();
   await expect(page.getByText("Anchor type: Figure")).toBeVisible();
   await expect(page.getByText("Page 3")).toBeVisible();
   await expect(page.getByRole("img", { name: "Transformer architecture diagram anchor" })).toBeVisible();

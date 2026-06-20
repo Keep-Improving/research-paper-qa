@@ -7,10 +7,19 @@ type CollectionInput = {
   note?: string | null;
 };
 
+type CollectionItemRecord = {
+  id: string;
+  userId: string;
+  targetType: CollectionTargetType;
+  targetId: string;
+  note: string | null;
+  createdAt: Date;
+};
+
 type CollectionPrisma = {
   collectionItem: {
     upsert: (args: any) => Promise<unknown>;
-    findMany: (args: any) => Promise<unknown[]>;
+    findMany: (args: any) => Promise<CollectionItemRecord[]>;
   };
 };
 

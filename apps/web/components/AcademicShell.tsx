@@ -11,9 +11,9 @@ export function AcademicShell({ children }: { children: ReactNode }) {
           </Link>
           <nav aria-label="Primary" className="primary-nav">
             <Link href="/">Search</Link>
-            <Link href="/papers/paper-transformer">Paper detail</Link>
-            <Link href="/discussions/discussion-attention-scale">Question detail</Link>
-            <Link href="/anchors/anchor-figure-caption">Anchor detail</Link>
+            <Link href="/?type=papers">Papers</Link>
+            <Link href="/?type=questions">Questions</Link>
+            <Link href="/?type=anchors">Anchors</Link>
             <Link href="/author/claims">Author claims</Link>
             <Link href="/author/workbench">Workbench</Link>
             <Link href="/collections">Collections</Link>

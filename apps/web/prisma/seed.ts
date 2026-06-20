@@ -166,6 +166,57 @@ async function main() {
       status: "approved"
     }
   });
+
+  await prisma.collectionItem.upsert({
+    where: {
+      userId_targetType_targetId: {
+        userId: reader.id,
+        targetType: "paper",
+        targetId: transformer.id
+      }
+    },
+    update: { note: "reading list" },
+    create: {
+      userId: reader.id,
+      targetType: "paper",
+      targetId: transformer.id,
+      note: "reading list"
+    }
+  });
+
+  await prisma.collectionItem.upsert({
+    where: {
+      userId_targetType_targetId: {
+        userId: reader.id,
+        targetType: "discussion",
+        targetId: attentionDiscussion.id
+      }
+    },
+    update: { note: "follow up after author clarification" },
+    create: {
+      userId: reader.id,
+      targetType: "discussion",
+      targetId: attentionDiscussion.id,
+      note: "follow up after author clarification"
+    }
+  });
+
+  await prisma.collectionItem.upsert({
+    where: {
+      userId_targetType_targetId: {
+        userId: reader.id,
+        targetType: "anchor",
+        targetId: equationAnchor.id
+      }
+    },
+    update: { note: "attention scaling anchor" },
+    create: {
+      userId: reader.id,
+      targetType: "anchor",
+      targetId: equationAnchor.id,
+      note: "attention scaling anchor"
+    }
+  });
 }
 
 main()

@@ -1,6 +1,6 @@
 import { AcademicShell } from "../../../components/AcademicShell";
 import { DiscussionBadges } from "../../../components/DiscussionPanel";
-import { CollectionButton, ReplyForm, ReportButton, VoteButton } from "../../../components/DiscussionActions";
+import { CollectionButton, ReplyForm, ReportButton, ResponseThread, VoteButton } from "../../../components/DiscussionActions";
 import { prisma } from "../../../lib/prisma";
 import { getDiscussionDetail } from "../../../lib/repositories/discussions";
 
@@ -25,8 +25,6 @@ export default async function DiscussionDetailPage({
 
   const paper = await prisma.paper.findUnique({ where: { id: discussion.paperId } });
   const anchor = discussion.anchor as { kind?: string; title?: string | null; quoteText?: string | null; contextText?: string | null; imageUrl?: string | null } | null;
-  const answers = discussion.replies.filter((reply) => reply.kind === "answer");
-  const comments = discussion.replies.filter((reply) => reply.kind === "comment");
   const authorResponses = discussion.replies.filter((reply) => reply.isAuthorResponse);
 
   return (
@@ -37,6 +35,10 @@ export default async function DiscussionDetailPage({
             <p className="page-kicker">{paper?.title ?? "Paper discussion"}</p>
             <h1 className="page-title">{discussion.title}</h1>
             <p className="page-summary">{discussion.body}</p>
+            <div className="toolbar">
+              <a className="button" href={`/papers/${discussion.paperId}`}>Back to paper</a>
+              <a className="button" href={`/?q=${encodeURIComponent(paper?.title ?? discussion.title)}`}>All questions for this paper</a>
+            </div>
           </div>
           <DiscussionBadges discussion={discussion} />
           <div className="meta-row">
@@ -63,29 +65,7 @@ export default async function DiscussionDetailPage({
           </section>
         ) : null}
 
-        <section className="panel">
-          <h2 className="section-title">Answers</h2>
-          <ul className="compact-list">
-            {answers.map((answer) => (
-              <li key={answer.id}>
-                <strong>{answer.authorName}</strong>
-                <p className="row-copy">{answer.body}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="panel">
-          <h2 className="section-title">Comments</h2>
-          <ul className="compact-list">
-            {comments.map((comment) => (
-              <li key={comment.id}>
-                <strong>{comment.authorName}</strong>
-                <p className="row-copy">{comment.body}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <ResponseThread discussionId={discussion.id} replies={discussion.replies} />
 
         <section className="panel">
           <h2 className="section-title">Author response area</h2>

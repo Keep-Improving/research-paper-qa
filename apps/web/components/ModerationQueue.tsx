@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAnchor, getDiscussion, samplePapers } from "./sampleData";
+import { getAnchor, getDiscussion } from "./sampleData";
 
 const moderationReports = [
   {
@@ -69,11 +69,15 @@ export function ModerationQueue() {
   );
 }
 
-export function CollectionsOverview() {
-  const paper = samplePapers[0];
-  const discussion = getDiscussion("discussion-attention-scale");
-  const anchor = getAnchor("anchor-equation-scale");
-
+export function CollectionsOverview({
+  anchors = [],
+  discussions = [],
+  papers = []
+}: {
+  anchors?: Array<{ id: string; title: string | null; position: string | null; quoteText: string | null }>;
+  discussions?: Array<{ id: string; title: string; body: string }>;
+  papers?: Array<{ id: string; title: string }>;
+}) {
   return (
     <div className="stack">
       <section className="panel stack">
@@ -92,23 +96,27 @@ export function CollectionsOverview() {
           <h2 className="section-title">Saved papers</h2>
           <span className="badge badge-author">Active</span>
         </div>
-        <div className="result-row">
-          <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
-          <p className="row-copy">Label: reading list</p>
-        </div>
+        {papers.length === 0 ? <p className="row-copy">No saved papers yet.</p> : null}
+        {papers.map((paper) => (
+          <div className="result-row" key={paper.id}>
+            <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
+            <p className="row-copy">Label: reading list</p>
+          </div>
+        ))}
       </section>
 
-      <section className="panel stack" aria-label="Saved discussions">
+      <section className="panel stack" aria-label="Saved questions">
         <div className="toolbar">
-          <h2 className="section-title">Saved discussions</h2>
-          <span className="badge badge-anchor">Archived</span>
+          <h2 className="section-title">Saved questions</h2>
+          <span className="badge badge-anchor">Active</span>
         </div>
-        {discussion ? (
-          <div className="result-row">
+        {discussions.length === 0 ? <p className="row-copy">No saved questions yet.</p> : null}
+        {discussions.map((discussion) => (
+          <div className="result-row" key={discussion.id}>
             <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
-            <p className="row-copy">Note: follow up after author clarification.</p>
+            <p className="row-copy">{discussion.body}</p>
           </div>
-        ) : null}
+        ))}
       </section>
 
       <section className="panel stack" aria-label="Saved anchors">
@@ -116,12 +124,13 @@ export function CollectionsOverview() {
           <h2 className="section-title">Saved anchors</h2>
           <span className="badge badge-author">Active</span>
         </div>
-        {anchor ? (
-          <div className="result-row">
-            <Link href={`/anchors/${anchor.id}`}>{anchor.title}</Link>
-            <p className="row-copy">{anchor.position}</p>
+        {anchors.length === 0 ? <p className="row-copy">No saved anchors yet.</p> : null}
+        {anchors.map((anchor) => (
+          <div className="result-row" key={anchor.id}>
+            <Link href={`/anchors/${anchor.id}`}>{anchor.title ?? anchor.quoteText ?? anchor.id}</Link>
+            <p className="row-copy">{anchor.position ?? "No position stored."}</p>
           </div>
-        ) : null}
+        ))}
       </section>
     </div>
   );
