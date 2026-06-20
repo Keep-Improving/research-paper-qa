@@ -64,13 +64,31 @@ function SidebarApp() {
 
   async function createDiscussion(input: SidebarCreateDiscussionInput) {
     const baseUrl = apiBaseUrl ?? await getApiBaseUrl();
-    const paperId = remotePaperId.current ?? paper.id;
-    await createRemoteDiscussion(baseUrl, { ...input, paperId });
-    setDiscussions(await listRemoteDiscussions(baseUrl, paperId));
+    const remotePaper = await ensureRemotePaper(baseUrl);
+    await createRemoteDiscussion(baseUrl, { ...input, paperId: remotePaper.id });
+    setDiscussions(await listRemoteDiscussions(baseUrl, remotePaper.id));
   }
 
   async function refreshDiscussions(baseUrl: string) {
-    setDiscussions(await listRemoteDiscussions(baseUrl, paper.id));
+    const remotePaper = await ensureRemotePaper(baseUrl);
+    setDiscussions(await listRemoteDiscussions(baseUrl, remotePaper.id));
+  }
+
+  async function ensureRemotePaper(baseUrl: string) {
+    if (remotePaperId.current) {
+      return paper.id === remotePaperId.current ? paper : { ...paper, id: remotePaperId.current };
+    }
+
+    const matchedPaper = await matchRemotePaper(baseUrl, {
+      title: fallbackDetectedPaper.title,
+      url: location.href
+    });
+    remotePaperId.current = matchedPaper.id;
+    setApiBaseUrl(baseUrl);
+    setPaper(matchedPaper);
+    setErrorMessage(undefined);
+    setLoadState("ready");
+    return matchedPaper;
   }
 
   async function createReply(discussionId: string, body: string, kind: "answer" | "comment") {
