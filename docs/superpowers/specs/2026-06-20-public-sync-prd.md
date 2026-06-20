@@ -532,3 +532,11 @@
 - Thread depth: improved. Response rendering is capped to two visible levels; deeper replies are flattened into the second level while preserving their `Replying to <author>` context.
 - Browse pages: improved. `Papers`, `Questions`, and `Anchors` are now separate routes with focused lists instead of aliases of the generic search page.
 - Verification: Playwright covers unified response forms and separate browse pages; web and extension builds/tests pass locally.
+
+## 21. Implementation Status Update - 2026-06-20 Extension Thread Parity Fix
+
+- Web response tree: fixed. Deep replies are flattened into the second visible level without recursively rendering the same descendant again, preventing duplicate `A3/A33`-style rows.
+- Extension response UI: improved. The sidebar detail panel now uses one `Responses` section instead of separate `Answers` and `Comments` sections.
+- Extension response form: improved. The sidebar no longer exposes an `Answer`/`Comment` selector; response creation posts a standard `answer` kind behind the scenes.
+- Extension reply threading: improved. Sidebar responses show `Replying to <author>`, support replying to a specific response with `parentReplyId`, and cap visible nesting to two levels.
+- Verification: Added regression coverage for duplicate web nested response rendering and extension threaded response submission; web and extension tests/builds pass locally.

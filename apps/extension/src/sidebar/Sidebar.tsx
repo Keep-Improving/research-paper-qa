@@ -47,6 +47,7 @@ export type SidebarDiscussion = {
 export type SidebarReply = {
   id: string;
   discussionId: string;
+  parentReplyId?: string | null;
   kind: "answer" | "comment" | "author_response" | "correction" | "replication_note";
   body: string;
   authorName: string;
@@ -92,7 +93,7 @@ type SidebarProps = {
   similarQuestionPrompt?: React.ReactNode;
   onUseSelection?: () => SidebarAnchorDraft | null | void | Promise<SidebarAnchorDraft | null | void>;
   onCreateDiscussion?: (input: SidebarCreateDiscussionInput) => void | Promise<void>;
-  onCreateReply?: (discussionId: string, body: string, kind: "answer" | "comment") => void | Promise<void>;
+  onCreateReply?: (discussionId: string, body: string, kind: "answer", parentReplyId?: string | null) => void | Promise<void>;
   onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
   onReportDiscussion?: (discussionId: string) => void | Promise<void>;
   onSelectDiscussion?: (discussionId: string) => SidebarDiscussion | Promise<SidebarDiscussion>;
@@ -192,8 +193,8 @@ export function Sidebar({
     }
   }
 
-  async function createReplyAndRefresh(discussionId: string, body: string, kind: "answer" | "comment") {
-    await onCreateReply?.(discussionId, body, kind);
+  async function createReplyAndRefresh(discussionId: string, body: string, kind: "answer", parentReplyId?: string | null) {
+    await onCreateReply?.(discussionId, body, kind, parentReplyId);
 
     if (onSelectDiscussion) {
       const detail = await onSelectDiscussion(discussionId);
@@ -265,15 +266,14 @@ function DiscussionDetail({
   discussion: SidebarDiscussion;
   detailError?: string;
   onBack: () => void;
-  onCreateReply?: (discussionId: string, body: string, kind: "answer" | "comment") => void | Promise<void>;
+  onCreateReply?: (discussionId: string, body: string, kind: "answer", parentReplyId?: string | null) => void | Promise<void>;
   onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
   onReportDiscussion?: (discussionId: string) => void | Promise<void>;
 }) {
   const [body, setBody] = useState("");
-  const [kind, setKind] = useState<"answer" | "comment">("answer");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
-  const answers = (discussion.replies ?? []).filter((reply) => reply.kind === "answer" || reply.kind === "author_response");
-  const comments = (discussion.replies ?? []).filter((reply) => reply.kind === "comment");
+  const replyTarget = replyingTo ? (discussion.replies ?? []).find((reply) => reply.id === replyingTo) : null;
 
   async function submitReply(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -282,8 +282,9 @@ function DiscussionDetail({
 
     setStatus("submitting");
     try {
-      await onCreateReply(discussion.id, trimmedBody, kind);
+      await onCreateReply(discussion.id, trimmedBody, "answer", replyingTo);
       setBody("");
+      setReplyingTo(null);
       setStatus("idle");
     } catch {
       setStatus("error");
@@ -309,15 +310,15 @@ function DiscussionDetail({
           Open web
         </a>
       </div>
-      <ReplyList title="Answers" replies={answers} />
-      <ReplyList title="Comments" replies={comments} />
+      <ResponseList
+        onReply={(replyId) => setReplyingTo(replyId)}
+        replies={discussion.replies ?? []}
+        replyingTo={replyingTo}
+      />
       <form onSubmit={submitReply} style={styles.detailForm}>
-        <select onChange={(event) => setKind(event.target.value as "answer" | "comment")} style={styles.detailSelect} value={kind}>
-          <option value="answer">Answer</option>
-          <option value="comment">Comment</option>
-        </select>
+        {replyTarget ? <p style={styles.replyEmpty}>Replying to {replyTarget.authorName}</p> : null}
         <textarea
-          aria-label="Reply body"
+          aria-label="Response body"
           onChange={(event) => setBody(event.currentTarget.value)}
           rows={3}
           style={styles.detailTextarea}
@@ -332,23 +333,105 @@ function DiscussionDetail({
   );
 }
 
-function ReplyList({ replies, title }: { replies: SidebarReply[]; title: string }) {
+function ResponseList({
+  onReply,
+  replies,
+  replyingTo
+}: {
+  onReply: (replyId: string) => void;
+  replies: SidebarReply[];
+  replyingTo: string | null;
+}) {
+  const replyById = new Map(replies.map((reply) => [reply.id, reply]));
+  const roots = replies.filter((reply) => !reply.parentReplyId);
+
+  function childrenOf(replyId: string) {
+    return replies.filter((reply) => reply.parentReplyId === replyId);
+  }
+
+  function collectDescendants(replyId: string): SidebarReply[] {
+    return childrenOf(replyId).flatMap((child) => [child, ...collectDescendants(child.id)]);
+  }
+
   return (
-    <section aria-label={title} style={styles.replySection}>
-      <h3 style={styles.replyTitle}>{title}</h3>
-      {replies.length === 0 ? (
-        <p style={styles.replyEmpty}>No {title.toLowerCase()} yet.</p>
+    <section aria-label="Responses" style={styles.replySection}>
+      <h3 style={styles.replyTitle}>Responses</h3>
+      {roots.length === 0 ? (
+        <p style={styles.replyEmpty}>No responses yet.</p>
       ) : (
         <ul style={styles.replyList}>
-          {replies.map((reply) => (
-            <li key={reply.id} style={styles.replyItem}>
-              <strong>{reply.authorName}</strong>
-              <p style={styles.replyBody}>{reply.body}</p>
-            </li>
+          {roots.map((reply) => (
+            <ResponseItem
+              children={collectDescendants(reply.id)}
+              key={reply.id}
+              onReply={onReply}
+              reply={reply}
+              replyById={replyById}
+              replyingTo={replyingTo}
+            />
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+function ResponseItem({
+  children,
+  onReply,
+  reply,
+  replyById,
+  replyingTo
+}: {
+  children: SidebarReply[];
+  onReply: (replyId: string) => void;
+  reply: SidebarReply;
+  replyById: Map<string, SidebarReply>;
+  replyingTo: string | null;
+}) {
+  const replyTarget = reply.parentReplyId ? replyById.get(reply.parentReplyId)?.authorName ?? "a response" : null;
+
+  return (
+    <li style={styles.replyItem}>
+      <div style={styles.replyHeader}>
+        <div>
+          <strong>{reply.authorName}</strong>
+          {replyTarget ? <p style={styles.replyMeta}>Replying to {replyTarget}</p> : null}
+        </div>
+        <button
+          aria-pressed={replyingTo === reply.id}
+          onClick={() => onReply(reply.id)}
+          style={styles.replyButton}
+          type="button"
+        >
+          Reply to response
+        </button>
+      </div>
+      <p style={styles.replyBody}>{reply.body}</p>
+      {children.length > 0 ? (
+        <ul style={styles.replyChildren}>
+          {children.map((child) => (
+            <li key={child.id} style={styles.replyChildItem}>
+              <div style={styles.replyHeader}>
+                <div>
+                  <strong>{child.authorName}</strong>
+                  <p style={styles.replyMeta}>Replying to {child.parentReplyId ? replyById.get(child.parentReplyId)?.authorName ?? "a response" : "a response"}</p>
+                </div>
+                <button
+                  aria-pressed={replyingTo === child.id}
+                  onClick={() => onReply(child.id)}
+                  style={styles.replyButton}
+                  type="button"
+                >
+                  Reply to response
+                </button>
+              </div>
+              <p style={styles.replyBody}>{child.body}</p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </li>
   );
 }
 
@@ -502,14 +585,6 @@ const styles = {
     lineHeight: 1.35,
     margin: 0
   },
-  detailSelect: {
-    border: "1px solid #b9bdb8",
-    borderRadius: 4,
-    color: "#1f2421",
-    fontSize: 12,
-    height: 30,
-    padding: "0 8px"
-  },
   detailTextarea: {
     border: "1px solid #b9bdb8",
     borderRadius: 4,
@@ -519,6 +594,42 @@ const styles = {
     minHeight: 72,
     padding: 8,
     resize: "vertical" as const
+  },
+  replyHeader: {
+    alignItems: "start",
+    display: "flex",
+    gap: 8,
+    justifyContent: "space-between"
+  },
+  replyMeta: {
+    color: "#626961",
+    fontSize: 11,
+    margin: "2px 0 0"
+  },
+  replyButton: {
+    border: "1px solid #c4c8c0",
+    borderRadius: 4,
+    background: "#ffffff",
+    color: "#3f4842",
+    cursor: "pointer",
+    fontSize: 11,
+    fontWeight: 700,
+    minHeight: 24,
+    padding: "0 6px"
+  },
+  replyChildren: {
+    borderLeft: "2px solid #e2e5dd",
+    display: "grid",
+    gap: 6,
+    listStyle: "none",
+    margin: "4px 0 0 8px",
+    padding: "0 0 0 8px"
+  },
+  replyChildItem: {
+    borderTop: "1px solid #eceee8",
+    display: "grid",
+    gap: 3,
+    paddingTop: 6
   },
   primaryButton: {
     border: "1px solid #2f3a3f",

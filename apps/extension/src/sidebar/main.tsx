@@ -90,9 +90,9 @@ function SidebarApp() {
     return matchedPaper;
   }
 
-  async function createReply(discussionId: string, body: string, kind: "answer" | "comment") {
+  async function createReply(discussionId: string, body: string, kind: "answer", parentReplyId?: string | null) {
     const baseUrl = apiBaseUrl ?? await getApiBaseUrl();
-    await createRemoteReply(baseUrl, discussionId, body, kind);
+    await createRemoteReply(baseUrl, discussionId, body, kind, parentReplyId);
     await refreshDiscussions(baseUrl);
   }
 

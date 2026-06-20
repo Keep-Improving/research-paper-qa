@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   captureActiveTabSelection,
   createRemoteDiscussion,
+  createRemoteReply,
   getApiBaseUrl,
   getRemoteDiscussion,
   listRemoteDiscussions,
@@ -145,6 +146,7 @@ describe("remote sidebar API client", () => {
         {
           id: "reply-1",
           discussionId: "discussion-1",
+          parentReplyId: null,
           kind: "answer",
           body: "Answer body",
           authorName: "Responder",
@@ -159,6 +161,7 @@ describe("remote sidebar API client", () => {
         {
           id: "reply-1",
           kind: "answer",
+          parentReplyId: null,
           body: "Answer body"
         }
       ]
@@ -167,5 +170,22 @@ describe("remote sidebar API client", () => {
     expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/api/discussions/discussion-1", {
       method: "GET"
     });
+  });
+
+  it("creates a threaded response with parent reply id", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      id: "reply-2"
+    }), { status: 201 }));
+
+    await createRemoteReply("https://api.example.test/api", "discussion-1", "Nested response", "answer", "reply-1", fetchImpl);
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/api/discussions/discussion-1/replies", expect.objectContaining({
+      method: "POST",
+      body: JSON.stringify({
+        kind: "answer",
+        body: "Nested response",
+        parentReplyId: "reply-1"
+      })
+    }));
   });
 });

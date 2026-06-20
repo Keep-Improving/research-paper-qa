@@ -80,7 +80,7 @@ describe("Sidebar discussion UI", () => {
     expect(screen.getByText("Can the inference be reproduced without the excluded samples?")).toBeInTheDocument();
   });
 
-  it("opens a discussion detail panel with answers and comments", async () => {
+  it("opens a discussion detail panel with unified threaded responses", async () => {
     const onSelectDiscussion = vi.fn().mockResolvedValue({
       ...discussions[0],
       replies: [
@@ -89,24 +89,47 @@ describe("Sidebar discussion UI", () => {
           kind: "answer",
           body: "The perturbation shifts the treated cohort but not the matched controls.",
           authorName: "Responder",
-          createdAt: "2026-06-19T10:00:00.000Z"
+          createdAt: "2026-06-19T10:00:00.000Z",
+          parentReplyId: null
         },
         {
           id: "reply-comment",
           kind: "comment",
           body: "This should be compared against batch-specific controls.",
           authorName: "Commenter",
-          createdAt: "2026-06-19T11:00:00.000Z"
+          createdAt: "2026-06-19T11:00:00.000Z",
+          parentReplyId: "reply-answer"
         }
       ]
     });
+    const onCreateReply = vi.fn().mockResolvedValue(undefined);
 
-    render(<Sidebar paper={paper} initialDiscussions={discussions} onSelectDiscussion={onSelectDiscussion} />);
+    render(
+      <Sidebar
+        paper={paper}
+        initialDiscussions={discussions}
+        onCreateReply={onCreateReply}
+        onSelectDiscussion={onSelectDiscussion}
+      />
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /Open discussion How does the perturbation/ }));
 
+    expect(await screen.findByRole("heading", { name: "Responses" })).toBeInTheDocument();
     expect(await screen.findByText("The perturbation shifts the treated cohort but not the matched controls.")).toBeInTheDocument();
     expect(screen.getByText("This should be compared against batch-specific controls.")).toBeInTheDocument();
+    expect(screen.getByText("Replying to Responder")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Answers" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Comments" })).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue("Answer")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Reply to response" })[0]);
+    fireEvent.change(screen.getByLabelText("Response body"), {
+      target: { value: "Nested follow-up from extension" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit reply" }));
+
+    expect(onCreateReply).toHaveBeenCalledWith("q-low", "Nested follow-up from extension", "answer", "reply-answer");
     expect(onSelectDiscussion).toHaveBeenCalledWith("q-low");
   });
 

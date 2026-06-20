@@ -84,14 +84,14 @@ export async function getRemoteDiscussion(baseUrl: string, discussionId: string,
   return mapRemoteDiscussion(await parseJsonResponse<Record<string, unknown>>(response));
 }
 
-export async function createRemoteReply(baseUrl: string, discussionId: string, body: string, kind: "answer" | "comment", fetchImpl: FetchImpl = fetch) {
+export async function createRemoteReply(baseUrl: string, discussionId: string, body: string, kind: "answer", parentReplyId?: string | null, fetchImpl: FetchImpl = fetch) {
   const response = await fetchImpl(`${trimBaseUrl(baseUrl)}/discussions/${encodeURIComponent(discussionId)}/replies`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-User-Id": DEFAULT_USER_ID
     },
-    body: JSON.stringify({ kind, body })
+    body: JSON.stringify({ kind, body, parentReplyId })
   });
 
   return parseJsonResponse<Record<string, unknown>>(response);
@@ -161,6 +161,7 @@ function mapRemoteReply(item: Record<string, unknown>): SidebarReply {
   return {
     id: String(item.id),
     discussionId: String(item.discussionId ?? item.discussion_id),
+    parentReplyId: item.parentReplyId === null || item.parent_reply_id === null ? null : typeof item.parentReplyId === "string" ? item.parentReplyId : typeof item.parent_reply_id === "string" ? item.parent_reply_id : null,
     kind: String(item.kind ?? "comment") as SidebarReply["kind"],
     body: String(item.body ?? ""),
     authorName: String(item.authorName ?? item.author_name ?? "Reader"),

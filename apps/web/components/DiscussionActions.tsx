@@ -159,12 +159,11 @@ export function ResponseThread({ discussionId, replies }: { discussionId: string
   }
 
   function displayChildrenOf(replyId: string, depth: number) {
-    const children = childrenOf(replyId);
-    if (depth < 1) {
-      return children;
+    if (depth > 0) {
+      return [];
     }
 
-    return children.flatMap((child) => [child, ...collectDescendants(child.id)]);
+    return collectDescendants(replyId);
   }
 
   function collectDescendants(replyId: string): ResponseItem[] {
