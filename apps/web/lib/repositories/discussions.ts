@@ -92,6 +92,31 @@ export async function listPaperDiscussions(prisma: DiscussionPrisma, paperId: st
   return rows.map((row) => mapDiscussion(row as DiscussionRow));
 }
 
+export async function listSearchDiscussions(prisma: DiscussionPrisma, query = "") {
+  const trimmedQuery = query.trim();
+  const rows = await prisma.discussion!.findMany!({
+    where: {
+      isHidden: false,
+      ...(trimmedQuery
+        ? {
+            OR: [
+              { title: { contains: trimmedQuery, mode: "insensitive" } },
+              { body: { contains: trimmedQuery, mode: "insensitive" } },
+              { paper: { title: { contains: trimmedQuery, mode: "insensitive" } } },
+              { anchor: { quoteText: { contains: trimmedQuery, mode: "insensitive" } } },
+              { replies: { some: { body: { contains: trimmedQuery, mode: "insensitive" }, isHidden: false } } }
+            ]
+          }
+        : {})
+    },
+    include: discussionInclude,
+    orderBy: [{ createdAt: "desc" }],
+    take: 50
+  });
+
+  return rows.map((row) => mapDiscussion(row as DiscussionRow));
+}
+
 export async function getDiscussionDetail(prisma: DiscussionPrisma, discussionId: string) {
   const row = await prisma.discussion!.findFirst!({
     where: {

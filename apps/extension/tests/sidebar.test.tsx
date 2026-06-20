@@ -80,6 +80,36 @@ describe("Sidebar discussion UI", () => {
     expect(screen.getByText("Can the inference be reproduced without the excluded samples?")).toBeInTheDocument();
   });
 
+  it("opens a discussion detail panel with answers and comments", async () => {
+    const onSelectDiscussion = vi.fn().mockResolvedValue({
+      ...discussions[0],
+      replies: [
+        {
+          id: "reply-answer",
+          kind: "answer",
+          body: "The perturbation shifts the treated cohort but not the matched controls.",
+          authorName: "Responder",
+          createdAt: "2026-06-19T10:00:00.000Z"
+        },
+        {
+          id: "reply-comment",
+          kind: "comment",
+          body: "This should be compared against batch-specific controls.",
+          authorName: "Commenter",
+          createdAt: "2026-06-19T11:00:00.000Z"
+        }
+      ]
+    });
+
+    render(<Sidebar paper={paper} initialDiscussions={discussions} onSelectDiscussion={onSelectDiscussion} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Open discussion How does the perturbation/ }));
+
+    expect(await screen.findByText("The perturbation shifts the treated cohort but not the matched controls.")).toBeInTheDocument();
+    expect(screen.getByText("This should be compared against batch-specific controls.")).toBeInTheDocument();
+    expect(onSelectDiscussion).toHaveBeenCalledWith("q-low");
+  });
+
   it("filters by author response", async () => {
     render(<Sidebar paper={paper} initialDiscussions={discussions} />);
 

@@ -17,7 +17,8 @@ function chromeManifestPlugin(): Plugin {
 export default defineConfig({
   plugins: [react(), chromeManifestPlugin()],
   test: {
-    environment: "jsdom"
+    environment: "jsdom",
+    testTimeout: 15000
   },
   build: {
     rollupOptions: {

@@ -29,7 +29,7 @@ export function DiscussionList({ discussions, loadState, errorMessage, onSelectD
     <section aria-label="Discussion list" style={styles.list}>
       {discussions.map((discussion) => (
         <article
-          aria-label={onSelectDiscussion ? `Open discussion ${discussion.body}` : undefined}
+          aria-label={onSelectDiscussion ? `Discussion ${discussion.body}` : undefined}
           key={discussion.id}
           onClick={() => onSelectDiscussion?.(discussion)}
           onKeyDown={(event) => {
@@ -50,6 +50,19 @@ export function DiscussionList({ discussions, loadState, errorMessage, onSelectD
             )}
             <span style={styles.spacer} />
             <span style={styles.metric}>{discussion.heat ?? 0} heat</span>
+            {onSelectDiscussion ? (
+              <button
+                aria-label={`Open discussion ${discussion.body}`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSelectDiscussion(discussion);
+                }}
+                style={styles.openButton}
+                type="button"
+              >
+                Open
+              </button>
+            ) : null}
           </div>
           <p style={styles.body}>{discussion.body}</p>
           <div style={styles.byline}>
@@ -120,6 +133,17 @@ const styles = {
     color: "#5b615d",
     fontSize: 11,
     whiteSpace: "nowrap" as const
+  },
+  openButton: {
+    border: "1px solid #c4c8c0",
+    borderRadius: 4,
+    background: "#ffffff",
+    color: "#3f4842",
+    cursor: "pointer",
+    fontSize: 11,
+    fontWeight: 700,
+    minHeight: 24,
+    padding: "0 6px"
   },
   body: {
     color: "#1f2421",

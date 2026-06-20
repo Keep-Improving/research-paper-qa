@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createDiscussionReply, createQuestion, createVote, getDiscussionDetail, listPaperDiscussions } from "./discussions";
+import { createDiscussionReply, createQuestion, createVote, getDiscussionDetail, listPaperDiscussions, listSearchDiscussions } from "./discussions";
 
 describe("discussion repository", () => {
   it("creates an anchor-backed question in one transaction", async () => {
@@ -117,6 +117,49 @@ describe("discussion repository", () => {
         paperId: "paper-1",
         isHidden: false
       }
+    }));
+  });
+
+  it("searches visible discussions across title, body, paper, anchors, and replies", async () => {
+    const prisma = {
+      discussion: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: "discussion-1",
+            paperId: "paper-1",
+            anchorId: null,
+            title: "Question title",
+            body: "Question body",
+            status: "open",
+            authorUserId: "user-1",
+            isHidden: false,
+            createdAt: new Date("2026-06-20T00:00:00Z"),
+            updatedAt: new Date("2026-06-20T00:00:00Z"),
+            anchor: null,
+            author: { displayName: "Reader" },
+            replies: [{ kind: "answer" }],
+            votes: []
+          }
+        ])
+      }
+    };
+
+    await expect(listSearchDiscussions(prisma, "mitochondria")).resolves.toEqual([
+      expect.objectContaining({
+        id: "discussion-1",
+        answerCount: 1
+      })
+    ]);
+
+    expect(prisma.discussion.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        isHidden: false,
+        OR: expect.arrayContaining([
+          { title: { contains: "mitochondria", mode: "insensitive" } },
+          { body: { contains: "mitochondria", mode: "insensitive" } }
+        ])
+      }),
+      take: 50
     }));
   });
 

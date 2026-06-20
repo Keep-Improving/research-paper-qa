@@ -1,5 +1,5 @@
 import type { TextAnchorDraft } from "../content/selectionAnchor";
-import type { SidebarCreateDiscussionInput, SidebarDiscussion, SidebarPaper } from "./Sidebar";
+import type { SidebarCreateDiscussionInput, SidebarDiscussion, SidebarPaper, SidebarReply } from "./Sidebar";
 
 const API_BASE_URL_KEY = "paperqa:apiBaseUrl";
 const DEFAULT_API_BASE_URL = "http://localhost:3000/api";
@@ -76,12 +76,12 @@ export async function createRemoteDiscussion(baseUrl: string, input: SidebarCrea
   return mapRemoteDiscussion(await parseJsonResponse<Record<string, unknown>>(response));
 }
 
-export async function getRemoteDiscussion(baseUrl: string, discussionId: string, fetchImpl: FetchImpl = fetch): Promise<Record<string, unknown>> {
+export async function getRemoteDiscussion(baseUrl: string, discussionId: string, fetchImpl: FetchImpl = fetch): Promise<SidebarDiscussion> {
   const response = await fetchImpl(`${trimBaseUrl(baseUrl)}/discussions/${encodeURIComponent(discussionId)}`, {
     method: "GET"
   });
 
-  return parseJsonResponse<Record<string, unknown>>(response);
+  return mapRemoteDiscussion(await parseJsonResponse<Record<string, unknown>>(response));
 }
 
 export async function createRemoteReply(baseUrl: string, discussionId: string, body: string, kind: "answer" | "comment", fetchImpl: FetchImpl = fetch) {
@@ -152,7 +152,20 @@ function mapRemoteDiscussion(item: Record<string, unknown>): SidebarDiscussion {
     answerCount: typeof item.answerCount === "number" ? item.answerCount : 0,
     commentCount: typeof item.commentCount === "number" ? item.commentCount : 0,
     isAuthorResponse: Boolean(item.isAuthorResponse ?? item.is_author_response),
-    anchor: item.anchor && typeof item.anchor === "object" ? mapRemoteAnchor(item.anchor as Record<string, unknown>) : undefined
+    anchor: item.anchor && typeof item.anchor === "object" ? mapRemoteAnchor(item.anchor as Record<string, unknown>) : undefined,
+    replies: Array.isArray(item.replies) ? item.replies.map((reply) => mapRemoteReply(reply as Record<string, unknown>)) : undefined
+  };
+}
+
+function mapRemoteReply(item: Record<string, unknown>): SidebarReply {
+  return {
+    id: String(item.id),
+    discussionId: String(item.discussionId ?? item.discussion_id),
+    kind: String(item.kind ?? "comment") as SidebarReply["kind"],
+    body: String(item.body ?? ""),
+    authorName: String(item.authorName ?? item.author_name ?? "Reader"),
+    createdAt: String(item.createdAt ?? item.created_at ?? new Date().toISOString()),
+    isAuthorResponse: Boolean(item.isAuthorResponse ?? item.is_author_response)
   };
 }
 

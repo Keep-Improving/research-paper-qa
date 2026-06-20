@@ -4,6 +4,7 @@ import {
   captureActiveTabSelection,
   createRemoteDiscussion,
   getApiBaseUrl,
+  getRemoteDiscussion,
   listRemoteDiscussions,
   matchRemotePaper
 } from "../src/sidebar/sidebarClient";
@@ -130,5 +131,41 @@ describe("remote sidebar API client", () => {
       method: "POST",
       headers: expect.objectContaining({ "X-User-Id": "user-reader" })
     }));
+  });
+
+  it("loads a discussion detail with replies through the public API", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      id: "discussion-1",
+      paperId: "paper-1",
+      body: "Question body",
+      status: "open",
+      authorName: "Reader",
+      createdAt: "2026-06-20T00:00:00Z",
+      replies: [
+        {
+          id: "reply-1",
+          discussionId: "discussion-1",
+          kind: "answer",
+          body: "Answer body",
+          authorName: "Responder",
+          createdAt: "2026-06-20T01:00:00Z"
+        }
+      ]
+    }), { status: 200 }));
+
+    await expect(getRemoteDiscussion("https://api.example.test/api", "discussion-1", fetchImpl)).resolves.toMatchObject({
+      id: "discussion-1",
+      replies: [
+        {
+          id: "reply-1",
+          kind: "answer",
+          body: "Answer body"
+        }
+      ]
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/api/discussions/discussion-1", {
+      method: "GET"
+    });
   });
 });

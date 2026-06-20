@@ -1,52 +1,56 @@
 import Link from "next/link";
 import {
-  SAMPLE_UI_LABEL,
   sampleAnchors,
-  sampleDiscussions,
-  samplePapers,
   type AnchorRecord,
-  type DiscussionRecord,
-  type PaperRecord
 } from "./sampleData";
 
 type SearchParams = {
   q?: string;
+  papers?: SearchPaper[];
+  discussions?: SearchDiscussion[];
 };
 
-function matchesQuery(value: string, query: string) {
-  return value.toLowerCase().includes(query.toLowerCase());
-}
+export type SearchPaper = {
+  id: string;
+  title: string;
+  authors: string[];
+  venue?: string | null;
+  year?: number | null;
+  doi?: string | null;
+  abstract?: string | null;
+};
 
-function paperText(paper: PaperRecord) {
-  return `${paper.title} ${paper.authors.join(" ")} ${paper.venue} ${paper.doi} ${paper.abstract}`;
-}
-
-function discussionText(discussion: DiscussionRecord) {
-  return `${discussion.title} ${discussion.body} ${discussion.authorResponse ?? ""}`;
-}
+export type SearchDiscussion = {
+  id: string;
+  title: string;
+  body: string;
+  kind?: string;
+  status: string;
+  isAuthorResponse?: boolean;
+};
 
 function anchorText(anchor: AnchorRecord) {
   return `${anchor.title} ${anchor.quote} ${anchor.context} ${anchor.section}`;
 }
 
-export function PaperSearch({ q = "" }: SearchParams) {
+function matchesQuery(value: string, query: string) {
+  return value.toLowerCase().includes(query.toLowerCase());
+}
+
+export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchParams) {
   const query = q.trim();
   const hasQuery = query.length > 0;
-  const papers = hasQuery ? samplePapers.filter((paper) => matchesQuery(paperText(paper), query)) : samplePapers;
-  const discussions = hasQuery
-    ? sampleDiscussions.filter((discussion) => matchesQuery(discussionText(discussion), query))
-    : sampleDiscussions;
   const anchors = hasQuery
     ? sampleAnchors.filter((anchor) => matchesQuery(anchorText(anchor), query))
     : sampleAnchors;
-  const authorResponses = discussions.filter((discussion) => discussion.hasAuthorResponse);
+  const authorResponses = discussions.filter((discussion) => discussion.isAuthorResponse);
   const isEmpty = papers.length === 0 && discussions.length === 0 && anchors.length === 0;
 
   return (
     <div className="search-grid">
       <section className="panel stack" aria-label="Paper search">
         <div>
-          <p className="page-kicker">{SAMPLE_UI_LABEL}</p>
+          <p className="page-kicker">Shared database</p>
           <h1 className="page-title">Research Paper Q&A</h1>
           <p className="page-summary">
             Search across papers, anchored questions, author responses, and quote or figure anchors.
@@ -78,9 +82,9 @@ export function PaperSearch({ q = "" }: SearchParams) {
                 <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
                 <p className="row-copy">{paper.authors.join(", ")}</p>
                 <div className="meta-row">
-                  <span>{paper.venue}</span>
-                  <span>{paper.year}</span>
-                  <span>{paper.doi}</span>
+                  {paper.venue ? <span>{paper.venue}</span> : null}
+                  {paper.year ? <span>{paper.year}</span> : null}
+                  {paper.doi ? <span>{paper.doi}</span> : null}
                 </div>
               </li>
             ))}
@@ -92,7 +96,7 @@ export function PaperSearch({ q = "" }: SearchParams) {
                 <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
                 <p className="row-copy">{discussion.body}</p>
                 <div className="meta-row">
-                  <span>{discussion.kind}</span>
+                  <span>{discussion.kind ?? "question"}</span>
                   <span>{discussion.status.replace("_", " ")}</span>
                 </div>
               </li>
@@ -103,7 +107,7 @@ export function PaperSearch({ q = "" }: SearchParams) {
             {authorResponses.map((discussion) => (
               <li className="result-row" key={`${discussion.id}-author-response`}>
                 <Link href={`/discussions/${discussion.id}`}>Author response thread</Link>
-                <p className="row-copy">{discussion.authorResponse}</p>
+                <p className="row-copy">{discussion.body}</p>
                 <span className="badge badge-author">Author response</span>
               </li>
             ))}

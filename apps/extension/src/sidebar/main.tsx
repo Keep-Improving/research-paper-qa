@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Sidebar, type SidebarCreateDiscussionInput, type SidebarDiscussion, type SidebarPaper } from "./Sidebar";
 import {
@@ -8,6 +8,7 @@ import {
   createRemoteReport,
   createRemoteVote,
   getApiBaseUrl,
+  getRemoteDiscussion,
   listRemoteDiscussions,
   matchRemotePaper
 } from "./sidebarClient";
@@ -18,9 +19,7 @@ const fallbackDetectedPaper: SidebarPaper = {
 };
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <SidebarApp />
-  </StrictMode>
+  <SidebarApp />
 );
 
 function SidebarApp() {
@@ -108,6 +107,11 @@ function SidebarApp() {
     await createRemoteReport(baseUrl, discussionId);
   }
 
+  async function selectDiscussion(discussionId: string) {
+    const baseUrl = apiBaseUrl ?? await getApiBaseUrl();
+    return getRemoteDiscussion(baseUrl, discussionId);
+  }
+
   return (
     <Sidebar
       paper={paper}
@@ -119,6 +123,7 @@ function SidebarApp() {
       onCreateReply={createReply}
       onVoteDiscussion={voteDiscussion}
       onReportDiscussion={reportDiscussion}
+      onSelectDiscussion={selectDiscussion}
     />
   );
 }

@@ -56,6 +56,7 @@ export default async function DiscussionDetailPage({
         {anchor ? (
           <section className="panel stack">
             <h2 className="section-title">Anchor</h2>
+            {anchor.title ? <p className="section-kicker">{anchor.title}</p> : null}
             {anchor.quoteText ? <blockquote className="anchor-quote">{anchor.quoteText}</blockquote> : null}
             {anchor.contextText ? <p className="row-copy">{anchor.contextText}</p> : null}
             {anchor.imageUrl ? <img alt={anchor.title ?? "Discussion anchor"} className="anchor-image" src={anchor.imageUrl} /> : null}

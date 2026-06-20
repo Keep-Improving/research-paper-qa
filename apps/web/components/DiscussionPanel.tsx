@@ -126,6 +126,11 @@ export function DiscussionPanel({ discussions, showFilters = true }: DiscussionP
               <li className="discussion-row" data-testid={`discussion-row-${discussion.id}`} key={discussion.id}>
                 <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
                 <p className="row-copy">{discussion.body}</p>
+                {discussion.isAuthorResponse ? (
+                  <p className="row-copy">
+                    <strong>Author response note:</strong> verified first or corresponding author response
+                  </p>
+                ) : null}
                 <DiscussionBadges discussion={discussion} />
                 <div className="meta-row">
                   <span>{discussion.authorName}</span>

@@ -506,3 +506,12 @@
 - P0-1 / P0-3 / P0-4 / P0-5: partial. Core API sync path and extension detail interactions are implemented; public deployed server verification remains pending.
 - P0-2 / P0-6 / P0-7: partial. Core paper/discussion pages and basic buttons are connected; search, moderation UI, collections page, author pages, and full status UI still need migration.
 - Browser smoke status: partial. Local Prisma dev Postgres is running, `.env` has `DATABASE_URL`, the Next.js dev API returns real paper/discussion data, and the unpacked extension was rebuilt/reloaded. Remaining web Playwright failures are stale assertions expecting old sample UI copy, not the earlier Prisma `DATABASE_URL` 500.
+
+## 18. Implementation Status Update - 2026-06-20 Sync Detail Fix
+
+- M2 website real-data wiring: improved. Home/search now reads Prisma-backed papers and discussions instead of runtime sample discussions, so API-created questions appear in search results and paper detail lists.
+- M2 discussion detail: improved. Discussion anchor title is rendered with the quote/context/image, and author-response discussions show an explicit author response note in lists.
+- M3 extension detail sync: improved. Sidebar question cards now have an explicit `Open` action that loads `/api/discussions/:discussionId`; the detail view renders answers, comments, and author responses from the shared API.
+- M3 extension reply sync: improved. After submitting an answer/comment in the sidebar, the extension re-fetches discussion detail so newly posted replies and existing replies stay visible.
+- P0-1 / P0-2 / P0-4 / P0-5 / P0-10: local implementation verified. Browser smoke created a real discussion through the shared API and confirmed it appears on search, paper detail, and discussion detail pages with its reply.
+- Remaining: public HTTPS deployment verification, full collections page migration, author-claim workflow completion, moderation action UI completion, and production API base URL packaging for the extension.

@@ -41,6 +41,17 @@ export type SidebarDiscussion = {
   commentCount?: number;
   isAuthorResponse?: boolean;
   anchor?: SidebarAnchor;
+  replies?: SidebarReply[];
+};
+
+export type SidebarReply = {
+  id: string;
+  discussionId: string;
+  kind: "answer" | "comment" | "author_response" | "correction" | "replication_note";
+  body: string;
+  authorName: string;
+  createdAt: string;
+  isAuthorResponse?: boolean;
 };
 
 export type SidebarCreateDiscussionInput = {
@@ -84,6 +95,7 @@ type SidebarProps = {
   onCreateReply?: (discussionId: string, body: string, kind: "answer" | "comment") => void | Promise<void>;
   onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
   onReportDiscussion?: (discussionId: string) => void | Promise<void>;
+  onSelectDiscussion?: (discussionId: string) => SidebarDiscussion | Promise<SidebarDiscussion>;
   onRetryAnchorCapture?: () => void;
 };
 
@@ -105,6 +117,7 @@ export function Sidebar({
   onCreateReply,
   onVoteDiscussion,
   onReportDiscussion,
+  onSelectDiscussion,
   onRetryAnchorCapture
 }: SidebarProps) {
   const [filters, setFilters] = useState<DiscussionFiltersState>({
@@ -117,6 +130,7 @@ export function Sidebar({
   const [draft, setDraft] = useState<SidebarAnchorDraft | null>(anchorDraft);
   const [selectionError, setSelectionError] = useState<string | undefined>(anchorCaptureError);
   const [selectedDiscussion, setSelectedDiscussion] = useState<SidebarDiscussion | null>(null);
+  const [detailError, setDetailError] = useState<string | undefined>();
 
   const visibleDiscussions = useMemo(() => {
     const filtered = initialDiscussions.filter((discussion) => {
@@ -162,6 +176,31 @@ export function Sidebar({
     }
   }
 
+  async function selectDiscussion(discussion: SidebarDiscussion) {
+    setSelectedDiscussion(discussion);
+    setDetailError(undefined);
+
+    if (!onSelectDiscussion) {
+      return;
+    }
+
+    try {
+      const detail = await onSelectDiscussion(discussion.id);
+      setSelectedDiscussion(detail);
+    } catch (error) {
+      setDetailError(error instanceof Error ? error.message : "Discussion detail could not be loaded.");
+    }
+  }
+
+  async function createReplyAndRefresh(discussionId: string, body: string, kind: "answer" | "comment") {
+    await onCreateReply?.(discussionId, body, kind);
+
+    if (onSelectDiscussion) {
+      const detail = await onSelectDiscussion(discussionId);
+      setSelectedDiscussion(detail);
+    }
+  }
+
   return (
     <main style={styles.shell}>
       <header style={styles.header}>
@@ -198,14 +237,15 @@ export function Sidebar({
         discussions={visibleDiscussions}
         loadState={loadState}
         errorMessage={errorMessage}
-        onSelectDiscussion={setSelectedDiscussion}
+        onSelectDiscussion={selectDiscussion}
       />
 
       {selectedDiscussion ? (
         <DiscussionDetail
           discussion={selectedDiscussion}
+          detailError={detailError}
           onBack={() => setSelectedDiscussion(null)}
-          onCreateReply={onCreateReply}
+          onCreateReply={createReplyAndRefresh}
           onReportDiscussion={onReportDiscussion}
           onVoteDiscussion={onVoteDiscussion}
         />
@@ -216,12 +256,14 @@ export function Sidebar({
 
 function DiscussionDetail({
   discussion,
+  detailError,
   onBack,
   onCreateReply,
   onVoteDiscussion,
   onReportDiscussion
 }: {
   discussion: SidebarDiscussion;
+  detailError?: string;
   onBack: () => void;
   onCreateReply?: (discussionId: string, body: string, kind: "answer" | "comment") => void | Promise<void>;
   onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
@@ -230,6 +272,8 @@ function DiscussionDetail({
   const [body, setBody] = useState("");
   const [kind, setKind] = useState<"answer" | "comment">("answer");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const answers = (discussion.replies ?? []).filter((reply) => reply.kind === "answer" || reply.kind === "author_response");
+  const comments = (discussion.replies ?? []).filter((reply) => reply.kind === "comment");
 
   async function submitReply(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -253,6 +297,7 @@ function DiscussionDetail({
       </button>
       <h2 style={styles.detailTitle}>{discussion.body}</h2>
       {discussion.anchor?.quoteText ? <q style={styles.detailQuote}>{discussion.anchor.quoteText}</q> : null}
+      {detailError ? <div role="alert" style={styles.submitError}>{detailError}</div> : null}
       <div style={styles.detailToolbar}>
         <button onClick={() => onVoteDiscussion?.(discussion.id)} style={styles.secondaryButton} type="button">
           Helpful
@@ -264,6 +309,8 @@ function DiscussionDetail({
           Open web
         </a>
       </div>
+      <ReplyList title="Answers" replies={answers} />
+      <ReplyList title="Comments" replies={comments} />
       <form onSubmit={submitReply} style={styles.detailForm}>
         <select onChange={(event) => setKind(event.target.value as "answer" | "comment")} style={styles.detailSelect} value={kind}>
           <option value="answer">Answer</option>
@@ -281,6 +328,26 @@ function DiscussionDetail({
           {status === "submitting" ? "Submitting..." : "Submit reply"}
         </button>
       </form>
+    </section>
+  );
+}
+
+function ReplyList({ replies, title }: { replies: SidebarReply[]; title: string }) {
+  return (
+    <section aria-label={title} style={styles.replySection}>
+      <h3 style={styles.replyTitle}>{title}</h3>
+      {replies.length === 0 ? (
+        <p style={styles.replyEmpty}>No {title.toLowerCase()} yet.</p>
+      ) : (
+        <ul style={styles.replyList}>
+          {replies.map((reply) => (
+            <li key={reply.id} style={styles.replyItem}>
+              <strong>{reply.authorName}</strong>
+              <p style={styles.replyBody}>{reply.body}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
@@ -397,6 +464,43 @@ const styles = {
   detailForm: {
     display: "grid",
     gap: 6
+  },
+  replySection: {
+    borderTop: "1px solid #eceee8",
+    display: "grid",
+    gap: 6,
+    paddingTop: 8
+  },
+  replyTitle: {
+    color: "#1f2421",
+    fontSize: 13,
+    lineHeight: 1.25,
+    margin: 0
+  },
+  replyEmpty: {
+    color: "#626961",
+    fontSize: 12,
+    margin: 0
+  },
+  replyList: {
+    display: "grid",
+    gap: 6,
+    listStyle: "none",
+    margin: 0,
+    padding: 0
+  },
+  replyItem: {
+    border: "1px solid #e2e5dd",
+    borderRadius: 4,
+    display: "grid",
+    gap: 3,
+    padding: 8
+  },
+  replyBody: {
+    color: "#1f2421",
+    fontSize: 12,
+    lineHeight: 1.35,
+    margin: 0
   },
   detailSelect: {
     border: "1px solid #b9bdb8",
