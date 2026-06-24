@@ -550,3 +550,11 @@
 - Spoofing protection: improved. Clients can no longer mark a normal reply as an author response by sending `isAuthorResponse`; only `kind: author_response` after permission checking creates the author-response label.
 - Script path: added `apps/web/scripts/import-author-identities.ts` for JSON-based identity ingestion and conservative text extraction of corresponding-author email candidates. It does not infer first-author identity from name alone.
 - Current status: partial. Lightweight email identity authorization is implemented locally; production use still needs the real login provider to supply verified user email and a deployed database migration.
+
+## 23. Implementation Status Update - 2026-06-24 Public Auth and Data Preservation
+
+- Public-server readiness: improved. The project now has an implementation plan for Vercel or equivalent HTTPS hosting plus hosted Postgres, documented in `docs/deployment/public-server.md`.
+- Login: improved. The web app adds email/password registration, login, logout, `/api/auth/me`, and HTTP-only session-cookie identity so website users no longer need development headers.
+- API identity: improved. Request user resolution first checks the session cookie; `x-user-id` and `x-user-email` remain only as local development fallback and are disabled in production.
+- Data preservation: clarified. Production updates must use additive Prisma migrations and `prisma migrate deploy`; destructive reset commands and bulk deletion are forbidden without explicit approval and backup/rollback notes.
+- Deployment status: partial. Local auth implementation and documentation are in place; a real public deployment still requires hosted Postgres credentials, Vercel/account authentication, production environment variables, and extension API base URL packaging.

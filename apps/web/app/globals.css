@@ -89,6 +89,28 @@ textarea {
   text-decoration: underline;
 }
 
+.auth-nav {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.auth-nav a {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-nav span {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .shell-content {
   max-width: 1120px;
   margin: 0 auto;

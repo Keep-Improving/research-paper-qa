@@ -1,7 +1,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
 
-export function AcademicShell({ children }: { children: ReactNode }) {
+import { hashSessionToken, sessionCookieName } from "../lib/auth/sessions";
+import { prisma } from "../lib/prisma";
+import { UserNav } from "./UserNav";
+
+export async function AcademicShell({ children }: { children: ReactNode }) {
+  const user = await getShellUser();
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -19,9 +26,39 @@ export function AcademicShell({ children }: { children: ReactNode }) {
             <Link href="/collections">Collections</Link>
             <Link href="/moderation">Moderation</Link>
           </nav>
+          <UserNav user={user} />
         </div>
       </header>
       <main className="shell-content">{children}</main>
     </div>
   );
+}
+
+async function getShellUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(sessionCookieName)?.value;
+  if (!token) {
+    return null;
+  }
+
+  const session = await prisma.userSession.findFirst({
+    where: {
+      tokenHash: hashSessionToken(token),
+      expiresAt: {
+        gt: new Date()
+      }
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          displayName: true,
+          email: true,
+          role: true
+        }
+      }
+    }
+  });
+
+  return session?.user ?? null;
 }
