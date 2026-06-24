@@ -1,20 +1,39 @@
 import Link from "next/link";
-import { getAnchorForDiscussion, sampleDiscussions, samplePapers } from "./sampleData";
 
-type AuthorWorkbenchProps = {
-  claim?: string;
+export type AuthorWorkbenchDiscussion = {
+  id: string;
+  title: string;
+  body: string;
+  heat: number;
+  votes: number;
+  createdAt: string;
+  anchorTitle?: string | null;
 };
 
-function hasAuthorResponsePermission(claim?: string) {
-  return claim !== "co_author" && claim !== "none";
-}
+export type AuthorWorkbenchPaper = {
+  id: string;
+  title: string;
+  venue?: string | null;
+  year?: number | null;
+  canPublishAuthorResponse: boolean;
+  discussions: AuthorWorkbenchDiscussion[];
+};
 
-export function AuthorWorkbench({ claim }: AuthorWorkbenchProps) {
-  const canPublishAuthorResponse = hasAuthorResponsePermission(claim);
-  const paper = samplePapers[0];
-  const unanswered = sampleDiscussions
-    .filter((discussion) => discussion.isUnresolved)
-    .sort((a, b) => b.heat - a.heat);
+type AuthorWorkbenchProps = {
+  papers: AuthorWorkbenchPaper[];
+  userEmail?: string | null;
+};
+
+export function AuthorWorkbench({ papers, userEmail }: AuthorWorkbenchProps) {
+  const hasAnyPermission = papers.some((paper) => paper.canPublishAuthorResponse);
+  const discussions = papers
+    .flatMap((paper) =>
+      paper.discussions.map((discussion) => ({
+        ...discussion,
+        paper
+      }))
+    )
+    .sort((left, right) => right.heat - left.heat);
 
   return (
     <div className="stack">
@@ -23,19 +42,20 @@ export function AuthorWorkbench({ claim }: AuthorWorkbenchProps) {
           <p className="page-kicker">Author workflow</p>
           <h1 className="page-title">Author workbench</h1>
           <p className="page-summary">
-            Review unanswered, high-heat questions on papers where the current user has an author
-            claim. Author response actions are shown only for approved first-author or
-            corresponding-author permissions.
+            Review unanswered, high-heat questions only on papers where your signed-in email matches a verified first-author
+            or corresponding-author identity.
           </p>
         </div>
 
         <div className="status-strip">
           <div>
-            <strong>{paper.title}</strong>
-            <p className="row-copy">{paper.venue} {paper.year}</p>
+            <strong>{userEmail ?? "Not signed in"}</strong>
+            <p className="row-copy">
+              {hasAnyPermission ? `${papers.filter((paper) => paper.canPublishAuthorResponse).length} verified paper(s)` : "No verified author email match"}
+            </p>
           </div>
-          <span className={`badge ${canPublishAuthorResponse ? "badge-author" : "badge-unresolved"}`}>
-            Author response permission: {canPublishAuthorResponse ? "Approved" : "Not eligible"}
+          <span className={`badge ${hasAnyPermission ? "badge-author" : "badge-unresolved"}`}>
+            Author response permission: {hasAnyPermission ? "Approved" : "Not eligible"}
           </span>
         </div>
       </section>
@@ -46,16 +66,18 @@ export function AuthorWorkbench({ claim }: AuthorWorkbenchProps) {
           <span className="badge">Sorted by heat</span>
         </div>
 
-        <ul className="discussion-list">
-          {unanswered.map((discussion) => {
-            const anchor = getAnchorForDiscussion(discussion);
-
-            return (
+        {discussions.length === 0 ? (
+          <div className="empty-state">
+            <p>No eligible author questions yet.</p>
+          </div>
+        ) : (
+          <ul className="discussion-list">
+            {discussions.map((discussion) => (
               <li className="discussion-row" key={discussion.id}>
                 <div className="toolbar row-toolbar">
                   <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
                   <div className="toolbar">
-                    {canPublishAuthorResponse ? (
+                    {discussion.paper.canPublishAuthorResponse ? (
                       <button className="button button-primary" type="button">
                         Author response
                       </button>
@@ -67,15 +89,16 @@ export function AuthorWorkbench({ claim }: AuthorWorkbenchProps) {
                 </div>
                 <p className="row-copy">{discussion.body}</p>
                 <div className="meta-row">
+                  <span>{discussion.paper.title}</span>
                   <span>Heat {discussion.heat}</span>
                   <span>{discussion.votes} votes</span>
                   <span>{discussion.createdAt}</span>
-                  {anchor ? <span>{anchor.title}</span> : null}
+                  {discussion.anchorTitle ? <span>{discussion.anchorTitle}</span> : null}
                 </div>
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

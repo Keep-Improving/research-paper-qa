@@ -70,6 +70,13 @@ describe("auth API routes", () => {
 
   it("rejects duplicate registration emails", async () => {
     prisma.user.create.mockRejectedValue({ code: "P2002" });
+    prisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      displayName: "Ada Lovelace",
+      email: "ada@example.edu",
+      role: "user",
+      passwordCredential: { id: "credential-1" }
+    });
 
     const response = await registerRoute.POST(jsonRequest({
       displayName: "Ada Lovelace",
@@ -79,6 +86,31 @@ describe("auth API routes", () => {
 
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({ error: "Email is already registered" });
+  });
+
+  it("adds credentials to an existing user that has no password login yet", async () => {
+    prisma.user.create.mockRejectedValue({ code: "P2002" });
+    prisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      displayName: "Ada Lovelace",
+      email: "ada@example.edu",
+      role: "user",
+      passwordCredential: null
+    });
+
+    const response = await registerRoute.POST(jsonRequest({
+      displayName: "Ada Lovelace",
+      email: "ada@example.edu",
+      password: "long-enough-password"
+    }));
+
+    expect(response.status).toBe(201);
+    expect(prisma.passwordCredential.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        userId: "user-1"
+      })
+    }));
+    expect(response.headers.get("set-cookie")).toContain("paperqa_session=");
   });
 
   it("logs in with valid credentials", async () => {

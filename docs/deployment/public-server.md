@@ -70,3 +70,9 @@ npm run dev --workspace apps/web
 6. Register a real user on the public website.
 7. Create a question from the website and confirm it persists after redeploy.
 8. Configure the extension to the same public API and confirm the question is visible there.
+
+## Author Identity Safety
+
+The workbench and author-response API check whether the signed-in user's email matches a verified `PaperAuthorIdentity`.
+
+Before enabling public author-response privileges for external users, add email verification so the system knows the user controls that email address. Email string matching alone is not enough for production author certification, because a user could type someone else's corresponding-author email during registration.

@@ -35,6 +35,24 @@ export async function POST(request: Request) {
     return createSessionResponse(prisma, user, 201);
   } catch (error: any) {
     if (error?.code === "P2002") {
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          passwordCredential: true
+        }
+      });
+
+      if (existingUser && !existingUser.passwordCredential) {
+        await prisma.passwordCredential.create({
+          data: {
+            userId: existingUser.id,
+            passwordHash: await hashPassword(password)
+          }
+        });
+
+        return createSessionResponse(prisma, existingUser, 201);
+      }
+
       return jsonError("Email is already registered", 409);
     }
 

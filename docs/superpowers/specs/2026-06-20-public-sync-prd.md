@@ -558,3 +558,10 @@
 - API identity: improved. Request user resolution first checks the session cookie; `x-user-id` and `x-user-email` remain only as local development fallback and are disabled in production.
 - Data preservation: clarified. Production updates must use additive Prisma migrations and `prisma migrate deploy`; destructive reset commands and bulk deletion are forbidden without explicit approval and backup/rollback notes.
 - Deployment status: partial. Local auth implementation and documentation are in place; a real public deployment still requires hosted Postgres credentials, Vercel/account authentication, production environment variables, and extension API base URL packaging.
+
+## 24. Implementation Status Update - 2026-06-24 Author Workbench Permission Fix
+
+- Author workbench authorization: fixed. The workbench no longer uses static sample data or a `claim` URL parameter to approve author-response actions.
+- Permission display: fixed. The workbench now reads the signed-in user session, loads the user's email, and only shows `Author response permission: Approved` when that email matches a verified `PaperAuthorIdentity` for the paper.
+- Non-author behavior: fixed. Signed-in users whose email does not match a verified first-author or corresponding-author identity see `Not eligible`, and the `Author response` action is hidden.
+- Remaining security gap: email/password registration still needs email verification before production author privileges should be trusted. Without email verification, a user could type an author email address they do not control. The next auth task should add email verification tokens before public author-response privileges are enabled.
