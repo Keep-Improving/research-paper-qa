@@ -54,6 +54,7 @@ async function getShellUser() {
           id: true,
           displayName: true,
           email: true,
+          emailVerifiedAt: true,
           role: true
         }
       }

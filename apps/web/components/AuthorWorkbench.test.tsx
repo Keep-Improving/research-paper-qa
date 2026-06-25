@@ -28,6 +28,7 @@ describe("AuthorWorkbench", () => {
       <AuthorWorkbench
         papers={[paper]}
         userEmail="reader@example.edu"
+        emailVerified
       />
     );
 
@@ -41,10 +42,24 @@ describe("AuthorWorkbench", () => {
       <AuthorWorkbench
         papers={[{ ...paper, canPublishAuthorResponse: true }]}
         userEmail="author@example.test"
+        emailVerified
       />
     );
 
     expect(html).toContain("Author response permission: Approved");
     expect(html).toContain("Author response</button>");
+  });
+
+  it("does not approve author responses before the account email is verified", () => {
+    const html = renderToStaticMarkup(
+      <AuthorWorkbench
+        papers={[{ ...paper, canPublishAuthorResponse: false }]}
+        userEmail="author@example.test"
+        emailVerified={false}
+      />
+    );
+
+    expect(html).toContain("Verify this email before author-response permissions are enabled");
+    expect(html).toContain("Author response permission: Not eligible");
   });
 });

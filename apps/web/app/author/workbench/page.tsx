@@ -17,15 +17,15 @@ export default async function AuthorWorkbenchPage() {
   const user = userId
     ? await prisma.user.findUnique({
         where: { id: userId },
-        select: { email: true }
+        select: { email: true, emailVerifiedAt: true }
       })
     : null;
 
-  const papers = await loadWorkbenchPapers(user?.email ?? null);
+  const papers = await loadWorkbenchPapers(user?.emailVerifiedAt ? user.email : null);
 
   return (
     <AcademicShell>
-      <AuthorWorkbench papers={papers} userEmail={user?.email ?? null} />
+      <AuthorWorkbench papers={papers} userEmail={user?.email ?? null} emailVerified={Boolean(user?.emailVerifiedAt)} />
     </AcademicShell>
   );
 }

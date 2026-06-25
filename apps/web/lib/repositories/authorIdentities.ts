@@ -26,7 +26,7 @@ type AuthorIdentityPrisma = {
     findUnique: (args: any) => Promise<{ id: string; paperId: string } | null>;
   };
   user?: {
-    findUnique: (args: any) => Promise<{ id: string; email: string } | null>;
+    findUnique: (args: any) => Promise<{ id: string; email: string; emailVerifiedAt?: Date | null } | null>;
   };
 };
 
@@ -99,10 +99,10 @@ export async function canCreateAuthorResponse(
 
   const user = await prisma.user!.findUnique({
     where: { id: input.userId },
-    select: { id: true, email: true }
+    select: { id: true, email: true, emailVerifiedAt: true }
   });
 
-  if (!user?.email) {
+  if (!user?.email || !user.emailVerifiedAt) {
     return false;
   }
 

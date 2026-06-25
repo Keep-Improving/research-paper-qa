@@ -6,6 +6,7 @@ This project is currently safe to run locally and can be deployed to a public No
 
 - Vercel or another public HTTPS Next.js host.
 - Hosted Postgres such as Neon Postgres or Supabase Postgres.
+- Transactional email such as Resend, Postmark, SendGrid, or Supabase Auth email.
 - A Chrome extension build configured with the deployed web API base URL.
 
 ## Required Environment Variables
@@ -66,13 +67,20 @@ npm run dev --workspace apps/web
 2. Configure Vercel environment variables.
 3. Run production migration with `prisma migrate deploy` once migration files are present.
 4. Deploy the web app.
-5. Set the extension API base URL to `https://your-public-domain.example/api`.
-6. Register a real user on the public website.
-7. Create a question from the website and confirm it persists after redeploy.
-8. Configure the extension to the same public API and confirm the question is visible there.
+5. Configure transactional email delivery for email verification links.
+6. Set the extension API base URL to `https://your-public-domain.example/api`.
+7. Register a real user on the public website.
+8. Verify the account email before testing author-response privileges.
+9. Create a question from the website and confirm it persists after redeploy.
+10. Configure the extension to the same public API and confirm the question is visible there.
 
 ## Author Identity Safety
 
-The workbench and author-response API check whether the signed-in user's email matches a verified `PaperAuthorIdentity`.
+The workbench and author-response API check both conditions before enabling author-response privileges:
 
-Before enabling public author-response privileges for external users, add email verification so the system knows the user controls that email address. Email string matching alone is not enough for production author certification, because a user could type someone else's corresponding-author email during registration.
+- the signed-in user's account email has been verified by token
+- that normalized email matches a verified first-author or corresponding-author `PaperAuthorIdentity` for the paper
+
+Email string matching alone is not enough for production author certification, because a user could type someone else's corresponding-author email during registration.
+
+The development registration response includes `verificationUrl` so the local flow can be tested without an email provider. Production registration responses must not expose this token in JSON; connect a transactional email service and send the link only to the registered email address.

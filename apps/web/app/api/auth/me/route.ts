@@ -15,6 +15,7 @@ export async function GET(request: Request) {
       id: true,
       displayName: true,
       email: true,
+      emailVerifiedAt: true,
       role: true
     }
   });

@@ -61,9 +61,10 @@ describe("auth UI", () => {
     expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
     expect(screen.getByRole("link", { name: "Register" })).toHaveAttribute("href", "/register");
 
-    rerender(<UserNav user={{ id: "user-1", displayName: "Ada Lovelace", email: "ada@example.edu", role: "user" }} />);
+    rerender(<UserNav user={{ id: "user-1", displayName: "Ada Lovelace", email: "ada@example.edu", emailVerified: true, role: "user" }} />);
 
     expect(screen.getByText("ada@example.edu")).toBeInTheDocument();
+    expect(screen.getByText("Email verified")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
   });
 });

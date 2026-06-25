@@ -6,6 +6,8 @@ type UserNavUser = {
   id: string;
   displayName: string;
   email: string;
+  emailVerifiedAt?: Date | string | null;
+  emailVerified?: boolean;
   role: string;
 };
 
@@ -27,6 +29,9 @@ export function UserNav({ user }: { user: UserNavUser | null }) {
   return (
     <div className="auth-nav">
       <span>{user.email}</span>
+      <span className={`badge ${user.emailVerified || user.emailVerifiedAt ? "badge-author" : "badge-unresolved"}`}>
+        {user.emailVerified || user.emailVerifiedAt ? "Email verified" : "Email unverified"}
+      </span>
       <button className="button" onClick={signOut} type="button">
         Sign out
       </button>

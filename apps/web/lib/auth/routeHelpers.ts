@@ -12,6 +12,7 @@ export type PublicUser = {
   id: string;
   displayName: string;
   email: string;
+  emailVerifiedAt?: Date | string | null;
   role: string;
 };
 
@@ -24,11 +25,17 @@ export function publicUser(user: PublicUser) {
     id: user.id,
     displayName: user.displayName,
     email: user.email,
+    emailVerified: Boolean(user.emailVerifiedAt),
     role: user.role
   };
 }
 
-export async function createSessionResponse(prisma: SessionPrisma, user: PublicUser, status = 200) {
+export async function createSessionResponse(
+  prisma: SessionPrisma,
+  user: PublicUser,
+  status = 200,
+  extraBody?: Record<string, unknown>
+) {
   const token = createSessionToken();
   const expiresAt = getSessionExpiry();
 
@@ -40,7 +47,7 @@ export async function createSessionResponse(prisma: SessionPrisma, user: PublicU
     }
   });
 
-  const response = NextResponse.json(publicUser(user), { status });
+  const response = NextResponse.json({ ...publicUser(user), ...extraBody }, { status });
   response.cookies.set(sessionCookieName, token, getSessionCookieOptions(expiresAt));
   return response;
 }

@@ -4,18 +4,24 @@ vi.mock("../../../lib/prisma", () => ({
   prisma: {
     user: {
       create: vi.fn(),
-      findUnique: vi.fn()
+      findUnique: vi.fn(),
+      update: vi.fn()
     },
     passwordCredential: {
       create: vi.fn(),
       findFirst: vi.fn()
+    },
+    emailVerificationToken: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn()
     },
     userSession: {
       create: vi.fn(),
       findFirst: vi.fn(),
       deleteMany: vi.fn()
     },
-    $transaction: vi.fn(async (callback) => callback(prisma))
+    $transaction: vi.fn(async (input) => typeof input === "function" ? input(prisma) : input)
   }
 }));
 
@@ -24,6 +30,7 @@ const registerRoute = await import("./register/route");
 const loginRoute = await import("./login/route");
 const logoutRoute = await import("./logout/route");
 const meRoute = await import("./me/route");
+const verifyEmailRoute = await import("./verify-email/route");
 
 describe("auth API routes", () => {
   beforeEach(() => {
@@ -32,8 +39,13 @@ describe("auth API routes", () => {
       id: "user-1",
       displayName: "Ada Lovelace",
       email: "ada@example.edu",
+      emailVerifiedAt: null,
       role: "user"
     });
+    prisma.emailVerificationToken.create.mockResolvedValue({ id: "verify-1" });
+    prisma.emailVerificationToken.findFirst.mockResolvedValue(null);
+    prisma.emailVerificationToken.update.mockResolvedValue({ id: "verify-1" });
+    prisma.user.update.mockResolvedValue({ id: "user-1" });
     prisma.passwordCredential.create.mockResolvedValue({ id: "credential-1" });
     prisma.userSession.create.mockResolvedValue({
       id: "session-1",
@@ -43,6 +55,7 @@ describe("auth API routes", () => {
       id: "user-1",
       displayName: "Ada Lovelace",
       email: "ada@example.edu",
+      emailVerifiedAt: null,
       role: "user"
     });
   });
@@ -58,8 +71,15 @@ describe("auth API routes", () => {
     expect(response.headers.get("set-cookie")).toContain("paperqa_session=");
     expect(await response.json()).toMatchObject({
       id: "user-1",
-      email: "ada@example.edu"
+      email: "ada@example.edu",
+      emailVerified: false,
+      verificationUrl: expect.stringContaining("/verify-email?token=")
     });
+    expect(prisma.emailVerificationToken.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        userId: "user-1"
+      })
+    }));
     expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         displayName: "Ada Lovelace",
@@ -74,6 +94,7 @@ describe("auth API routes", () => {
       id: "user-1",
       displayName: "Ada Lovelace",
       email: "ada@example.edu",
+      emailVerifiedAt: null,
       role: "user",
       passwordCredential: { id: "credential-1" }
     });
@@ -94,6 +115,7 @@ describe("auth API routes", () => {
       id: "user-1",
       displayName: "Ada Lovelace",
       email: "ada@example.edu",
+      emailVerifiedAt: null,
       role: "user",
       passwordCredential: null
     });
@@ -122,6 +144,7 @@ describe("auth API routes", () => {
         id: "user-1",
         displayName: "Ada Lovelace",
         email: "ada@example.edu",
+        emailVerifiedAt: null,
         role: "user"
       }
     });
@@ -153,6 +176,13 @@ describe("auth API routes", () => {
 
   it("returns current user from session", async () => {
     prisma.userSession.findFirst.mockResolvedValue({ userId: "user-1" });
+    prisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      displayName: "Ada Lovelace",
+      email: "ada@example.edu",
+      emailVerifiedAt: new Date("2026-06-25T00:00:00Z"),
+      role: "user"
+    });
 
     const response = await meRoute.GET(new Request("http://localhost/api/auth/me", {
       headers: {
@@ -163,8 +193,35 @@ describe("auth API routes", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
       id: "user-1",
-      email: "ada@example.edu"
+      email: "ada@example.edu",
+      emailVerified: true
     });
+  });
+
+  it("verifies an email with a valid token", async () => {
+    prisma.emailVerificationToken.findFirst.mockResolvedValue({
+      id: "verify-1",
+      userId: "user-1"
+    });
+
+    const response = await verifyEmailRoute.POST(jsonRequest({
+      token: "verification-token"
+    }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, emailVerified: true });
+    expect(prisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "user-1" },
+      data: {
+        emailVerifiedAt: expect.any(Date)
+      }
+    }));
+    expect(prisma.emailVerificationToken.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "verify-1" },
+      data: {
+        usedAt: expect.any(Date)
+      }
+    }));
   });
 
   it("logs out and clears the session cookie", async () => {

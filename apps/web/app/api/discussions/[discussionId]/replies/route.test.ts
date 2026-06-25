@@ -27,7 +27,7 @@ describe("discussion replies API", () => {
     vi.clearAllMocks();
     prisma.user.upsert.mockResolvedValue({ id: "user-reader" });
     prisma.discussion.findUnique.mockResolvedValue({ id: "discussion-1", paperId: "paper-1" });
-    prisma.user.findUnique.mockResolvedValue({ id: "user-reader", email: "reader@example.edu" });
+    prisma.user.findUnique.mockResolvedValue({ id: "user-reader", email: "reader@example.edu", emailVerifiedAt: null });
     prisma.paperAuthorIdentity.findFirst.mockResolvedValue(null);
     prisma.discussionReply.create.mockResolvedValue({
       id: "reply-1",
@@ -57,8 +57,30 @@ describe("discussion replies API", () => {
     expect(prisma.discussionReply.create).not.toHaveBeenCalled();
   });
 
-  it("creates author responses for users whose email matches a verified paper-author identity", async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: "user-author", email: "Author@Example.edu" });
+  it("rejects author responses when the matching account email is not verified", async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: "user-author", email: "Author@Example.edu", emailVerifiedAt: null });
+
+    const response = await POST(jsonRequest(
+      {
+        body: "Author clarification",
+        isAuthorResponse: true
+      },
+      {
+        "x-user-id": "user-author",
+        "x-user-email": "Author@Example.edu"
+      }
+    ), routeContext("discussion-1"));
+
+    expect(response.status).toBe(403);
+    expect(prisma.paperAuthorIdentity.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("creates author responses for users whose verified email matches a verified paper-author identity", async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: "user-author",
+      email: "Author@Example.edu",
+      emailVerifiedAt: new Date("2026-06-25T00:00:00Z")
+    });
     prisma.paperAuthorIdentity.findFirst.mockResolvedValue({ id: "identity-1" });
 
     const response = await POST(jsonRequest(

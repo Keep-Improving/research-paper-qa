@@ -22,9 +22,10 @@ export type AuthorWorkbenchPaper = {
 type AuthorWorkbenchProps = {
   papers: AuthorWorkbenchPaper[];
   userEmail?: string | null;
+  emailVerified?: boolean;
 };
 
-export function AuthorWorkbench({ papers, userEmail }: AuthorWorkbenchProps) {
+export function AuthorWorkbench({ papers, userEmail, emailVerified = false }: AuthorWorkbenchProps) {
   const hasAnyPermission = papers.some((paper) => paper.canPublishAuthorResponse);
   const discussions = papers
     .flatMap((paper) =>
@@ -42,8 +43,8 @@ export function AuthorWorkbench({ papers, userEmail }: AuthorWorkbenchProps) {
           <p className="page-kicker">Author workflow</p>
           <h1 className="page-title">Author workbench</h1>
           <p className="page-summary">
-            Review unanswered, high-heat questions only on papers where your signed-in email matches a verified first-author
-            or corresponding-author identity.
+            Review unanswered, high-heat questions only when your verified account email matches a verified first-author or
+            corresponding-author identity.
           </p>
         </div>
 
@@ -51,7 +52,13 @@ export function AuthorWorkbench({ papers, userEmail }: AuthorWorkbenchProps) {
           <div>
             <strong>{userEmail ?? "Not signed in"}</strong>
             <p className="row-copy">
-              {hasAnyPermission ? `${papers.filter((paper) => paper.canPublishAuthorResponse).length} verified paper(s)` : "No verified author email match"}
+              {!userEmail
+                ? "Sign in to check author response eligibility"
+                : !emailVerified
+                  ? "Verify this email before author-response permissions are enabled"
+                  : hasAnyPermission
+                    ? `${papers.filter((paper) => paper.canPublishAuthorResponse).length} verified paper(s)`
+                    : "No verified author email match"}
             </p>
           </div>
           <span className={`badge ${hasAnyPermission ? "badge-author" : "badge-unresolved"}`}>

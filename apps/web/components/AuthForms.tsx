@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type AuthStatus = "idle" | "submitting" | "error";
+type AuthStatus = "idle" | "submitting" | "error" | "registered";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -59,6 +59,7 @@ export function RegisterForm() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<AuthStatus>("idle");
   const [error, setError] = useState("");
+  const [verificationUrl, setVerificationUrl] = useState("");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,12 +73,17 @@ export function RegisterForm() {
         body: JSON.stringify({ displayName, email, password })
       });
 
+      const body = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
         throw new Error(body.error ?? "Registration failed");
       }
 
-      window.location.assign("/");
+      if (typeof body.verificationUrl === "string") {
+        setVerificationUrl(body.verificationUrl);
+        setStatus("registered");
+      } else {
+        window.location.assign("/");
+      }
     } catch (caught) {
       setStatus("error");
       setError(caught instanceof Error ? caught.message : "Registration failed");
@@ -100,6 +106,16 @@ export function RegisterForm() {
         <input className="text-input" onChange={(event) => setPassword(event.target.value)} type="password" value={password} />
       </label>
       {status === "error" ? <p className="row-copy" role="alert">{error}</p> : null}
+      {status === "registered" ? (
+        <div className="callout stack" role="status">
+          <p className="row-copy">
+            Account created. Verify this email before author-response privileges can use it.
+          </p>
+          <a className="button button-primary" href={verificationUrl}>
+            Verify email
+          </a>
+        </div>
+      ) : null}
       <button className="button button-primary" disabled={status === "submitting"} type="submit">
         {status === "submitting" ? "Creating..." : "Create account"}
       </button>

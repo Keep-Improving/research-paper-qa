@@ -51,13 +51,17 @@ describe("author identity repository", () => {
     }));
   });
 
-  it("allows author responses when the user email matches a verified corresponding-author identity", async () => {
+  it("allows author responses when the verified user email matches a verified corresponding-author identity", async () => {
     const prisma = {
       discussion: {
         findUnique: vi.fn().mockResolvedValue({ id: "discussion-1", paperId: "paper-1" })
       },
       user: {
-        findUnique: vi.fn().mockResolvedValue({ id: "user-author", email: "AUTHOR@example.edu" })
+        findUnique: vi.fn().mockResolvedValue({
+          id: "user-author",
+          email: "AUTHOR@example.edu",
+          emailVerifiedAt: new Date("2026-06-25T00:00:00Z")
+        })
       },
       paperAuthorIdentity: {
         findFirst: vi.fn().mockResolvedValue({ id: "identity-1" })
@@ -87,7 +91,11 @@ describe("author identity repository", () => {
         findUnique: vi.fn().mockResolvedValue({ id: "discussion-1", paperId: "paper-1" })
       },
       user: {
-        findUnique: vi.fn().mockResolvedValue({ id: "user-first", email: "first@example.edu" })
+        findUnique: vi.fn().mockResolvedValue({
+          id: "user-first",
+          email: "first@example.edu",
+          emailVerifiedAt: new Date("2026-06-25T00:00:00Z")
+        })
       },
       paperAuthorIdentity: {
         findFirst: vi.fn().mockResolvedValue(null)
@@ -98,6 +106,30 @@ describe("author identity repository", () => {
       discussionId: "discussion-1",
       userId: "user-first"
     })).resolves.toBe(false);
+  });
+
+  it("denies author responses when the account email has not been verified", async () => {
+    const prisma = {
+      discussion: {
+        findUnique: vi.fn().mockResolvedValue({ id: "discussion-1", paperId: "paper-1" })
+      },
+      user: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "user-author",
+          email: "author@example.edu",
+          emailVerifiedAt: null
+        })
+      },
+      paperAuthorIdentity: {
+        findFirst: vi.fn().mockResolvedValue({ id: "identity-1" })
+      }
+    };
+
+    await expect(canCreateAuthorResponse(prisma, {
+      discussionId: "discussion-1",
+      userId: "user-author"
+    })).resolves.toBe(false);
+    expect(prisma.paperAuthorIdentity.findFirst).not.toHaveBeenCalled();
   });
 
   it("extracts corresponding author candidates but does not infer first-author identity from name alone", () => {

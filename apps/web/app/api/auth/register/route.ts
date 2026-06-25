@@ -1,4 +1,10 @@
 import { jsonError } from "../../../../lib/api";
+import {
+  buildVerificationUrl,
+  createEmailVerificationToken,
+  getEmailVerificationExpiry,
+  hashEmailVerificationToken
+} from "../../../../lib/auth/emailVerification";
 import { hashPassword } from "../../../../lib/auth/passwords";
 import { createSessionResponse, normalizeEmail } from "../../../../lib/auth/routeHelpers";
 import { prisma } from "../../../../lib/prisma";
@@ -14,6 +20,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const verificationToken = createEmailVerificationToken();
     const user = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
@@ -29,10 +36,18 @@ export async function POST(request: Request) {
         }
       });
 
+      await tx.emailVerificationToken.create({
+        data: {
+          userId: createdUser.id,
+          tokenHash: hashEmailVerificationToken(verificationToken),
+          expiresAt: getEmailVerificationExpiry()
+        }
+      });
+
       return createdUser;
     });
 
-    return createSessionResponse(prisma, user, 201);
+    return createSessionResponse(prisma, user, 201, buildVerificationResponse(request, verificationToken));
   } catch (error: any) {
     if (error?.code === "P2002") {
       const existingUser = await prisma.user.findUnique({
@@ -43,6 +58,7 @@ export async function POST(request: Request) {
       });
 
       if (existingUser && !existingUser.passwordCredential) {
+        const verificationToken = createEmailVerificationToken();
         await prisma.passwordCredential.create({
           data: {
             userId: existingUser.id,
@@ -50,7 +66,22 @@ export async function POST(request: Request) {
           }
         });
 
-        return createSessionResponse(prisma, existingUser, 201);
+        if (!existingUser.emailVerifiedAt) {
+          await prisma.emailVerificationToken.create({
+            data: {
+              userId: existingUser.id,
+              tokenHash: hashEmailVerificationToken(verificationToken),
+              expiresAt: getEmailVerificationExpiry()
+            }
+          });
+        }
+
+        return createSessionResponse(
+          prisma,
+          existingUser,
+          201,
+          existingUser.emailVerifiedAt ? undefined : buildVerificationResponse(request, verificationToken)
+        );
       }
 
       return jsonError("Email is already registered", 409);
@@ -58,4 +89,11 @@ export async function POST(request: Request) {
 
     throw error;
   }
+}
+
+function buildVerificationResponse(request: Request, token: string) {
+  return {
+    emailVerificationRequired: true,
+    ...(process.env.NODE_ENV === "production" ? {} : { verificationUrl: buildVerificationUrl(request, token) })
+  };
 }
