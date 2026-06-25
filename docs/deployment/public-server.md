@@ -74,6 +74,16 @@ npm run dev --workspace apps/web
 9. Create a question from the website and confirm it persists after redeploy.
 10. Configure the extension to the same public API and confirm the question is visible there.
 
+## Extension Cutover
+
+Open the extension sidebar and set `API base URL` to your deployed `/api` endpoint, for example:
+
+```text
+https://your-public-domain.example/api
+```
+
+The value is stored in `chrome.storage.local` under `paperqa:apiBaseUrl`, so it survives browser restarts on that machine.
+
 ## Author Identity Safety
 
 The workbench and author-response API check both conditions before enabling author-response privileges:

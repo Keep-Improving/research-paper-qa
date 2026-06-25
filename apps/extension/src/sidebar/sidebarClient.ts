@@ -35,6 +35,12 @@ export async function getApiBaseUrl() {
   return configured.replace(/\/+$/, "");
 }
 
+export async function setApiBaseUrl(baseUrl: string) {
+  const trimmed = trimBaseUrl(baseUrl);
+  await chrome.storage.local.set({ [API_BASE_URL_KEY]: trimmed });
+  return trimmed;
+}
+
 export async function matchRemotePaper(baseUrl: string, paper: Partial<SidebarPaper> & { url?: string }, fetchImpl: FetchImpl = fetch): Promise<SidebarPaper> {
   const response = await fetchImpl(`${trimBaseUrl(baseUrl)}/papers/match`, {
     method: "POST",

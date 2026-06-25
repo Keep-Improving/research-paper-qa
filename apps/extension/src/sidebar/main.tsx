@@ -10,7 +10,8 @@ import {
   getApiBaseUrl,
   getRemoteDiscussion,
   listRemoteDiscussions,
-  matchRemotePaper
+  matchRemotePaper,
+  setApiBaseUrl
 } from "./sidebarClient";
 
 const fallbackDetectedPaper: SidebarPaper = {
@@ -113,9 +114,10 @@ function SidebarApp() {
   }
 
   return (
-    <Sidebar
+      <Sidebar
       paper={paper}
       initialDiscussions={discussions}
+      apiBaseUrl={apiBaseUrl}
       loadState={loadState}
       errorMessage={errorMessage}
       onUseSelection={captureActiveTabSelection}
@@ -124,8 +126,13 @@ function SidebarApp() {
       onVoteDiscussion={voteDiscussion}
       onReportDiscussion={reportDiscussion}
       onSelectDiscussion={selectDiscussion}
+      onApiBaseUrlChange={handleApiBaseUrlChange}
     />
   );
+}
+
+async function handleApiBaseUrlChange(baseUrl: string) {
+  await setApiBaseUrl(baseUrl);
 }
 
 async function loadRemoteState() {

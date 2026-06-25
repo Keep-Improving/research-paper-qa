@@ -86,6 +86,7 @@ export type DiscussionFiltersState = {
 type SidebarProps = {
   paper?: SidebarPaper;
   initialDiscussions?: SidebarDiscussion[];
+  apiBaseUrl?: string | null;
   anchorDraft?: SidebarAnchorDraft | null;
   anchorCaptureError?: string;
   loadState?: "loading" | "ready" | "error";
@@ -98,6 +99,7 @@ type SidebarProps = {
   onReportDiscussion?: (discussionId: string) => void | Promise<void>;
   onSelectDiscussion?: (discussionId: string) => SidebarDiscussion | Promise<SidebarDiscussion>;
   onRetryAnchorCapture?: () => void;
+  onApiBaseUrlChange?: (baseUrl: string) => void | Promise<void>;
 };
 
 const fallbackPaper: SidebarPaper = {
@@ -108,6 +110,7 @@ const fallbackPaper: SidebarPaper = {
 export function Sidebar({
   paper = fallbackPaper,
   initialDiscussions = [],
+  apiBaseUrl,
   anchorDraft = null,
   anchorCaptureError,
   loadState = "ready",
@@ -119,7 +122,8 @@ export function Sidebar({
   onVoteDiscussion,
   onReportDiscussion,
   onSelectDiscussion,
-  onRetryAnchorCapture
+  onRetryAnchorCapture,
+  onApiBaseUrlChange
 }: SidebarProps) {
   const [filters, setFilters] = useState<DiscussionFiltersState>({
     kind: "all",
@@ -212,6 +216,8 @@ export function Sidebar({
         <PaperIdentifier paper={paper} />
       </header>
 
+      <ApiBaseUrlPanel apiBaseUrl={apiBaseUrl} onApiBaseUrlChange={onApiBaseUrlChange} />
+
       <NewQuestionDropZone
         onUseSelection={onUseSelection ? useSelection : undefined}
         onImageAnchor={(anchor) => setDraft(normalizeImageAnchor(anchor))}
@@ -252,6 +258,60 @@ export function Sidebar({
         />
       ) : null}
     </main>
+  );
+}
+
+function ApiBaseUrlPanel({
+  apiBaseUrl,
+  onApiBaseUrlChange
+}: {
+  apiBaseUrl?: string | null;
+  onApiBaseUrlChange?: (baseUrl: string) => void | Promise<void>;
+}) {
+  const [value, setValue] = useState(apiBaseUrl ?? "");
+  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  async function save(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!onApiBaseUrlChange) {
+      return;
+    }
+
+    try {
+      setStatus("saving");
+      await onApiBaseUrlChange(value.trim());
+      setStatus("saved");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <section aria-label="API base URL" style={styles.apiPanel}>
+      <form onSubmit={save} style={styles.apiForm}>
+        <label htmlFor="api-base-url" style={styles.apiLabel}>
+          API base URL
+        </label>
+        <input
+          id="api-base-url"
+          aria-label="API base URL"
+          onChange={(event) => setValue(event.currentTarget.value)}
+          placeholder="https://your-domain.example/api"
+          style={styles.apiInput}
+          value={value}
+        />
+        <button disabled={status === "saving"} style={styles.apiButton} type="submit">
+          {status === "saving" ? "Saving..." : "Save"}
+        </button>
+      </form>
+      <p style={styles.apiHelp}>
+        {status === "saved"
+          ? "Saved locally for this browser."
+          : status === "error"
+            ? "Could not save API base URL."
+            : "Point this to your public deployment once it is live."}
+      </p>
+    </section>
   );
 }
 
@@ -488,6 +548,52 @@ const styles = {
     gridTemplateColumns: "minmax(0, 1fr) auto",
     gap: 10,
     paddingBottom: 10
+  },
+  apiPanel: {
+    border: "1px solid #d0d2cc",
+    borderRadius: 6,
+    display: "grid",
+    gap: 6,
+    padding: 10,
+    background: "#fbfbf7"
+  },
+  apiForm: {
+    alignItems: "end",
+    display: "grid",
+    gap: 6,
+    gridTemplateColumns: "minmax(0, 1fr) 72px"
+  },
+  apiLabel: {
+    color: "#505750",
+    fontSize: 12,
+    fontWeight: 700,
+    gridColumn: "1 / -1"
+  },
+  apiInput: {
+    border: "1px solid #b9bdb8",
+    borderRadius: 4,
+    color: "#1f2421",
+    fontSize: 12,
+    height: 28,
+    minWidth: 0,
+    padding: "0 8px"
+  },
+  apiButton: {
+    border: "1px solid #2f3a3f",
+    borderRadius: 4,
+    background: "#2f3a3f",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: 12,
+    fontWeight: 700,
+    height: 28,
+    padding: "0 10px"
+  },
+  apiHelp: {
+    color: "#626961",
+    fontSize: 11,
+    lineHeight: 1.35,
+    margin: 0
   },
   title: {
     color: "#1f2421",
