@@ -75,7 +75,9 @@ Responsibility boundaries:
 - Create: `apps/extension/package.json`
 - Create: `packages/api-client/package.json`
 
-- [ ] **Step 1: Write repository README**
+**Task 1 completion note:** Code-quality review added minimal Next/Vite/API client scaffold files and ESLint config to make the package scripts point to real entries.
+
+- [x] **Step 1: Write repository README**
 
 Create `README.md`:
 
@@ -98,7 +100,7 @@ Research Paper Q&A is a scholarly discussion platform that links questions, comm
 - Shared backend for papers, anchors, discussions, votes, collections, reports, and notifications.
 ```
 
-- [ ] **Step 2: Add ignore rules**
+- [x] **Step 2: Add ignore rules**
 
 Create `.gitignore`:
 
@@ -119,7 +121,7 @@ build/
 *.pyc
 ```
 
-- [ ] **Step 3: Add local services**
+- [x] **Step 3: Add local services**
 
 Create `docker-compose.yml`:
 
@@ -140,7 +142,7 @@ volumes:
   postgres_data:
 ```
 
-- [ ] **Step 4: Add API project metadata**
+- [x] **Step 4: Add API project metadata**
 
 Create `apps/api/pyproject.toml`:
 
@@ -170,7 +172,7 @@ dev = [
 line-length = 100
 ```
 
-- [ ] **Step 5: Add web package metadata**
+- [x] **Step 5: Add web package metadata**
 
 Create `apps/web/package.json`:
 
@@ -198,7 +200,7 @@ Create `apps/web/package.json`:
 }
 ```
 
-- [ ] **Step 6: Add extension package metadata**
+- [x] **Step 6: Add extension package metadata**
 
 Create `apps/extension/package.json`:
 
@@ -227,7 +229,7 @@ Create `apps/extension/package.json`:
 }
 ```
 
-- [ ] **Step 7: Add shared API client package metadata**
+- [x] **Step 7: Add shared API client package metadata**
 
 Create `packages/api-client/package.json`:
 
@@ -245,7 +247,7 @@ Create `packages/api-client/package.json`:
 }
 ```
 
-- [ ] **Step 8: Verify files exist**
+- [x] **Step 8: Verify files exist**
 
 Run:
 
@@ -255,7 +257,7 @@ Get-ChildItem -Recurse README.md,.gitignore,docker-compose.yml,apps,packages | S
 
 Expected: the files listed in this task are present.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add README.md .gitignore docker-compose.yml apps packages
@@ -272,7 +274,7 @@ git commit -m "chore: initialize monorepo"
 - Create: `apps/api/app/api/routes/health.py`
 - Create: `apps/api/tests/test_health.py`
 
-- [ ] **Step 1: Write failing health test**
+- [x] **Step 1: Write failing health test**
 
 Create `apps/api/tests/test_health.py`:
 
@@ -290,7 +292,7 @@ def test_health_returns_ok():
     assert response.json() == {"status": "ok"}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -301,7 +303,7 @@ python -m pytest tests/test_health.py -v
 
 Expected: FAIL because `app.main` or `/health` is not implemented.
 
-- [ ] **Step 3: Implement settings**
+- [x] **Step 3: Implement settings**
 
 Create `apps/api/app/core/config.py`:
 
@@ -319,7 +321,7 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
-- [ ] **Step 4: Implement database session**
+- [x] **Step 4: Implement database session**
 
 Create `apps/api/app/db/session.py`:
 
@@ -333,7 +335,7 @@ engine = create_engine(settings.database_url, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 ```
 
-- [ ] **Step 5: Implement declarative base**
+- [x] **Step 5: Implement declarative base**
 
 Create `apps/api/app/db/base.py`:
 
@@ -345,7 +347,7 @@ class Base(DeclarativeBase):
     pass
 ```
 
-- [ ] **Step 6: Implement health route**
+- [x] **Step 6: Implement health route**
 
 Create `apps/api/app/api/routes/health.py`:
 
@@ -360,7 +362,7 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 ```
 
-- [ ] **Step 7: Implement FastAPI app**
+- [x] **Step 7: Implement FastAPI app**
 
 Create `apps/api/app/main.py`:
 
@@ -374,7 +376,7 @@ app = FastAPI(title=settings.app_name)
 app.include_router(health_router)
 ```
 
-- [ ] **Step 8: Run test to verify it passes**
+- [x] **Step 8: Run test to verify it passes**
 
 Run:
 
@@ -385,12 +387,14 @@ python -m pytest tests/test_health.py -v
 
 Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add apps/api
 git commit -m "feat(api): add FastAPI skeleton"
 ```
+
+**Task 2 quality note:** Added Python package markers, editable-install package discovery, and ignored local agent/install artifacts so the API skeleton imports cleanly from the repository root without committing generated files.
 
 ## Task 3: Implement Core Database Models and Migrations
 
@@ -407,7 +411,7 @@ git commit -m "feat(api): add FastAPI skeleton"
 - Modify: `apps/api/app/db/base.py`
 - Create: `apps/api/tests/test_models.py`
 
-- [ ] **Step 1: Write enum and relationship tests**
+- [x] **Step 1: Write enum and relationship tests**
 
 Create `apps/api/tests/test_models.py`:
 
@@ -427,7 +431,7 @@ def test_discussion_status_has_disputed_marker():
     assert DiscussionKind.AUTHOR_RESPONSE.value == "author_response"
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -438,7 +442,7 @@ python -m pytest tests/test_models.py -v
 
 Expected: FAIL because models do not exist.
 
-- [ ] **Step 3: Create user model**
+- [x] **Step 3: Create user model**
 
 Create `apps/api/app/models/user.py`:
 
@@ -463,7 +467,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 4: Create paper model**
+- [x] **Step 4: Create paper model**
 
 Create `apps/api/app/models/paper.py`:
 
@@ -492,7 +496,7 @@ class Paper(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 5: Create author claim model**
+- [x] **Step 5: Create author claim model**
 
 Create `apps/api/app/models/author_claim.py`:
 
@@ -535,7 +539,7 @@ class PaperAuthorClaim(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 6: Create anchor model**
+- [x] **Step 6: Create anchor model**
 
 Create `apps/api/app/models/anchor.py`:
 
@@ -583,7 +587,7 @@ class Anchor(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 7: Create discussion model**
+- [x] **Step 7: Create discussion model**
 
 Create `apps/api/app/models/discussion.py`:
 
@@ -634,11 +638,11 @@ class DiscussionItem(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 ```
 
-- [ ] **Step 8: Create remaining models**
+- [x] **Step 8: Create remaining models**
 
 Create `apps/api/app/models/reaction.py`, `collection.py`, `moderation.py`, and `notification.py` with focused SQLAlchemy models for reactions, saved items, reports, and notifications. Use the field names from the PRD exactly: `user_id`, `paper_id`, `discussion_item_id`, `anchor_id`, `kind`, `status`, `created_at`.
 
-- [ ] **Step 9: Export model imports through base**
+- [x] **Step 9: Export model imports through base**
 
 Modify `apps/api/app/db/base.py`:
 
@@ -661,7 +665,7 @@ from app.models.reaction import Reaction  # noqa: E402,F401
 from app.models.user import User  # noqa: E402,F401
 ```
 
-- [ ] **Step 10: Run tests**
+- [x] **Step 10: Run tests**
 
 Run:
 
@@ -672,12 +676,14 @@ python -m pytest tests/test_models.py -v
 
 Expected: PASS.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```powershell
 git add apps/api/app/models apps/api/app/db/base.py apps/api/tests/test_models.py
 git commit -m "feat(api): add core data models"
 ```
+
+**Task 3 quality note:** Model imports moved to `app.models`, leaving `db/base.py` as only the `DeclarativeBase` definition. Metadata table registration is regression-tested after importing `app.models.author_claim` before `app.models`.
 
 ## Task 4: Implement Paper Matching API
 
@@ -688,15 +694,15 @@ git commit -m "feat(api): add core data models"
 - Modify: `apps/api/app/main.py`
 - Create: `apps/api/tests/test_paper_matching.py`
 
-- [ ] **Step 1: Write paper matching tests**
+- [x] **Step 1: Write paper matching tests**
 
 Create tests for DOI normalization, arXiv ID matching, PMID matching, and fallback creation for title/URL records. Use FastAPI `TestClient` and a test database fixture.
 
-- [ ] **Step 2: Implement schemas**
+- [x] **Step 2: Implement schemas**
 
 Define `PaperIdentifyRequest`, `PaperRead`, and `PaperCreate` in `schemas/paper.py`.
 
-- [ ] **Step 3: Implement matching service**
+- [x] **Step 3: Implement matching service**
 
 Implement `identify_or_create_paper(session, request)` with this priority:
 
@@ -705,11 +711,11 @@ Implement `identify_or_create_paper(session, request)` with this priority:
 3. Match `Paper.pmid`.
 4. Create paper from title and URL with no stable identifier.
 
-- [ ] **Step 4: Implement route**
+- [x] **Step 4: Implement route**
 
 Add `POST /papers/identify` in `routes/papers.py`.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -720,12 +726,14 @@ python -m pytest tests/test_paper_matching.py -v
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add apps/api
 git commit -m "feat(api): add paper identification"
 ```
+
+**Task 4 quality note:** API model timestamp defaults are timezone-aware UTC values, API dev dependencies use `httpx2` to match the current Starlette `TestClient`, and full API tests pass with `DeprecationWarning` treated as errors.
 
 ## Task 5: Implement Discussion, Anchor, Filter, and Sort APIs
 
@@ -739,7 +747,7 @@ git commit -m "feat(api): add paper identification"
 - Modify: `apps/api/app/main.py`
 - Create: `apps/api/tests/test_discussions.py`
 
-- [ ] **Step 1: Write discussion API tests**
+- [x] **Step 1: Write discussion API tests**
 
 Test these behaviors:
 
@@ -748,7 +756,7 @@ Test these behaviors:
 - Discussion list can filter by `status=open`, `kind=question`, `has_author_response=true`, and `anchor_kind=text`.
 - Discussion list can sort by `newest`, `active`, `votes`, `heat`, `dispute`, and `anchor_position`.
 
-- [ ] **Step 2: Write author response permission tests**
+- [x] **Step 2: Write author response permission tests**
 
 Test these behaviors:
 
@@ -757,15 +765,15 @@ Test these behaviors:
 - Co-author claim cannot create `author_response`.
 - First author can still create a normal question without `is_author_response`.
 
-- [ ] **Step 3: Implement anchor schemas**
+- [x] **Step 3: Implement anchor schemas**
 
 Define `AnchorCreate` and `AnchorRead` with fields from `Anchor`.
 
-- [ ] **Step 4: Implement discussion schemas**
+- [x] **Step 4: Implement discussion schemas**
 
 Define `DiscussionCreate`, `DiscussionRead`, `DiscussionFilter`, and `DiscussionSort`.
 
-- [ ] **Step 5: Implement permission service**
+- [x] **Step 5: Implement permission service**
 
 Implement:
 
@@ -776,11 +784,11 @@ def can_publish_author_response(session, *, user_id: UUID, paper_id: UUID) -> bo
 
 Return true only for approved first-author or corresponding-author claims.
 
-- [ ] **Step 6: Implement query service**
+- [x] **Step 6: Implement query service**
 
 Implement filters and sort expressions. For heat and dispute in MVP, use deterministic stored counts or query-time counts from reactions and comments. Do not use random scores.
 
-- [ ] **Step 7: Implement routes**
+- [x] **Step 7: Implement routes**
 
 Add:
 
@@ -789,7 +797,7 @@ Add:
 - `GET /discussions/{discussion_id}`
 - `POST /discussions/{discussion_id}/reactions`
 
-- [ ] **Step 8: Run tests**
+- [x] **Step 8: Run tests**
 
 Run:
 
@@ -800,12 +808,14 @@ python -m pytest tests/test_discussions.py -v
 
 Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add apps/api
 git commit -m "feat(api): add anchored discussions"
 ```
+
+**Task 5 quality note:** Discussion routes use an explicit `X-User-Id` header dependency as the current auth seam until the real authentication system is implemented. Review fixes made `votes`, `heat`, and `dispute` deterministic count-based sorts, canonicalized author-response `kind`/`is_author_response` storage after permission succeeds, and validated reaction kinds at schema level.
 
 ## Task 6: Implement Shared TypeScript API Client
 
@@ -815,7 +825,7 @@ git commit -m "feat(api): add anchored discussions"
 - Create: `packages/api-client/src/index.ts`
 - Create: `packages/api-client/src/client.test.ts`
 
-- [ ] **Step 1: Write client tests**
+- [x] **Step 1: Write client tests**
 
 Test that the client calls:
 
@@ -823,15 +833,15 @@ Test that the client calls:
 - `GET /papers/{paperId}/discussions`
 - `POST /papers/{paperId}/discussions`
 
-- [ ] **Step 2: Implement shared types**
+- [x] **Step 2: Implement shared types**
 
 Define `Paper`, `Anchor`, `DiscussionItem`, `DiscussionFilter`, `DiscussionSort`, and request types matching backend schema names.
 
-- [ ] **Step 3: Implement API client**
+- [x] **Step 3: Implement API client**
 
 Implement a small `PaperQaClient` class with `fetch` injection for testability.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run:
 
@@ -842,7 +852,9 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+**Task 6 quality note:** api-client dev test stack audit passes after updating Vitest. Root TypeScript workspace config added so root `npx tsc --noEmit` runs the intended compiler.
+
+- [x] **Step 5: Commit**
 
 ```powershell
 git add packages/api-client
@@ -861,31 +873,31 @@ git commit -m "feat(client): add shared API client"
 - Create: `apps/extension/tests/paperDetection.test.ts`
 - Create: `apps/extension/tests/selectionAnchor.test.ts`
 
-- [ ] **Step 1: Write paper detection tests**
+- [x] **Step 1: Write paper detection tests**
 
 Test DOI meta tag detection, citation DOI detection, arXiv URL detection, PubMed URL detection, DOI landing URL detection, and title fallback.
 
-- [ ] **Step 2: Implement paper detection**
+- [x] **Step 2: Implement paper detection**
 
 Implement `detectPaper(document, location)` returning DOI, arXiv ID, PMID, title, URL, and confidence.
 
-- [ ] **Step 3: Write selection anchor tests**
+- [x] **Step 3: Write selection anchor tests**
 
 Test selected text capture includes quote text, context text, source URL, and optional DOM path.
 
-- [ ] **Step 4: Implement selection anchor capture**
+- [x] **Step 4: Implement selection anchor capture**
 
 Implement `captureSelectionAnchor(window, document)`.
 
-- [ ] **Step 5: Implement image/screenshot anchor input model**
+- [x] **Step 5: Implement image/screenshot anchor input model**
 
 Implement drag handling for images and a screenshot fallback action. Preserve source URL, alt text, nearby caption if available, and image blob reference when accessible.
 
-- [ ] **Step 6: Implement sidebar drop zone**
+- [x] **Step 6: Implement sidebar drop zone**
 
 Create a compact academic-style drop zone that accepts current selection, dragged image, or manual anchor fields.
 
-- [ ] **Step 7: Run extension tests**
+- [x] **Step 7: Run extension tests**
 
 Run:
 
@@ -896,12 +908,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```powershell
 git add apps/extension
 git commit -m "feat(extension): add paper detection and anchor capture"
 ```
+
+**Task 7 quality note:** Extension Vitest was upgraded to `^4.1.9`, jsdom was added for DOM-based content-script tests, and `npm audit --audit-level=moderate` reports 0 vulnerabilities. Review hardening now covers DOI/arXiv normalization, invalid DOI fallback confidence, centered selection context clipping including long selected quotes, and file-backed image anchors including URL-only image drops that do not claim an article `source_url`.
 
 ## Task 8: Implement Extension Sidebar Discussion UI
 
@@ -913,7 +927,7 @@ git commit -m "feat(extension): add paper detection and anchor capture"
 - Modify: `apps/extension/src/sidebar/Sidebar.tsx`
 - Create: `apps/extension/tests/sidebar.test.tsx`
 
-- [ ] **Step 1: Write sidebar interaction tests**
+- [x] **Step 1: Write sidebar interaction tests**
 
 Test that the sidebar can:
 
@@ -923,19 +937,19 @@ Test that the sidebar can:
 - Create a question from a text anchor draft.
 - Show manual fallback when anchor capture fails.
 
-- [ ] **Step 2: Implement filters**
+- [x] **Step 2: Implement filters**
 
 Create compact segmented controls and menus for content type, state, anchor type, participant, and sort. Use stable dimensions to avoid sidebar layout jumps.
 
-- [ ] **Step 3: Implement discussion list**
+- [x] **Step 3: Implement discussion list**
 
 Render questions, answers, comments, author responses, and anchor previews. Keep typography compact and readable.
 
-- [ ] **Step 4: Implement composer**
+- [x] **Step 4: Implement composer**
 
 Support question body, anchor preview, similar-question prompt, submit, loading, empty, and error states.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -946,12 +960,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add apps/extension
 git commit -m "feat(extension): add discussion sidebar"
 ```
+
+**Task 8 quality note:** Sidebar UI uses restrained academic styling with compact borders, stable filter/button dimensions, Use selection is wired through an optional callback with a disabled unavailable fallback, filters cover kind/status/anchor/participant/sort, and anchored question composition, manual anchor fallback, plus loading/empty/error states remain covered.
 
 ## Task 9: Implement Website Core Pages
 
@@ -966,11 +982,11 @@ git commit -m "feat(extension): add discussion sidebar"
 - Create: `apps/web/components/AcademicShell.tsx`
 - Create: `apps/web/tests/paper-pages.spec.ts`
 
-- [ ] **Step 1: Write Playwright page tests**
+- [x] **Step 1: Write Playwright page tests**
 
 Test search page, paper detail discussion filters, question detail anchor display, and empty/error states.
 
-- [ ] **Step 2: Implement academic shell**
+- [x] **Step 2: Implement academic shell**
 
 Use a restrained academic tool style:
 
@@ -981,19 +997,19 @@ Use a restrained academic tool style:
 - No marketing hero.
 - No decorative gradients or nested cards.
 
-- [ ] **Step 3: Implement search page**
+- [x] **Step 3: Implement search page**
 
 Search papers, questions, author responses, and anchors. Empty state explains that records appear after papers are collected or detected.
 
-- [ ] **Step 4: Implement paper detail page**
+- [x] **Step 4: Implement paper detail page**
 
 Render metadata, collection action, discussion filters, discussion list, anchor grouping, author responses, hot and unanswered questions.
 
-- [ ] **Step 5: Implement detail pages**
+- [x] **Step 5: Implement detail pages**
 
 Render question detail and anchor detail pages with related discussions.
 
-- [ ] **Step 6: Run Playwright**
+- [x] **Step 6: Run Playwright**
 
 Run:
 
@@ -1004,12 +1020,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add apps/web
 git commit -m "feat(web): add core research discussion pages"
 ```
+
+**Task 9 quality note:** Website uses a restrained academic shell with compact navigation and dense research-tool rows, no marketing hero, no decorative gradients, and no nested cards. Empty/error states and paper detail discussion filters/sort are covered by Playwright tests, including an initial newest-order assertion before switching to heat order. Discussion filters and newest/heat sorting are stateful in the web UI. UI uses clearly labeled sample UI data only; no mock API calls or fake fetch responses were added. `npm audit --audit-level=moderate` reports the known `postcss <8.5.10` advisory through `next@16.2.9`; `npm audit fix --force` proposes a breaking downgrade to `next@9.3.3`, and a direct override would replace a Next-managed transitive dependency, so this task records the exception instead of applying an unsupported dependency rewrite.
 
 ## Task 10: Implement Author Certification and Author Workbench
 
@@ -1022,23 +1040,23 @@ git commit -m "feat(web): add core research discussion pages"
 - Create: `apps/web/components/AuthorClaimForm.tsx`
 - Create: `apps/web/components/AuthorWorkbench.tsx`
 
-- [ ] **Step 1: Write backend tests**
+- [x] **Step 1: Write backend tests**
 
 Test claim creation, admin approval, first/corresponding author response permission, and co-author denial.
 
-- [ ] **Step 2: Implement author claim API**
+- [x] **Step 2: Implement author claim API**
 
 Add endpoints for submitting claims, listing current user claims, and admin approval/rejection.
 
-- [ ] **Step 3: Write web tests**
+- [x] **Step 3: Write web tests**
 
 Test claim form role selection, evidence submission, approval state display, and workbench list of high-heat unanswered questions.
 
-- [ ] **Step 4: Implement website pages**
+- [x] **Step 4: Implement website pages**
 
 Add author claim form and workbench. The author response action appears only when the API says the user has permission.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run:
 
@@ -1051,12 +1069,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add apps/api apps/web
 git commit -m "feat: add author certification workflow"
 ```
+
+**Task 10 quality note:** Backend author-claim endpoints use the existing explicit header auth seam for current users and a separate admin header seam for review decisions until real authentication is implemented. Claim creation, current-user listing, admin approval/rejection, first/corresponding author-response permission, pending claim denial, co-author denial, and missing-paper/missing-claim errors are covered by API tests. Website author certification and workbench pages use local sample UI state only, without fake fetches or mock API responses; the author-response action is visible only for first/corresponding-author eligible state and hidden for co-author state.
 
 ## Task 11: Implement Collections, Notifications, and Moderation Foundations
 
@@ -1070,27 +1090,27 @@ git commit -m "feat: add author certification workflow"
 - Create: `apps/web/app/moderation/page.tsx`
 - Create: `apps/web/components/ModerationQueue.tsx`
 
-- [ ] **Step 1: Write API tests**
+- [x] **Step 1: Write API tests**
 
 Test saving papers/questions/anchors, report creation, AI-risk suggestion storage, admin hide/restore, duplicate discussion linking, and notification creation.
 
-- [ ] **Step 2: Implement collections API**
+- [x] **Step 2: Implement collections API**
 
 Support saving and unsaving papers, discussions, and anchors with optional user labels.
 
-- [ ] **Step 3: Implement moderation API**
+- [x] **Step 3: Implement moderation API**
 
 Support report queue, hide/restore, disputed marker override, duplicate linking, and admin notes.
 
-- [ ] **Step 4: Implement notification API**
+- [x] **Step 4: Implement notification API**
 
 Create notifications for replies, author responses, and followed-anchor updates.
 
-- [ ] **Step 5: Implement web pages**
+- [x] **Step 5: Implement web pages**
 
 Add collections page and moderation queue with clear status labels and no destructive bulk delete. Any large deletion or removal operation must require user-selected items and explicit confirmation.
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run:
 
@@ -1103,12 +1123,14 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add apps/api apps/web
 git commit -m "feat: add collections and moderation foundations"
 ```
+
+**Task 11 quality note:** Collections use archive status for non-destructive unsave behavior instead of deletion. Moderation endpoints cover report creation, deterministic AI-risk label suggestions, admin queue listing, hide/restore, disputed marker override, and duplicate discussion linking. Notification endpoints create and list reply, author-response, and followed-anchor updates. Website collections and moderation pages use clearly labeled local sample UI state only, avoid fake API responses, and do not expose delete or bulk-delete controls.
 
 ## Task 12: End-to-End Verification
 
@@ -1117,19 +1139,19 @@ git commit -m "feat: add collections and moderation foundations"
 - Create: `apps/extension/tests/e2e-extension-sidebar.spec.ts`
 - Create: `docs/verification/mvp-checklist.md`
 
-- [ ] **Step 1: Write website E2E test**
+- [x] **Step 1: Write website E2E test**
 
 Test a user searches a paper, opens the paper page, creates an anchored question, sees similar question prompt, filters author responses, and saves the paper.
 
-- [ ] **Step 2: Write extension E2E test**
+- [x] **Step 2: Write extension E2E test**
 
 Test arXiv/PubMed/DOI fixture pages, paper detection, text selection anchor creation, image fallback, full sidebar discussion list, filter/sort, and submit question.
 
-- [ ] **Step 3: Write verification checklist**
+- [x] **Step 3: Write verification checklist**
 
 Create `docs/verification/mvp-checklist.md` with all PRD acceptance criteria copied as checkboxes and a command or manual browser check for each one.
 
-- [ ] **Step 4: Run full backend tests**
+- [x] **Step 4: Run full backend tests**
 
 Run:
 
@@ -1140,7 +1162,7 @@ python -m pytest -v
 
 Expected: PASS.
 
-- [ ] **Step 5: Run web tests**
+- [x] **Step 5: Run web tests**
 
 Run:
 
@@ -1151,7 +1173,7 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 6: Run extension tests**
+- [x] **Step 6: Run extension tests**
 
 Run:
 
@@ -1162,7 +1184,7 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 7: Start dev servers and inspect UI**
+- [x] **Step 7: Start dev servers and inspect UI**
 
 Run API and website locally, load extension unpacked in Chrome, and use Playwright or browser automation to verify:
 
@@ -1171,12 +1193,14 @@ Run API and website locally, load extension unpacked in Chrome, and use Playwrig
 - Filters and sorting do not break layout.
 - Anchor capture failure paths show manual fallback.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```powershell
 git add apps docs/verification
 git commit -m "test: add MVP end-to-end verification"
 ```
+
+**Task 12 quality note:** Added website and extension E2E coverage plus a verification checklist mapping PRD acceptance criteria to automated commands or manual browser checks. Final UI inspection covered website pages for author workbench, collections, moderation, and paper detail with no console errors; unpacked live-extension browser testing remains a packaging follow-up because the current extension verification runs in Vitest/jsdom against the real detection, anchor, and sidebar code.
 
 ## Self-Review
 

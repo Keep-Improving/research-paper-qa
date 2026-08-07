@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  user
+  researcher
+  admin
+}
+
+enum AnchorKind {
+  paper
+  text
+  image
+  screenshot
+  figure
+  table
+  formula
+  reference
+  manual
+}
+
+enum DiscussionStatus {
+  open
+  answered
+  resolved
+  author_responded
+  disputed
+  hidden
+}
+
+enum ReplyKind {
+  answer
+  comment
+  author_response
+  correction
+  replication_note
+}
+
+enum VoteValue {
+  up
+  down
+  helpful
+}
+
+enum CollectionTargetType {
+  paper
+  discussion
+  anchor
+}
+
+enum AuthorClaimRole {
+  first_author
+  corresponding_author
+  co_author
+}
+
+enum AuthorClaimStatus {
+  pending
+  approved
+  rejected
+}
+
+enum AuthorIdentityRole {
+  first_author
+  corresponding_author
+}
+
+enum AuthorIdentitySource {
+  pdf_text
+  publisher_page
+  crossref
+  openalex
+  manual_seed
+  imported_file
+}
+
+enum AuthorIdentityStatus {
+  verified
+  needs_verification
+}
+
+enum ModerationTargetType {
+  discussion
+  reply
+  anchor
+  paper
+}
+
+enum ModerationStatus {
+  open
+  resolved
+  dismissed
+}
+
+enum ModerationAction {
+  none
+  hidden
+  restored
+  disputed
+  duplicate_linked
+}
+
+model User {
+  id          String   @id @default(cuid())
+  displayName String
+  email       String   @unique
+  emailVerifiedAt DateTime?
+  role        UserRole @default(user)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  discussions      Discussion[]
+  replies          DiscussionReply[]
+  votes            Vote[]
+  collections      CollectionItem[]
+  authorClaims     PaperAuthorClaim[] @relation("ClaimUser")
+  reviewedClaims   PaperAuthorClaim[] @relation("ClaimReviewer")
+  moderationReports ModerationReport[] @relation("ReportUser")
+  passwordCredential PasswordCredential?
+  sessions         UserSession[]
+  emailVerifications EmailVerificationToken[]
+}
+
+model PasswordCredential {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Paper {
+  id        String   @id @default(cuid())
+  title     String
+  doi       String?  @unique
+  arxivId   String?  @unique
+  pmid      String?  @unique
+  url       String?
+  authors   String[]
+  venue     String?
+  year      Int?
+  abstract  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  anchors      Anchor[]
+  discussions  Discussion[]
+  authorClaims PaperAuthorClaim[]
+  authorIdentities PaperAuthorIdentity[]
+
+  @@index([title])
+}
+
+model Anchor {
+  id              String     @id @default(cuid())
+  paperId         String
+  kind            AnchorKind
+  title           String?
+  quoteText       String?
+  contextText     String?
+  sectionLabel    String?
+  pageNumber      Int?
+  position        String?
+  sourceUrl       String?
+  domPath         String?
+  imageUrl        String?
+  imageAlt        String?
+  note            String?
+  createdByUserId String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  paper       Paper        @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  discussions Discussion[]
+
+  @@index([paperId])
+  @@index([kind])
+}
+
+model Discussion {
+  id           String           @id @default(cuid())
+  paperId      String
+  anchorId     String?
+  title        String
+  body         String
+  status       DiscussionStatus @default(open)
+  authorUserId String
+  isHidden     Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  paper   Paper             @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  anchor  Anchor?           @relation(fields: [anchorId], references: [id], onDelete: SetNull)
+  author  User              @relation(fields: [authorUserId], references: [id])
+  replies DiscussionReply[]
+  votes   Vote[]
+
+  @@index([paperId])
+  @@index([anchorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model DiscussionReply {
+  id                String    @id @default(cuid())
+  discussionId      String
+  parentReplyId     String?
+  kind              ReplyKind
+  body              String
+  authorUserId      String
+  isAuthorResponse  Boolean   @default(false)
+  isHidden          Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  discussion Discussion       @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  parent     DiscussionReply? @relation("ReplyThread", fields: [parentReplyId], references: [id], onDelete: SetNull)
+  children   DiscussionReply[] @relation("ReplyThread")
+  author     User             @relation(fields: [authorUserId], references: [id])
+  votes      Vote[]
+
+  @@index([discussionId])
+  @@index([kind])
+}
+
+model Vote {
+  id           String    @id @default(cuid())
+  discussionId String?
+  replyId      String?
+  userId       String
+  value        VoteValue
+  createdAt    DateTime  @default(now())
+
+  discussion Discussion?      @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  reply      DiscussionReply? @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([discussionId, userId, value])
+  @@unique([replyId, userId, value])
+}
+
+model CollectionItem {
+  id         String               @id @default(cuid())
+  userId     String
+  targetType CollectionTargetType
+  targetId   String
+  note       String?
+  createdAt  DateTime             @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId])
+  @@index([targetType, targetId])
+}
+
+model PaperAuthorClaim {
+  id             String            @id @default(cuid())
+  paperId        String
+  userId         String
+  claimedRole    AuthorClaimRole
+  evidenceType   String
+  evidenceDetail String
+  status         AuthorClaimStatus @default(pending)
+  reviewedByUserId String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  paper      Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  user       User  @relation("ClaimUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer   User? @relation("ClaimReviewer", fields: [reviewedByUserId], references: [id])
+
+  @@index([paperId])
+  @@index([userId])
+}
+
+model PaperAuthorIdentity {
+  id              String               @id @default(cuid())
+  paperId         String
+  role            AuthorIdentityRole
+  name            String?
+  email           String
+  normalizedEmail String
+  source          AuthorIdentitySource
+  status          AuthorIdentityStatus @default(verified)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@unique([paperId, normalizedEmail, role])
+  @@index([paperId])
+  @@index([normalizedEmail])
+  @@index([role, status])
+}
+
+model ModerationReport {
+  id             String               @id @default(cuid())
+  targetType     ModerationTargetType
+  targetId       String
+  reporterUserId String
+  reason         String
+  status         ModerationStatus     @default(open)
+  action         ModerationAction     @default(none)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  reporter User @relation("ReportUser", fields: [reporterUserId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@index([status])
+}

@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Research Paper Q&A",
+  "description": "Discuss research papers with anchored questions and author responses.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_title": "Research Paper Q&A"
+  },
+  "background": {
+    "service_worker": "assets/background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "src/sidebar/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["assets/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
