@@ -565,3 +565,10 @@
 - Permission display: fixed. The workbench now reads the signed-in user session, loads the user's email, and only shows `Author response permission: Approved` when that email matches a verified `PaperAuthorIdentity` for the paper.
 - Non-author behavior: fixed. Signed-in users whose email does not match a verified first-author or corresponding-author identity see `Not eligible`, and the `Author response` action is hidden.
 - Remaining security gap: email/password registration still needs email verification before production author privileges should be trusted. Without email verification, a user could type an author email address they do not control. The next auth task should add email verification tokens before public author-response privileges are enabled.
+
+## 25. Implementation Status Update - 2026-08-12 Vercel Database Migration Fix
+
+- Vercel build migration: complete. The web workspace now runs `prisma migrate deploy` before `next build` through the `vercel-build` script.
+- Build-time database access: fixed. Production migrations create the Prisma tables before Next.js prerenders database-backed routes such as `/anchors`.
+- Data preservation: maintained. Deployment uses additive committed migrations and does not run reset, truncate, or bulk-delete commands.
+- Public deployment verification: pending until the updated commit is deployed by Vercel against the configured production `DATABASE_URL`.
