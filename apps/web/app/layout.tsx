@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { resolveLocale } from "../lib/i18n/locale";
 import { LOCALE_COOKIE } from "../lib/i18n/types";
+import { LocaleProvider } from "../components/LocaleProvider";
 
 export const metadata: Metadata = {
   title: "Research Paper Q&A",
@@ -25,7 +26,9 @@ async function RootLayoutContent({ children }: { children: ReactNode }) {
 
   return (
     <html lang={locale}>
-      <body>{children}</body>
+      <body>
+        <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }

@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { hashSessionToken, sessionCookieName } from "../lib/auth/sessions";
 import { prisma } from "../lib/prisma";
 import { UserNav } from "./UserNav";
+import { LanguageToggle } from "./LanguageToggle";
 
 export async function AcademicShell({ children }: { children: ReactNode }) {
   const user = await getShellUser();
@@ -27,6 +28,7 @@ export async function AcademicShell({ children }: { children: ReactNode }) {
             <Link href="/moderation">Moderation</Link>
           </nav>
           <UserNav user={user} />
+          <LanguageToggle />
         </div>
       </header>
       <main className="shell-content">{children}</main>
