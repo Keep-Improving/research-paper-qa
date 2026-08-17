@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import { useLocale } from "./LocaleProvider";
+
 type UserNavUser = {
   id: string;
   displayName: string;
@@ -12,6 +14,8 @@ type UserNavUser = {
 };
 
 export function UserNav({ user }: { user: UserNavUser | null }) {
+  const { t } = useLocale();
+
   async function signOut() {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.assign("/");
@@ -20,8 +24,8 @@ export function UserNav({ user }: { user: UserNavUser | null }) {
   if (!user) {
     return (
       <div className="auth-nav">
-        <Link href="/login">Sign in</Link>
-        <Link href="/register">Register</Link>
+        <Link href="/login">{t("auth.signIn")}</Link>
+        <Link href="/register">{t("auth.register")}</Link>
       </div>
     );
   }
@@ -30,10 +34,10 @@ export function UserNav({ user }: { user: UserNavUser | null }) {
     <div className="auth-nav">
       <span>{user.email}</span>
       <span className={`badge ${user.emailVerified || user.emailVerifiedAt ? "badge-author" : "badge-unresolved"}`}>
-        {user.emailVerified || user.emailVerifiedAt ? "Email verified" : "Email unverified"}
+        {user.emailVerified || user.emailVerifiedAt ? t("auth.emailVerified") : t("auth.emailUnverified")}
       </span>
       <button className="button" onClick={signOut} type="button">
-        Sign out
+        {t("auth.signOut")}
       </button>
     </div>
   );

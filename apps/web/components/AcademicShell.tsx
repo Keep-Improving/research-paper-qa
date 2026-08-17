@@ -6,6 +6,8 @@ import { hashSessionToken, sessionCookieName } from "../lib/auth/sessions";
 import { prisma } from "../lib/prisma";
 import { UserNav } from "./UserNav";
 import { LanguageToggle } from "./LanguageToggle";
+import { MoreNav } from "./MoreNav";
+import { PrimaryNav } from "./PrimaryNav";
 
 export async function AcademicShell({ children }: { children: ReactNode }) {
   const user = await getShellUser();
@@ -17,16 +19,8 @@ export async function AcademicShell({ children }: { children: ReactNode }) {
           <Link className="brand" href="/">
             Research Paper Q&A
           </Link>
-          <nav aria-label="Primary" className="primary-nav">
-            <Link href="/">Search</Link>
-            <Link href="/papers">Papers</Link>
-            <Link href="/questions">Questions</Link>
-            <Link href="/anchors">Anchors</Link>
-            <Link href="/author/claims">Author claims</Link>
-            <Link href="/author/workbench">Workbench</Link>
-            <Link href="/collections">Collections</Link>
-            <Link href="/moderation">Moderation</Link>
-          </nav>
+          <PrimaryNav />
+          <MoreNav user={user ? { role: user.role } : null} />
           <UserNav user={user} />
           <LanguageToggle />
         </div>

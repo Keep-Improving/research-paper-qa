@@ -6,6 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { LoginForm, RegisterForm } from "./AuthForms";
 import { UserNav } from "./UserNav";
+import { LocaleProvider } from "./LocaleProvider";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() })
+}));
 
 afterEach(() => {
   cleanup();
@@ -56,12 +61,20 @@ describe("auth UI", () => {
   });
 
   it("shows login/register links for signed-out users and user email for signed-in users", () => {
-    const { rerender } = render(<UserNav user={null} />);
+    const { rerender } = render(
+      <LocaleProvider initialLocale="en-US">
+        <UserNav user={null} />
+      </LocaleProvider>
+    );
 
     expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
     expect(screen.getByRole("link", { name: "Register" })).toHaveAttribute("href", "/register");
 
-    rerender(<UserNav user={{ id: "user-1", displayName: "Ada Lovelace", email: "ada@example.edu", emailVerified: true, role: "user" }} />);
+    rerender(
+      <LocaleProvider initialLocale="en-US">
+        <UserNav user={{ id: "user-1", displayName: "Ada Lovelace", email: "ada@example.edu", emailVerified: true, role: "user" }} />
+      </LocaleProvider>
+    );
 
     expect(screen.getByText("ada@example.edu")).toBeInTheDocument();
     expect(screen.getByText("Email verified")).toBeInTheDocument();
