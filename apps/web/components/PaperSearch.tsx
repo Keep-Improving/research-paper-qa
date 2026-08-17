@@ -3,6 +3,7 @@ import {
   sampleAnchors,
   type AnchorRecord,
 } from "./sampleData";
+import { InlineHint } from "./InlineHint";
 
 type SearchParams = {
   q?: string;
@@ -67,6 +68,7 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
             placeholder="Try transformer, author response, Figure 1, or attention"
           />
         </form>
+        <InlineHint messageKey="search.hint" storageKey="paperqa-hint:search" />
       </section>
 
       {isEmpty ? (

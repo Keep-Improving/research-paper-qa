@@ -1,6 +1,7 @@
 import { AcademicShell } from "../../../components/AcademicShell";
 import { CollectionButton } from "../../../components/DiscussionActions";
 import { DiscussionPanel } from "../../../components/DiscussionPanel";
+import { InlineHint } from "../../../components/InlineHint";
 import { prisma } from "../../../lib/prisma";
 import { listPaperDiscussions } from "../../../lib/repositories/discussions";
 
@@ -55,6 +56,7 @@ export default async function PaperDetailPage({
             <CollectionButton label="Add to collection" targetId={paper.id} targetType="paper" />
             <CollectionButton label="Follow paper" targetId={paper.id} targetType="paper" />
           </div>
+          <InlineHint messageKey="hint.anchor" storageKey="paperqa-hint:anchor" />
         </section>
 
         <div className="two-column">

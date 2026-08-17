@@ -252,6 +252,37 @@ textarea {
   padding: 16px;
 }
 
+.inline-hint {
+  align-items: center;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.inline-hint p {
+  margin: 0;
+}
+
+.inline-hint-dismiss {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  flex: 0 0 auto;
+  padding: 4px 8px;
+}
+
+.inline-hint-dismiss:hover,
+.inline-hint-dismiss:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .stack {
   display: grid;
   gap: 16px;
