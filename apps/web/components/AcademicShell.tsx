@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 
 import { hashSessionToken, sessionCookieName } from "../lib/auth/sessions";
 import { prisma } from "../lib/prisma";
+import { getServerMessages } from "../lib/i18n/server";
 import { UserNav } from "./UserNav";
 import { LanguageToggle } from "./LanguageToggle";
 import { MoreNav } from "./MoreNav";
@@ -11,13 +12,14 @@ import { PrimaryNav } from "./PrimaryNav";
 
 export async function AcademicShell({ children }: { children: ReactNode }) {
   const user = await getShellUser();
+  const { t } = await getServerMessages();
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-inner">
           <Link className="brand" href="/">
-            Research Paper Q&A
+            {t("brand.name")}
           </Link>
           <PrimaryNav />
           <MoreNav user={user ? { role: user.role } : null} />

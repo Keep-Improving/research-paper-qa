@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { useLocale } from "./LocaleProvider";
+
 type DiscussionPanelProps = {
   discussions: DiscussionRecord[];
   showFilters?: boolean;
@@ -28,11 +30,11 @@ export type DiscussionRecord = {
 type DiscussionFilter = "all" | "author_response" | "unanswered" | "disputed";
 type DiscussionSort = "newest" | "heat";
 
-const filterOptions: { label: string; value: DiscussionFilter }[] = [
-  { label: "All", value: "all" },
-  { label: "Author responses", value: "author_response" },
-  { label: "Unanswered", value: "unanswered" },
-  { label: "Disputed", value: "disputed" }
+const filterOptions: { value: DiscussionFilter; key: "common.all" | "common.authorResponse" | "common.unanswered" | "common.disputed" }[] = [
+  { key: "common.all", value: "all" },
+  { key: "common.authorResponse", value: "author_response" },
+  { key: "common.unanswered", value: "unanswered" },
+  { key: "common.disputed", value: "disputed" }
 ];
 
 function statusLabel(status: string) {
@@ -64,13 +66,14 @@ function compareDiscussions(a: DiscussionRecord, b: DiscussionRecord, sort: Disc
 }
 
 export function DiscussionBadges({ discussion }: { discussion: DiscussionRecord }) {
+  const { t } = useLocale();
   const anchor = discussion.anchor;
 
   return (
-    <div className="badge-row" aria-label={`Badges for ${discussion.title}`}>
-      {discussion.isAuthorResponse ? <span className="badge badge-author">Author response</span> : null}
-      {discussion.status === "disputed" ? <span className="badge badge-disputed">Disputed</span> : null}
-      {discussion.status === "open" && discussion.answerCount === 0 ? <span className="badge badge-unresolved">Unresolved</span> : null}
+    <div className="badge-row" aria-label={discussion.title}>
+      {discussion.isAuthorResponse ? <span className="badge badge-author">{t("common.authorResponse")}</span> : null}
+      {discussion.status === "disputed" ? <span className="badge badge-disputed">{t("common.disputed")}</span> : null}
+      {discussion.status === "open" && discussion.answerCount === 0 ? <span className="badge badge-unresolved">{t("common.unresolved")}</span> : null}
       {anchor ? <span className="badge badge-anchor">{anchor.kind} anchor</span> : null}
       <span className="badge">{statusLabel(discussion.status)}</span>
     </div>
@@ -78,6 +81,7 @@ export function DiscussionBadges({ discussion }: { discussion: DiscussionRecord 
 }
 
 export function DiscussionPanel({ discussions, showFilters = true }: DiscussionPanelProps) {
+  const { t } = useLocale();
   const [filter, setFilter] = useState<DiscussionFilter>("all");
   const [sort, setSort] = useState<DiscussionSort>("newest");
   const visibleDiscussions = useMemo(
@@ -86,9 +90,9 @@ export function DiscussionPanel({ discussions, showFilters = true }: DiscussionP
   );
 
   return (
-    <section className="panel stack" aria-label="Discussion list">
+    <section className="panel stack" aria-label={t("common.discussionFilters")}>
       {showFilters ? (
-        <div className="toolbar" role="group" aria-label="Discussion filters">
+        <div className="toolbar" role="group" aria-label={t("common.discussionFilters")}>
           {filterOptions.map((option) => (
             <button
               aria-pressed={filter === option.value}
@@ -97,25 +101,25 @@ export function DiscussionPanel({ discussions, showFilters = true }: DiscussionP
               onClick={() => setFilter(option.value)}
               type="button"
             >
-              {option.label}
+              {t(option.key)}
             </button>
           ))}
           <select
-            aria-label="Sort discussions"
+            aria-label={t("common.sortDiscussions")}
             className="filter-button"
             onChange={(event) => setSort(event.target.value as DiscussionSort)}
             value={sort}
           >
-            <option value="newest">Newest</option>
-            <option value="heat">Heat</option>
+            <option value="newest">{t("common.newest")}</option>
+            <option value="heat">{t("common.sortHeat")}</option>
           </select>
         </div>
       ) : null}
 
       {visibleDiscussions.length === 0 ? (
         <div className="empty-state">
-          <strong>No discussions yet</strong>
-          <p className="row-copy">Questions and author responses will appear when readers add them.</p>
+          <strong>{t("common.noDiscussions")}</strong>
+          <p className="row-copy">{t("common.discussionsWillAppear")}</p>
         </div>
       ) : (
         <ul className="discussion-list" data-testid="discussion-list">
@@ -128,17 +132,17 @@ export function DiscussionPanel({ discussions, showFilters = true }: DiscussionP
                 <p className="row-copy">{discussion.body}</p>
                 {discussion.isAuthorResponse ? (
                   <p className="row-copy">
-                    <strong>Author response note:</strong> verified first or corresponding author response
+                    <strong>{t("common.authorResponse")}:</strong> verified first or corresponding author response
                   </p>
                 ) : null}
                 <DiscussionBadges discussion={discussion} />
                 <div className="meta-row">
                   <span>{discussion.authorName}</span>
                   <span>{discussion.createdAt}</span>
-                  <span>{discussion.answerCount} answers</span>
-                  <span>{discussion.commentCount} comments</span>
-                  <span>Heat {discussion.heat}</span>
-                  {anchor ? <span>Anchor: {anchor.title ?? anchor.quoteText ?? anchor.kind}</span> : null}
+                  <span>{discussion.answerCount} {t("common.answers")}</span>
+                  <span>{discussion.commentCount} {t("common.comments")}</span>
+                  <span>{t("common.heat")} {discussion.heat}</span>
+                  {anchor ? <span>{t("common.anchor")}: {anchor.title ?? anchor.quoteText ?? anchor.kind}</span> : null}
                 </div>
               </li>
             );

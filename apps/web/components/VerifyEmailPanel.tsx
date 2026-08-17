@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import { useLocale } from "./LocaleProvider";
+
 type VerifyStatus = "checking" | "verified" | "error";
 
 export function VerifyEmailPanel({ token }: { token: string }) {
+  const { t } = useLocale();
   const [status, setStatus] = useState<VerifyStatus>(token ? "checking" : "error");
-  const [message, setMessage] = useState(token ? "Verifying email..." : "Verification token is missing.");
+  const [message, setMessage] = useState(token ? t("auth.verifyingEmail") : t("auth.missingVerificationToken"));
 
   useEffect(() => {
     if (!token) {
@@ -23,16 +26,16 @@ export function VerifyEmailPanel({ token }: { token: string }) {
         });
         const body = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(body.error ?? "Email verification failed");
+          throw new Error(body.error ?? t("auth.emailVerification"));
         }
         if (!cancelled) {
           setStatus("verified");
-          setMessage("Email verified. Author-response permissions can now use this address.");
+          setMessage(t("auth.emailVerifiedDescription"));
         }
       } catch (caught) {
         if (!cancelled) {
           setStatus("error");
-          setMessage(caught instanceof Error ? caught.message : "Email verification failed");
+          setMessage(caught instanceof Error ? caught.message : t("auth.emailVerification"));
         }
       }
     }
@@ -42,18 +45,18 @@ export function VerifyEmailPanel({ token }: { token: string }) {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, t]);
 
   return (
     <section className="panel stack">
-      <p className="page-kicker">Account security</p>
-      <h1 className="page-title">Email verification</h1>
+      <p className="page-kicker">{t("auth.accountSecurity")}</p>
+      <h1 className="page-title">{t("auth.emailVerification")}</h1>
       <p className="page-summary" role={status === "error" ? "alert" : "status"}>
         {message}
       </p>
       {status === "verified" ? (
         <a className="button button-primary" href="/author/workbench">
-          Open workbench
+          {t("auth.openWorkbench")}
         </a>
       ) : null}
     </section>

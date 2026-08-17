@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useLocale } from "./LocaleProvider";
 
 type AnchorPanelRecord = {
   id: string;
@@ -22,24 +23,25 @@ type AnchorPanelRecord = {
 };
 
 export function AnchorPanel({ anchor, showRelated = true }: { anchor: AnchorPanelRecord; showRelated?: boolean }) {
+  const { t } = useLocale();
   const related = anchor.discussions ?? [];
-  const anchorType = anchor.kind === "figure" || anchor.kind === "image" ? "Figure" : "Text";
-  const title = anchor.title ?? anchor.quoteText ?? "Untitled anchor";
+  const anchorType = anchor.kind === "figure" || anchor.kind === "image" ? t("common.figure") : t("common.text");
+  const title = anchor.title ?? anchor.quoteText ?? t("common.anchor");
 
   return (
-    <section className="panel stack" aria-label={`${title} anchor`}>
+    <section className="panel stack" aria-label={`${title} ${t("common.anchor")}`}>
       <div>
-        <p className="page-kicker">{anchor.paper?.title ?? "Anchor detail"}</p>
+        <p className="page-kicker">{anchor.paper?.title ?? t("common.anchorDetail")}</p>
         <h1 className="page-title">{title}</h1>
         <div className="meta-row">
-          <span>Anchor type: {anchorType}</span>
-          {anchor.pageNumber ? <span>Page {anchor.pageNumber}</span> : null}
+          <span>{t("common.anchorType")}: {anchorType}</span>
+          {anchor.pageNumber ? <span>{t("common.page")} {anchor.pageNumber}</span> : null}
           {anchor.sectionLabel ? <span>{anchor.sectionLabel}</span> : null}
           {anchor.position ? <span>{anchor.position}</span> : null}
         </div>
         <div className="toolbar">
-          <Link className="button" href={`/papers/${anchor.paperId}`}>Back to paper</Link>
-          <Link className="button" href={`/?q=${encodeURIComponent(anchor.paper?.title ?? title)}`}>Browse anchors</Link>
+          <Link className="button" href={`/papers/${anchor.paperId}`}>{t("common.backToPaper")}</Link>
+          <Link className="button" href={`/?q=${encodeURIComponent(anchor.paper?.title ?? title)}`}>{t("common.browseAnchors")}</Link>
         </div>
       </div>
 
@@ -56,9 +58,9 @@ export function AnchorPanel({ anchor, showRelated = true }: { anchor: AnchorPane
 
       {showRelated ? (
         <section>
-          <h2 className="section-title">Related discussions</h2>
+          <h2 className="section-title">{t("common.relatedDiscussions")}</h2>
           {related.length === 0 ? (
-            <p className="row-copy">No discussions are linked to this anchor yet.</p>
+            <p className="row-copy">{t("common.noRelatedDiscussions")}</p>
           ) : (
             <ul className="compact-list">
               {related.map((discussion) => (

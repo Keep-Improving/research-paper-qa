@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useLocale } from "./LocaleProvider";
 
 export type AuthorWorkbenchDiscussion = {
   id: string;
@@ -26,6 +27,7 @@ type AuthorWorkbenchProps = {
 };
 
 export function AuthorWorkbench({ papers, userEmail, emailVerified = false }: AuthorWorkbenchProps) {
+  const { t } = useLocale();
   const hasAnyPermission = papers.some((paper) => paper.canPublishAuthorResponse);
   const discussions = papers
     .flatMap((paper) =>
@@ -40,42 +42,39 @@ export function AuthorWorkbench({ papers, userEmail, emailVerified = false }: Au
     <div className="stack">
       <section className="panel stack">
         <div>
-          <p className="page-kicker">Author workflow</p>
-          <h1 className="page-title">Author workbench</h1>
-          <p className="page-summary">
-            Review unanswered, high-heat questions only when your verified account email matches a verified first-author or
-            corresponding-author identity.
-          </p>
+          <p className="page-kicker">{t("author.workflow")}</p>
+          <h1 className="page-title">{t("author.workbenchTitle")}</h1>
+          <p className="page-summary">{t("author.workbenchSummary")}</p>
         </div>
 
         <div className="status-strip">
           <div>
-            <strong>{userEmail ?? "Not signed in"}</strong>
+            <strong>{userEmail ?? t("author.notSignedIn")}</strong>
             <p className="row-copy">
               {!userEmail
-                ? "Sign in to check author response eligibility"
+                ? t("author.checkEligibility")
                 : !emailVerified
-                  ? "Verify this email before author-response permissions are enabled"
+                  ? t("author.verifyBeforePermissions")
                   : hasAnyPermission
-                    ? `${papers.filter((paper) => paper.canPublishAuthorResponse).length} verified paper(s)`
-                    : "No verified author email match"}
+                    ? `${papers.filter((paper) => paper.canPublishAuthorResponse).length} ${t("author.verifiedPapers")}`
+                    : t("author.noVerifiedMatch")}
             </p>
           </div>
           <span className={`badge ${hasAnyPermission ? "badge-author" : "badge-unresolved"}`}>
-            Author response permission: {hasAnyPermission ? "Approved" : "Not eligible"}
+            {t("author.permission")}: {hasAnyPermission ? t("author.approved") : t("author.notEligible")}
           </span>
         </div>
       </section>
 
-      <section className="panel stack" aria-label="High heat unanswered questions">
+      <section className="panel stack" aria-label={t("author.highHeatQuestions")}>
         <div className="toolbar">
-          <h2 className="section-title">High-heat unanswered questions</h2>
-          <span className="badge">Sorted by heat</span>
+          <h2 className="section-title">{t("author.highHeatQuestions")}</h2>
+          <span className="badge">{t("author.sortedByHeat")}</span>
         </div>
 
         {discussions.length === 0 ? (
           <div className="empty-state">
-            <p>No eligible author questions yet.</p>
+            <p>{t("author.noEligibleQuestions")}</p>
           </div>
         ) : (
           <ul className="discussion-list">
@@ -86,19 +85,19 @@ export function AuthorWorkbench({ papers, userEmail, emailVerified = false }: Au
                   <div className="toolbar">
                     {discussion.paper.canPublishAuthorResponse ? (
                       <button className="button button-primary" type="button">
-                        Author response
+                        {t("common.authorResponse")}
                       </button>
                     ) : null}
                     <button className="button" type="button">
-                      Ask as reader
+                      {t("author.askAsReader")}
                     </button>
                   </div>
                 </div>
                 <p className="row-copy">{discussion.body}</p>
                 <div className="meta-row">
                   <span>{discussion.paper.title}</span>
-                  <span>Heat {discussion.heat}</span>
-                  <span>{discussion.votes} votes</span>
+                  <span>{t("common.heat")} {discussion.heat}</span>
+                  <span>{discussion.votes} {t("common.votes")}</span>
                   <span>{discussion.createdAt}</span>
                   {discussion.anchorTitle ? <span>{discussion.anchorTitle}</span> : null}
                 </div>

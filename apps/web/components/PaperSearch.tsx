@@ -4,6 +4,8 @@ import {
   type AnchorRecord,
 } from "./sampleData";
 import { InlineHint } from "./InlineHint";
+import { useLocale } from "./LocaleProvider";
+import type { MessageKey } from "../lib/i18n/messages/en-US";
 
 type SearchParams = {
   q?: string;
@@ -39,6 +41,7 @@ function matchesQuery(value: string, query: string) {
 }
 
 export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchParams) {
+  const { t } = useLocale();
   const query = q.trim();
   const hasQuery = query.length > 0;
   const anchors = hasQuery
@@ -49,23 +52,21 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
 
   return (
     <div className="search-grid">
-      <section className="panel stack" aria-label="Paper search">
+      <section className="panel stack" aria-label={t("search.inputLabel")}>
         <div>
-          <p className="page-kicker">Shared database</p>
-          <h1 className="page-title">Research Paper Q&A</h1>
-          <p className="page-summary">
-            Search across papers, anchored questions, author responses, and quote or figure anchors.
-          </p>
+          <p className="page-kicker">{t("search.kicker")}</p>
+          <h1 className="page-title">{t("search.title")}</h1>
+          <p className="page-summary">{t("search.summary")}</p>
         </div>
         <form action="/" role="search">
-          <label htmlFor="paper-search">Search papers and discussions</label>
+          <label htmlFor="paper-search">{t("search.inputLabel")}</label>
           <input
             className="search-input"
             id="paper-search"
             name="q"
             type="search"
             defaultValue={q}
-            placeholder="Try transformer, author response, Figure 1, or attention"
+            placeholder={t("search.placeholder")}
           />
         </form>
         <InlineHint messageKey="search.hint" storageKey="paperqa-hint:search" />
@@ -73,12 +74,12 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
 
       {isEmpty ? (
         <section className="empty-state">
-          <h2 className="section-title">No records match this search</h2>
-          <p>Records appear after papers are collected or detected by the website or extension.</p>
+          <h2 className="section-title">{t("search.noResults")}</h2>
+          <p>{t("search.noResultsBody")}</p>
         </section>
       ) : (
         <>
-          <ResultSection title="Papers">
+          <ResultSection titleKey="papers.title">
             {papers.map((paper) => (
               <li className="result-row" key={paper.id}>
                 <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
@@ -92,7 +93,7 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
             ))}
           </ResultSection>
 
-          <ResultSection title="Questions">
+          <ResultSection titleKey="questions.title">
             {discussions.map((discussion) => (
               <li className="result-row" key={discussion.id}>
                 <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
@@ -105,17 +106,17 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
             ))}
           </ResultSection>
 
-          <ResultSection title="Author responses">
+          <ResultSection titleKey="common.authorResponse">
             {authorResponses.map((discussion) => (
               <li className="result-row" key={`${discussion.id}-author-response`}>
-                <Link href={`/discussions/${discussion.id}`}>Author response thread</Link>
+                <Link href={`/discussions/${discussion.id}`}>{t("common.authorResponse")}</Link>
                 <p className="row-copy">{discussion.body}</p>
-                <span className="badge badge-author">Author response</span>
+                <span className="badge badge-author">{t("common.authorResponse")}</span>
               </li>
             ))}
           </ResultSection>
 
-          <ResultSection title="Anchors">
+          <ResultSection titleKey="anchors.title">
             {anchors.map((anchor) => (
               <li className="result-row" key={anchor.id}>
                 <Link href={`/anchors/${anchor.id}`}>{anchor.title}</Link>
@@ -134,10 +135,11 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
   );
 }
 
-function ResultSection({ children, title }: { children: React.ReactNode; title: string }) {
+function ResultSection({ children, titleKey }: { children: React.ReactNode; titleKey: MessageKey }) {
+  const { t } = useLocale();
   return (
     <section className="panel">
-      <h2 className="section-title">{title}</h2>
+      <h2 className="section-title">{t(titleKey)}</h2>
       <ul className="result-list">{children}</ul>
     </section>
   );

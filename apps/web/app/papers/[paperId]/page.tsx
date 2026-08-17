@@ -4,12 +4,14 @@ import { DiscussionPanel } from "../../../components/DiscussionPanel";
 import { InlineHint } from "../../../components/InlineHint";
 import { prisma } from "../../../lib/prisma";
 import { listPaperDiscussions } from "../../../lib/repositories/discussions";
+import { getServerMessages } from "../../../lib/i18n/server";
 
 export default async function PaperDetailPage({
   params
 }: {
   params: Promise<{ paperId: string }>;
 }) {
+  const { t } = await getServerMessages();
   const { paperId } = await params;
   const paper = await prisma.paper.findUnique({
     where: { id: paperId },
@@ -22,8 +24,8 @@ export default async function PaperDetailPage({
     return (
       <AcademicShell>
         <section className="error-state">
-          <h1 className="page-title">Paper not found</h1>
-          <p>We could not find this paper in the shared database.</p>
+          <h1 className="page-title">{t("common.paperNotFound")}</h1>
+          <p>{t("common.notFoundBody")}</p>
         </section>
       </AcademicShell>
     );
@@ -42,9 +44,9 @@ export default async function PaperDetailPage({
       <div className="stack">
         <section className="panel stack">
           <div>
-            <p className="page-kicker">Shared paper discussion</p>
+            <p className="page-kicker">{t("common.sharedPaperDiscussion")}</p>
             <h1 className="page-title">{paper.title}</h1>
-            <p className="page-summary">{paper.abstract ?? "No abstract has been stored for this paper yet."}</p>
+            <p className="page-summary">{paper.abstract ?? t("common.noAbstract")}</p>
             <div className="meta-row">
               <span>{paper.authors.join(", ")}</span>
               {paper.venue ? <span>{paper.venue}</span> : null}
@@ -53,8 +55,8 @@ export default async function PaperDetailPage({
             </div>
           </div>
           <div className="toolbar">
-            <CollectionButton label="Add to collection" targetId={paper.id} targetType="paper" />
-            <CollectionButton label="Follow paper" targetId={paper.id} targetType="paper" />
+            <CollectionButton label={t("common.addToCollection")} targetId={paper.id} targetType="paper" />
+            <CollectionButton label={t("common.followPaper")} targetId={paper.id} targetType="paper" />
           </div>
           <InlineHint messageKey="hint.anchor" storageKey="paperqa-hint:anchor" />
         </section>
@@ -63,7 +65,7 @@ export default async function PaperDetailPage({
           <div className="stack">
             <DiscussionPanel discussions={discussions} />
             <section className="panel">
-              <h2 className="section-title">Author responses</h2>
+              <h2 className="section-title">{t("common.authorResponse")}</h2>
               <ul className="compact-list">
                 {authorResponses.map((discussion) => (
                   <li key={discussion.id}>{discussion.title}</li>
@@ -74,14 +76,14 @@ export default async function PaperDetailPage({
 
           <aside className="stack" aria-label="Paper summary sections">
             <section className="panel">
-              <h2 className="section-title">Anchor groups</h2>
-              <h3>Text anchors</h3>
+              <h2 className="section-title">{t("common.anchorGroups")}</h2>
+              <h3>{t("common.textAnchors")}</h3>
               <ul className="compact-list">
                 {textAnchors.map((anchor) => (
                   <li key={anchor.id}>{anchor.title ?? anchor.quoteText ?? anchor.id}</li>
                 ))}
               </ul>
-              <h3>Figure anchors</h3>
+              <h3>{t("common.figureAnchors")}</h3>
               <ul className="compact-list">
                 {figureAnchors.map((anchor) => (
                   <li key={anchor.id}>{anchor.title ?? anchor.imageAlt ?? anchor.id}</li>
@@ -90,7 +92,7 @@ export default async function PaperDetailPage({
             </section>
 
             <section className="panel">
-              <h2 className="section-title">Hot discussions</h2>
+              <h2 className="section-title">{t("common.hotDiscussions")}</h2>
               <ul className="compact-list">
                 {hotDiscussions.map((discussion) => (
                   <li key={discussion.id}>{discussion.title}</li>
@@ -99,7 +101,7 @@ export default async function PaperDetailPage({
             </section>
 
             <section className="panel">
-              <h2 className="section-title">Unanswered questions</h2>
+              <h2 className="section-title">{t("common.unansweredQuestions")}</h2>
               <ul className="compact-list">
                 {unanswered.map((discussion) => (
                   <li key={discussion.id}>{discussion.title}</li>

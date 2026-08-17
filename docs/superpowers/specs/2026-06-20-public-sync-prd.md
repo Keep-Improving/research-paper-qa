@@ -572,3 +572,12 @@
 - Build-time database access: fixed. Production migrations create the Prisma tables before Next.js prerenders database-backed routes such as `/anchors`.
 - Data preservation: maintained. Deployment uses additive committed migrations and does not run reset, truncate, or bulk-delete commands.
 - Public deployment verification: pending until the updated commit is deployed by Vercel against the configured production `DATABASE_URL`.
+
+## 26. Implementation Status Update - 2026-08-17 Bilingual Reader Navigation
+
+- Bilingual UI: complete. The website detects the browser language on first visit, persists manual `中文 / EN` selection in a cookie, and uses centralized message dictionaries for all website interface copy. Stored paper and user-authored content remains in its original language.
+- Reader-first navigation: complete. Primary navigation is now `搜索 / 论文 / 问题 / 我的`; anchors, author tools, and moderation are secondary or role-aware entries.
+- Personal workspace: complete. `/me` shows saved papers, questions, anchors, authored discussions and replies, with author tools shown only for researcher/admin roles and a clear sign-in state for anonymous visitors.
+- Lightweight guidance: complete. Search and paper detail pages include dismissible, localized hints stored in browser local storage; no mock API or database content was added.
+- Verification: complete locally. TypeScript, 54 web unit tests, production `next build`, and Playwright checks for Chinese/English switching, cookie persistence, `/me`, and role-aware “更多” navigation passed. Full lint remains blocked by 22 pre-existing `no-explicit-any` errors and 3 existing warnings outside this feature.
+- Public deployment: pending. The Vercel build still requires the configured production `DATABASE_URL` and `prisma migrate deploy` path from the previous deployment fix.

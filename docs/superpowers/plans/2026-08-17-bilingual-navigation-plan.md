@@ -10,6 +10,8 @@
 
 ---
 
+**Implementation status (2026-08-17):** Complete. Tasks 1-6 are implemented and verified with typecheck, 54 web unit tests, production build, and Playwright browser checks. Full lint still reports pre-existing `no-explicit-any` errors outside this feature.
+
 ### Task 1: 建立语言解析与翻译字典
 
 **Files:**

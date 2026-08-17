@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useLocale } from "./LocaleProvider";
+
 type ActionStatus = "idle" | "saving" | "saved" | "error";
 
 async function postJson(path: string, body: unknown) {
@@ -22,6 +24,7 @@ async function postJson(path: string, body: unknown) {
 }
 
 export function CollectionButton({ targetType, targetId, label }: { targetType: string; targetId: string; label: string }) {
+  const { t } = useLocale();
   const [status, setStatus] = useState<ActionStatus>("idle");
 
   async function save() {
@@ -36,12 +39,13 @@ export function CollectionButton({ targetType, targetId, label }: { targetType: 
 
   return (
     <button className={status === "saved" ? "button button-primary" : "button"} onClick={save} type="button">
-      {status === "saving" ? "Saving..." : status === "saved" ? "Saved" : status === "error" ? "Retry save" : label}
+      {status === "saving" ? t("common.saving") : status === "saved" ? t("common.saved") : status === "error" ? `${t("common.retry")} ${label.toLowerCase()}` : label}
     </button>
   );
 }
 
 export function VoteButton({ discussionId }: { discussionId: string }) {
+  const { t } = useLocale();
   const [status, setStatus] = useState<ActionStatus>("idle");
 
   async function vote() {
@@ -56,12 +60,13 @@ export function VoteButton({ discussionId }: { discussionId: string }) {
 
   return (
     <button className="button" onClick={vote} type="button">
-      {status === "saving" ? "Voting..." : status === "saved" ? "Marked helpful" : status === "error" ? "Retry vote" : "Helpful"}
+      {status === "saving" ? t("common.voting") : status === "saved" ? t("common.markedHelpful") : status === "error" ? `${t("common.retry")} ${t("common.votes")}` : t("common.helpful")}
     </button>
   );
 }
 
 export function ReportButton({ targetType, targetId }: { targetType: string; targetId: string }) {
+  const { t } = useLocale();
   const [status, setStatus] = useState<ActionStatus>("idle");
 
   async function report() {
@@ -76,7 +81,7 @@ export function ReportButton({ targetType, targetId }: { targetType: string; tar
 
   return (
     <button className="button" onClick={report} type="button">
-      {status === "saving" ? "Reporting..." : status === "saved" ? "Reported" : status === "error" ? "Retry report" : "Report"}
+      {status === "saving" ? t("common.reporting") : status === "saved" ? t("common.reported") : status === "error" ? `${t("common.retry")} ${t("common.report")}` : t("common.report")}
     </button>
   );
 }
@@ -84,8 +89,8 @@ export function ReportButton({ targetType, targetId }: { targetType: string; tar
 export function ReplyForm({
   discussionId,
   parentReplyId,
-  title = "Add a response",
-  submitLabel = "Submit response",
+  title,
+  submitLabel,
   compact = false,
   replyTargetName
 }: {
@@ -96,6 +101,7 @@ export function ReplyForm({
   compact?: boolean;
   replyTargetName?: string;
 }) {
+  const { t } = useLocale();
   const [body, setBody] = useState("");
   const [status, setStatus] = useState<ActionStatus>("idle");
 
@@ -116,23 +122,23 @@ export function ReplyForm({
 
   return (
     <form className={compact ? "stack response-reply-form" : "panel stack"} onSubmit={submit}>
-      {compact ? <h4>{title}</h4> : <h2 className="section-title">{title}</h2>}
-      {replyTargetName ? <p className="row-copy">Replying to {replyTargetName}</p> : null}
+      {compact ? <h4>{title ?? t("common.addResponse")}</h4> : <h2 className="section-title">{title ?? t("common.addResponse")}</h2>}
+      {replyTargetName ? <p className="row-copy">{t("common.replyingTo")} {replyTargetName}</p> : null}
       <label className="field-label">
-        Response
+        {t("common.response")}
         <textarea
           className="text-area"
           onChange={(event) => setBody(event.target.value)}
-          placeholder="Write a concrete answer or comment."
+          placeholder={t("common.writeResponse")}
           value={body}
         />
       </label>
       <div className="toolbar">
         <button className="button button-primary" disabled={status === "saving"} type="submit">
-          {status === "saving" ? "Submitting..." : submitLabel}
+          {status === "saving" ? t("common.submitting") : submitLabel ?? t("common.submitResponse")}
         </button>
-        {status === "saved" ? <span className="row-copy">Saved</span> : null}
-        {status === "error" ? <span className="row-copy">Submit failed</span> : null}
+        {status === "saved" ? <span className="row-copy">{t("common.saved")}</span> : null}
+        {status === "error" ? <span className="row-copy">{t("common.retry")}</span> : null}
       </div>
     </form>
   );
@@ -150,6 +156,7 @@ type ResponseItem = {
 };
 
 export function ResponseThread({ discussionId, replies }: { discussionId: string; replies: ResponseItem[] }) {
+  const { t } = useLocale();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const roots = replies.filter((reply) => !reply.parentReplyId);
   const replyById = new Map(replies.map((reply) => [reply.id, reply]));
@@ -176,9 +183,9 @@ export function ResponseThread({ discussionId, replies }: { discussionId: string
 
   return (
     <section className="panel stack">
-      <h2 className="section-title">Responses</h2>
+      <h2 className="section-title">{t("common.responses")}</h2>
       {roots.length === 0 ? (
-        <p className="row-copy">No responses yet.</p>
+        <p className="row-copy">{t("common.noResponses")}</p>
       ) : (
         <ul className="response-list">
           {roots.map((reply) => (
@@ -191,6 +198,7 @@ export function ResponseThread({ discussionId, replies }: { discussionId: string
               onReply={setReplyingTo}
               reply={reply}
               replyingTo={replyingTo}
+              t={t}
             />
           ))}
         </ul>
@@ -207,6 +215,7 @@ function ResponseRow({
   onReply,
   reply,
   replyingTo
+  ,t
 }: {
   authorName: (replyId: string | null) => string | null;
   childrenOf: (replyId: string, depth: number) => ResponseItem[];
@@ -215,6 +224,7 @@ function ResponseRow({
   onReply: (replyId: string | null) => void;
   reply: ResponseItem;
   replyingTo: string | null;
+  t: (key: import("../lib/i18n/messages/en-US").MessageKey) => string;
 }) {
   const children = childrenOf(reply.id, depth);
   const replyTarget = authorName(reply.parentReplyId);
@@ -226,13 +236,13 @@ function ResponseRow({
         <div>
           <strong>{reply.authorName}</strong>
           <div className="meta-row">
-            <span>{responseKindLabel(reply)}</span>
-            {replyTarget ? <span>Replying to {replyTarget}</span> : null}
+            <span>{responseKindLabel(reply, t)}</span>
+            {replyTarget ? <span>{t("common.replyingTo")} {replyTarget}</span> : null}
             <span>{reply.createdAt}</span>
           </div>
         </div>
         <button className="button" onClick={() => onReply(replyingTo === reply.id ? null : reply.id)} type="button">
-          Reply to response
+          {t("common.replyToResponse")}
         </button>
       </div>
       <p className="row-copy">{reply.body}</p>
@@ -242,8 +252,8 @@ function ResponseRow({
           discussionId={discussionId}
           parentReplyId={reply.id}
           replyTargetName={reply.authorName}
-          submitLabel="Submit reply"
-          title={`Reply to ${reply.authorName}`}
+          submitLabel={t("common.submitReply")}
+          title={`${t("common.replyToResponse")} ${reply.authorName}`}
         />
       ) : null}
       {children.length > 0 ? (
@@ -258,6 +268,7 @@ function ResponseRow({
               onReply={onReply}
               reply={child}
               replyingTo={replyingTo}
+              t={t}
             />
           ))}
         </ul>
@@ -266,10 +277,10 @@ function ResponseRow({
   );
 }
 
-function responseKindLabel(reply: ResponseItem) {
+function responseKindLabel(reply: ResponseItem, t: (key: import("../lib/i18n/messages/en-US").MessageKey) => string) {
   if (reply.isAuthorResponse || reply.kind === "author_response") {
-    return "Author response";
+    return t("common.authorResponse");
   }
 
-  return reply.kind === "answer" ? "Answer" : "Comment";
+  return reply.kind === "answer" ? t("common.answer") : t("common.comment");
 }

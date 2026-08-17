@@ -2,8 +2,10 @@ import Link from "next/link";
 
 import { AcademicShell } from "../../components/AcademicShell";
 import { prisma } from "../../lib/prisma";
+import { getServerMessages } from "../../lib/i18n/server";
 
 export default async function PapersPage() {
+  const { t } = await getServerMessages();
   const papers = await prisma.paper.findMany({
     orderBy: [{ updatedAt: "desc" }],
     take: 100
@@ -13,9 +15,9 @@ export default async function PapersPage() {
     <AcademicShell>
       <section className="panel stack">
         <div>
-          <p className="page-kicker">Library</p>
-          <h1 className="page-title">Papers</h1>
-          <p className="page-summary">Browse stored papers only.</p>
+          <p className="page-kicker">{t("common.library")}</p>
+          <h1 className="page-title">{t("papers.title")}</h1>
+          <p className="page-summary">{t("common.browseStoredPapers")}</p>
         </div>
         <ul className="result-list">
           {papers.map((paper) => (

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getAnchor, getDiscussion } from "./sampleData";
+import { getDiscussion } from "./sampleData";
+import { useLocale } from "./LocaleProvider";
 
 const moderationReports = [
   {
@@ -21,15 +22,13 @@ const moderationReports = [
 ];
 
 export function ModerationQueue() {
+  const { t } = useLocale();
   return (
     <section className="panel stack">
       <div>
-        <p className="page-kicker">Governance</p>
-        <h1 className="page-title">Moderation queue</h1>
-        <p className="page-summary">
-          Review reports, AI risk suggestions, duplicate links, and reversible content visibility
-          changes. Destructive bulk removal is intentionally absent from this view.
-        </p>
+        <p className="page-kicker">{t("moderation.governance")}</p>
+        <h1 className="page-title">{t("moderation.queue")}</h1>
+        <p className="page-summary">{t("moderation.summary")}</p>
       </div>
 
       <ul className="discussion-list">
@@ -46,16 +45,16 @@ export function ModerationQueue() {
                 </div>
                 <div className="toolbar">
                   <button className="button" type="button">
-                    Hide
+                    {t("moderation.hide")}
                   </button>
                   <button className="button" type="button">
-                    Restore
+                    {t("moderation.restore")}
                   </button>
                   <button className="button" type="button">
-                    Mark disputed
+                    {t("moderation.markDisputed")}
                   </button>
                   <button className="button" type="button">
-                    Link duplicate
+                    {t("moderation.linkDuplicate")}
                   </button>
                 </div>
               </div>
@@ -78,39 +77,37 @@ export function CollectionsOverview({
   discussions?: Array<{ id: string; title: string; body: string }>;
   papers?: Array<{ id: string; title: string }>;
 }) {
+  const { t } = useLocale();
   return (
     <div className="stack">
       <section className="panel stack">
         <div>
-          <p className="page-kicker">Library</p>
-          <h1 className="page-title">Collections</h1>
-          <p className="page-summary">
-            Track papers, discussion threads, and anchors that need follow-up. Archived items remain
-            visible as non-destructive history.
-          </p>
+          <p className="page-kicker">{t("common.library")}</p>
+          <h1 className="page-title">{t("collections.title")}</h1>
+          <p className="page-summary">{t("collections.summary")}</p>
         </div>
       </section>
 
-      <section className="panel stack" aria-label="Saved papers">
+      <section className="panel stack" aria-label={t("my.savedPapers")}>
         <div className="toolbar">
-          <h2 className="section-title">Saved papers</h2>
-          <span className="badge badge-author">Active</span>
+          <h2 className="section-title">{t("my.savedPapers")}</h2>
+          <span className="badge badge-author">{t("collections.active")}</span>
         </div>
-        {papers.length === 0 ? <p className="row-copy">No saved papers yet.</p> : null}
+        {papers.length === 0 ? <p className="row-copy">{t("collections.noSavedPapers")}</p> : null}
         {papers.map((paper) => (
           <div className="result-row" key={paper.id}>
             <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
-            <p className="row-copy">Label: reading list</p>
+            <p className="row-copy">{t("collections.labelReadingList")}</p>
           </div>
         ))}
       </section>
 
-      <section className="panel stack" aria-label="Saved questions">
+      <section className="panel stack" aria-label={t("my.savedQuestions")}>
         <div className="toolbar">
-          <h2 className="section-title">Saved questions</h2>
-          <span className="badge badge-anchor">Active</span>
+          <h2 className="section-title">{t("my.savedQuestions")}</h2>
+          <span className="badge badge-anchor">{t("collections.active")}</span>
         </div>
-        {discussions.length === 0 ? <p className="row-copy">No saved questions yet.</p> : null}
+        {discussions.length === 0 ? <p className="row-copy">{t("collections.noSavedQuestions")}</p> : null}
         {discussions.map((discussion) => (
           <div className="result-row" key={discussion.id}>
             <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
@@ -119,16 +116,16 @@ export function CollectionsOverview({
         ))}
       </section>
 
-      <section className="panel stack" aria-label="Saved anchors">
+      <section className="panel stack" aria-label={t("my.savedAnchors")}>
         <div className="toolbar">
-          <h2 className="section-title">Saved anchors</h2>
-          <span className="badge badge-author">Active</span>
+          <h2 className="section-title">{t("my.savedAnchors")}</h2>
+          <span className="badge badge-author">{t("collections.active")}</span>
         </div>
-        {anchors.length === 0 ? <p className="row-copy">No saved anchors yet.</p> : null}
+        {anchors.length === 0 ? <p className="row-copy">{t("collections.noSavedAnchors")}</p> : null}
         {anchors.map((anchor) => (
           <div className="result-row" key={anchor.id}>
             <Link href={`/anchors/${anchor.id}`}>{anchor.title ?? anchor.quoteText ?? anchor.id}</Link>
-            <p className="row-copy">{anchor.position ?? "No position stored."}</p>
+            <p className="row-copy">{anchor.position ?? t("common.noPosition")}</p>
           </div>
         ))}
       </section>

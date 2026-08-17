@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import type { MessageKey } from "../lib/i18n/messages/en-US";
 import { useLocale } from "./LocaleProvider";
 
 export function InlineHint({ storageKey, messageKey }: { storageKey: string; messageKey: MessageKey }) {
   const { t } = useLocale();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(window.localStorage.getItem(storageKey) !== "dismissed");
-  }, [storageKey]);
+  const visible = useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("paperqa-hint-change", onStoreChange);
+      return () => window.removeEventListener("paperqa-hint-change", onStoreChange);
+    },
+    () => window.localStorage.getItem(storageKey) !== "dismissed",
+    () => false
+  );
 
   if (!visible) {
     return null;
@@ -25,7 +28,7 @@ export function InlineHint({ storageKey, messageKey }: { storageKey: string; mes
         className="inline-hint-dismiss"
         onClick={() => {
           window.localStorage.setItem(storageKey, "dismissed");
-          setVisible(false);
+          window.dispatchEvent(new Event("paperqa-hint-change"));
         }}
         type="button"
       >

@@ -15,6 +15,12 @@ type LocaleContextValue = {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
+const fallbackLocaleContext: LocaleContextValue = {
+  locale: "en-US",
+  setLocale: () => undefined,
+  t: (key) => enUS[key]
+};
+
 export function LocaleProvider({ initialLocale, children }: { initialLocale: Locale; children: ReactNode }) {
   const router = useRouter();
   const [locale, setLocaleState] = useState(initialLocale);
@@ -38,8 +44,5 @@ export function LocaleProvider({ initialLocale, children }: { initialLocale: Loc
 
 export function useLocale() {
   const context = useContext(LocaleContext);
-  if (!context) {
-    throw new Error("useLocale must be used inside LocaleProvider");
-  }
-  return context;
+  return context ?? fallbackLocaleContext;
 }
