@@ -117,6 +117,33 @@ export async function listSearchDiscussions(prisma: DiscussionPrisma, query = ""
   return rows.map((row) => mapDiscussion(row as DiscussionRow));
 }
 
+export async function listUserDiscussions(prisma: DiscussionPrisma, userId: string) {
+  const rows = await prisma.discussion!.findMany!({
+    where: {
+      isHidden: false,
+      OR: [
+        { authorUserId: userId },
+        { replies: { some: { authorUserId: userId, isHidden: false } } }
+      ]
+    },
+    include: {
+      replies: {
+        where: { authorUserId: userId, isHidden: false },
+        select: { authorUserId: true }
+      }
+    },
+    orderBy: [{ updatedAt: "desc" }]
+  });
+
+  return (rows as UserDiscussionRow[]).map((row) => ({
+    id: row.id,
+    title: row.title,
+    status: row.status,
+    myReplyCount: row.replies.length,
+    updatedAt: row.updatedAt.toISOString()
+  }));
+}
+
 export async function getDiscussionDetail(prisma: DiscussionPrisma, discussionId: string) {
   const row = await prisma.discussion!.findFirst!({
     where: {
@@ -237,6 +264,14 @@ type DiscussionRow = {
   };
   replies: Array<{ kind: string; isAuthorResponse?: boolean }>;
   votes: Array<{ value: string }>;
+};
+
+type UserDiscussionRow = {
+  id: string;
+  title: string;
+  status: string;
+  updatedAt: Date;
+  replies: Array<{ authorUserId: string }>;
 };
 
 type DiscussionAnchorRow = {
