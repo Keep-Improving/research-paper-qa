@@ -22,6 +22,7 @@ export const zhCN: Record<MessageKey, string> = {
   "language.chinese": "中文",
   "language.english": "EN",
   "common.close": "关闭",
+  "common.demo": "案例 / Demo",
   "common.loading": "加载中",
   "search.kicker": "科研索引",
   "search.title": "查找论文和问题",

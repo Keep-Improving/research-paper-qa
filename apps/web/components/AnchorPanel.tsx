@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useLocale } from "./LocaleProvider";
+import { DemoBadge } from "./DemoBadge";
 
 type AnchorPanelRecord = {
   id: string;
@@ -14,6 +15,7 @@ type AnchorPanelRecord = {
   imageUrl: string | null;
   imageAlt: string | null;
   paper?: { title: string } | null;
+  isDemo?: boolean;
   discussions?: Array<{
     id: string;
     title: string;
@@ -33,6 +35,7 @@ export function AnchorPanel({ anchor, showRelated = true }: { anchor: AnchorPane
       <div>
         <p className="page-kicker">{anchor.paper?.title ?? t("common.anchorDetail")}</p>
         <h1 className="page-title">{title}</h1>
+        {anchor.isDemo ? <DemoBadge /> : null}
         <div className="meta-row">
           <span>{t("common.anchorType")}: {anchorType}</span>
           {anchor.pageNumber ? <span>{t("common.page")} {anchor.pageNumber}</span> : null}

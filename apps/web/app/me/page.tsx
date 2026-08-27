@@ -30,18 +30,18 @@ export default async function MyPage() {
   const [papers, questions, anchors, discussions] = await Promise.all([
     prisma.paper.findMany({
       where: { id: { in: collections.filter((item) => item.targetType === "paper").map((item) => item.targetId) } },
-      select: { id: true, title: true }
+      select: { id: true, title: true, isDemo: true }
     }),
     prisma.discussion.findMany({
       where: {
         id: { in: collections.filter((item) => item.targetType === "discussion").map((item) => item.targetId) },
         isHidden: false
       },
-      select: { id: true, title: true }
+      select: { id: true, title: true, isDemo: true }
     }),
     prisma.anchor.findMany({
       where: { id: { in: collections.filter((item) => item.targetType === "anchor").map((item) => item.targetId) } },
-      select: { id: true, title: true, quoteText: true }
+      select: { id: true, title: true, quoteText: true, isDemo: true }
     }),
     listUserDiscussions(prisma, userId)
   ]);
@@ -52,7 +52,8 @@ export default async function MyPage() {
       questions,
       anchors: anchors.map((anchor) => ({
         id: anchor.id,
-        title: anchor.title ?? anchor.quoteText ?? anchor.id
+        title: anchor.title ?? anchor.quoteText ?? anchor.id,
+        isDemo: anchor.isDemo
       }))
     },
     discussions,

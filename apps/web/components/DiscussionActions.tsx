@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { useLocale } from "./LocaleProvider";
+import { DemoBadge } from "./DemoBadge";
 
 type ActionStatus = "idle" | "saving" | "saved" | "error";
 
@@ -153,6 +154,7 @@ type ResponseItem = {
   authorName: string;
   isAuthorResponse: boolean;
   createdAt: string;
+  isDemo?: boolean;
 };
 
 export function ResponseThread({ discussionId, replies }: { discussionId: string; replies: ResponseItem[] }) {
@@ -237,6 +239,7 @@ function ResponseRow({
           <strong>{reply.authorName}</strong>
           <div className="meta-row">
             <span>{responseKindLabel(reply, t)}</span>
+            {reply.isDemo ? <DemoBadge /> : null}
             {replyTarget ? <span>{t("common.replyingTo")} {replyTarget}</span> : null}
             <span>{reply.createdAt}</span>
           </div>

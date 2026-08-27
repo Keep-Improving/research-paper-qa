@@ -5,6 +5,7 @@ import { InlineHint } from "../../../components/InlineHint";
 import { prisma } from "../../../lib/prisma";
 import { listPaperDiscussions } from "../../../lib/repositories/discussions";
 import { getServerMessages } from "../../../lib/i18n/server";
+import { DemoBadge } from "../../../components/DemoBadge";
 
 export default async function PaperDetailPage({
   params
@@ -46,6 +47,7 @@ export default async function PaperDetailPage({
           <div>
             <p className="page-kicker">{t("common.sharedPaperDiscussion")}</p>
             <h1 className="page-title">{paper.title}</h1>
+            {paper.isDemo ? <DemoBadge /> : null}
             <p className="page-summary">{paper.abstract ?? t("common.noAbstract")}</p>
             <div className="meta-row">
               <span>{paper.authors.join(", ")}</span>

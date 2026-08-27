@@ -5,6 +5,7 @@ import { DiscussionBadges } from "../../components/DiscussionPanel";
 import { prisma } from "../../lib/prisma";
 import { listSearchDiscussions } from "../../lib/repositories/discussions";
 import { getServerMessages } from "../../lib/i18n/server";
+import { DemoBadge } from "../../components/DemoBadge";
 
 export default async function QuestionsPage() {
   const { t } = await getServerMessages();
@@ -22,6 +23,7 @@ export default async function QuestionsPage() {
           {discussions.map((discussion) => (
             <li className="discussion-row" key={discussion.id}>
               <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
+              {discussion.isDemo ? <DemoBadge /> : null}
               <p className="row-copy">{discussion.body}</p>
               <DiscussionBadges discussion={discussion} />
               <div className="meta-row">

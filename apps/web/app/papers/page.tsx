@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AcademicShell } from "../../components/AcademicShell";
 import { prisma } from "../../lib/prisma";
 import { getServerMessages } from "../../lib/i18n/server";
+import { DemoBadge } from "../../components/DemoBadge";
 
 export default async function PapersPage() {
   const { t } = await getServerMessages();
@@ -23,6 +24,7 @@ export default async function PapersPage() {
           {papers.map((paper) => (
             <li className="result-row" key={paper.id}>
               <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
+              {paper.isDemo ? <DemoBadge /> : null}
               <p className="row-copy">{paper.authors.join(", ")}</p>
               <div className="meta-row">
                 {paper.venue ? <span>{paper.venue}</span> : null}

@@ -40,7 +40,8 @@ export default async function HomePage({
           venue: paper.venue,
           year: paper.year,
           doi: paper.doi,
-          abstract: paper.abstract
+          abstract: paper.abstract,
+          isDemo: paper.isDemo
         }))}
         discussions={discussions}
       />

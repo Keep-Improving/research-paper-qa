@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useLocale } from "./LocaleProvider";
+import { DemoBadge } from "./DemoBadge";
 
 export type AuthorWorkbenchDiscussion = {
   id: string;
@@ -9,6 +10,7 @@ export type AuthorWorkbenchDiscussion = {
   votes: number;
   createdAt: string;
   anchorTitle?: string | null;
+  isDemo?: boolean;
 };
 
 export type AuthorWorkbenchPaper = {
@@ -18,6 +20,7 @@ export type AuthorWorkbenchPaper = {
   year?: number | null;
   canPublishAuthorResponse: boolean;
   discussions: AuthorWorkbenchDiscussion[];
+  isDemo?: boolean;
 };
 
 type AuthorWorkbenchProps = {
@@ -82,6 +85,7 @@ export function AuthorWorkbench({ papers, userEmail, emailVerified = false }: Au
               <li className="discussion-row" key={discussion.id}>
                 <div className="toolbar row-toolbar">
                   <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
+                  {discussion.isDemo ? <DemoBadge /> : null}
                   <div className="toolbar">
                     {discussion.paper.canPublishAuthorResponse ? (
                       <button className="button button-primary" type="button">

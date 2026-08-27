@@ -331,6 +331,12 @@ textarea {
   color: var(--success);
 }
 
+.badge-demo {
+  background: #fff3cd;
+  border-color: #d6b656;
+  color: #795b00;
+}
+
 .badge-disputed {
   background: var(--danger-soft);
   border-color: #d3a0a0;

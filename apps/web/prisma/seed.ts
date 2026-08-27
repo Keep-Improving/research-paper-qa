@@ -34,7 +34,8 @@ async function main() {
       venue: "NeurIPS",
       year: 2017,
       doi: "10.48550/arXiv.1706.03762",
-      abstract: "A compact seed record for exercising real research-paper discussion workflows."
+      abstract: "A compact seed record for exercising real research-paper discussion workflows.",
+      isDemo: true
     }
   });
 
@@ -48,7 +49,8 @@ async function main() {
       venue: "ICML",
       year: 2020,
       doi: "10.48550/arXiv.2002.05709",
-      abstract: "Seed data for empty and search states."
+      abstract: "Seed data for empty and search states.",
+      isDemo: true
     }
   });
 
@@ -64,7 +66,8 @@ async function main() {
       contextText: "The scaling term keeps dot products from growing too large as key dimensionality increases.",
       pageNumber: 4,
       sectionLabel: "3.2.1 Scaled Dot-Product Attention",
-      position: "Section 3.2.1, equation block"
+      position: "Section 3.2.1, equation block",
+      isDemo: true
     }
   });
 
@@ -82,7 +85,8 @@ async function main() {
       sectionLabel: "3 Model Architecture",
       position: "Figure 1 caption",
       imageAlt: "Transformer architecture diagram anchor",
-      imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 180'%3E%3Crect width='420' height='180' fill='%23f6f5f1'/%3E%3Crect x='44' y='32' width='132' height='116' fill='%23ffffff' stroke='%23696358'/%3E%3Crect x='244' y='32' width='132' height='116' fill='%23ffffff' stroke='%23696358'/%3E%3Cpath d='M176 90h68' stroke='%232f5f73' stroke-width='3'/%3E%3Cpath d='M232 78l14 12-14 12' fill='none' stroke='%232f5f73' stroke-width='3'/%3E%3Ctext x='110' y='84' text-anchor='middle' font-family='Georgia' font-size='16' fill='%2326211b'%3EEncoder%3C/text%3E%3Ctext x='310' y='84' text-anchor='middle' font-family='Georgia' font-size='16' fill='%2326211b'%3EDecoder%3C/text%3E%3Ctext x='210' y='160' text-anchor='middle' font-family='Georgia' font-size='13' fill='%23696358'%3EFigure anchor seed%3C/text%3E%3C/svg%3E"
+      imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 180'%3E%3Crect width='420' height='180' fill='%23f6f5f1'/%3E%3Crect x='44' y='32' width='132' height='116' fill='%23ffffff' stroke='%23696358'/%3E%3Crect x='244' y='32' width='132' height='116' fill='%23ffffff' stroke='%23696358'/%3E%3Cpath d='M176 90h68' stroke='%232f5f73' stroke-width='3'/%3E%3Cpath d='M232 78l14 12-14 12' fill='none' stroke='%232f5f73' stroke-width='3'/%3E%3Ctext x='110' y='84' text-anchor='middle' font-family='Georgia' font-size='16' fill='%2326211b'%3EEncoder%3C/text%3E%3Ctext x='310' y='84' text-anchor='middle' font-family='Georgia' font-size='16' fill='%2326211b'%3EDecoder%3C/text%3E%3Ctext x='210' y='160' text-anchor='middle' font-family='Georgia' font-size='13' fill='%23696358'%3EFigure anchor seed%3C/text%3E%3C/svg%3E",
+      isDemo: true
     }
   });
 
@@ -96,7 +100,8 @@ async function main() {
       title: "Why does scaled dot-product attention divide by sqrt(dk)?",
       body: "The paper states that scaling prevents extremely small gradients. What empirical or theoretical evidence supports this specific normalizer?",
       status: "author_responded",
-      authorUserId: reader.id
+      authorUserId: reader.id,
+      isDemo: true
     }
   });
 
@@ -110,7 +115,8 @@ async function main() {
       title: "Are the residual paths in Figure 1 applied before or after normalization?",
       body: "The diagram is compact. The implementation order affects how readers reproduce the architecture.",
       status: "open",
-      authorUserId: reader.id
+      authorUserId: reader.id,
+      isDemo: true
     }
   });
 
@@ -124,7 +130,8 @@ async function main() {
       title: "BLEU comparison needs clearer tokenizer settings",
       body: "The reported comparison may be sensitive to preprocessing details.",
       status: "disputed",
-      authorUserId: reader.id
+      authorUserId: reader.id,
+      isDemo: true
     }
   });
 
@@ -136,7 +143,8 @@ async function main() {
       discussionId: attentionDiscussion.id,
       kind: "answer",
       body: "The variance of unscaled dot products grows with dimension, so the normalizer keeps softmax gradients in a usable range.",
-      authorUserId: reader.id
+      authorUserId: reader.id,
+      isDemo: true
     }
   });
 
@@ -149,7 +157,8 @@ async function main() {
       kind: "author_response",
       body: "Verified author response: the scaling was chosen to stabilize logits across common model widths and matched early ablation behavior.",
       authorUserId: author.id,
-      isAuthorResponse: true
+      isAuthorResponse: true,
+      isDemo: true
     }
   });
 
@@ -243,6 +252,11 @@ async function main() {
       note: "attention scaling anchor"
     }
   });
+
+  await prisma.paper.updateMany({ where: { id: { in: ["paper-transformer", "paper-contrastive"] } }, data: { isDemo: true } });
+  await prisma.anchor.updateMany({ where: { id: { in: [equationAnchor.id, figureAnchor.id] } }, data: { isDemo: true } });
+  await prisma.discussion.updateMany({ where: { id: { in: [attentionDiscussion.id, "discussion-figure-residual", "discussion-bleu-dispute"] } }, data: { isDemo: true } });
+  await prisma.discussionReply.updateMany({ where: { id: { in: ["reply-attention-scale-answer", "reply-attention-scale-author"] } }, data: { isDemo: true } });
 }
 
 main()

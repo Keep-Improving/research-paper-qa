@@ -175,6 +175,7 @@ model Paper {
   venue     String?
   year      Int?
   abstract  String?
+  isDemo    Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -201,6 +202,7 @@ model Anchor {
   imageUrl        String?
   imageAlt        String?
   note            String?
+  isDemo          Boolean    @default(false)
   createdByUserId String?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
@@ -221,6 +223,7 @@ model Discussion {
   status       DiscussionStatus @default(open)
   authorUserId String
   isHidden     Boolean          @default(false)
+  isDemo       Boolean          @default(false)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
@@ -245,6 +248,7 @@ model DiscussionReply {
   authorUserId      String
   isAuthorResponse  Boolean   @default(false)
   isHidden          Boolean   @default(false)
+  isDemo            Boolean   @default(false)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 

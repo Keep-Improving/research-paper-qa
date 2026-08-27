@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AcademicShell } from "../../components/AcademicShell";
 import { prisma } from "../../lib/prisma";
 import { getServerMessages } from "../../lib/i18n/server";
+import { DemoBadge } from "../../components/DemoBadge";
 
 export default async function AnchorsPage() {
   const { t } = await getServerMessages();
@@ -24,6 +25,7 @@ export default async function AnchorsPage() {
           {anchors.map((anchor) => (
             <li className="result-row" key={anchor.id}>
               <Link href={`/anchors/${anchor.id}`}>{anchor.title ?? anchor.quoteText ?? anchor.id}</Link>
+              {anchor.isDemo ? <DemoBadge /> : null}
               <p className="row-copy">{anchor.quoteText ?? anchor.contextText ?? t("common.noQuote")}</p>
               <div className="meta-row">
                 <span>{anchor.kind}</span>

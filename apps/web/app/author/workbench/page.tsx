@@ -70,6 +70,7 @@ async function loadWorkbenchPapers(userEmail: string | null): Promise<AuthorWork
       return {
         id: paper.id,
         title: paper.title,
+        isDemo: paper.isDemo,
         venue: paper.venue,
         year: paper.year,
         canPublishAuthorResponse,
@@ -81,6 +82,7 @@ async function loadWorkbenchPapers(userEmail: string | null): Promise<AuthorWork
           votes: discussion.votes.length,
           createdAt: discussion.createdAt.toISOString(),
           anchorTitle: discussion.anchor?.title ?? discussion.anchor?.quoteText ?? null
+          ,isDemo: discussion.isDemo
         }))
       };
     })

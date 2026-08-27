@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { useLocale } from "./LocaleProvider";
+import { DemoBadge } from "./DemoBadge";
 
 type DiscussionPanelProps = {
   discussions: DiscussionRecord[];
@@ -25,6 +26,7 @@ export type DiscussionRecord = {
   commentCount: number;
   isAuthorResponse: boolean;
   heat: number;
+  isDemo?: boolean;
 };
 
 type DiscussionFilter = "all" | "author_response" | "unanswered" | "disputed";
@@ -72,6 +74,7 @@ export function DiscussionBadges({ discussion }: { discussion: DiscussionRecord 
   return (
     <div className="badge-row" aria-label={discussion.title}>
       {discussion.isAuthorResponse ? <span className="badge badge-author">{t("common.authorResponse")}</span> : null}
+      {discussion.isDemo ? <DemoBadge /> : null}
       {discussion.status === "disputed" ? <span className="badge badge-disputed">{t("common.disputed")}</span> : null}
       {discussion.status === "open" && discussion.answerCount === 0 ? <span className="badge badge-unresolved">{t("common.unresolved")}</span> : null}
       {anchor ? <span className="badge badge-anchor">{anchor.kind} anchor</span> : null}

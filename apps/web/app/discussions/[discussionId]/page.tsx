@@ -4,6 +4,7 @@ import { CollectionButton, ReplyForm, ReportButton, ResponseThread, VoteButton }
 import { prisma } from "../../../lib/prisma";
 import { getDiscussionDetail } from "../../../lib/repositories/discussions";
 import { getServerMessages } from "../../../lib/i18n/server";
+import { DemoBadge } from "../../../components/DemoBadge";
 
 export default async function DiscussionDetailPage({
   params
@@ -36,6 +37,7 @@ export default async function DiscussionDetailPage({
           <div>
             <p className="page-kicker">{paper?.title ?? t("common.paperDiscussion")}</p>
             <h1 className="page-title">{discussion.title}</h1>
+            {discussion.isDemo ? <DemoBadge /> : null}
             <p className="page-summary">{discussion.body}</p>
             <div className="toolbar">
               <a className="button" href={`/papers/${discussion.paperId}`}>{t("common.backToPaper")}</a>

@@ -256,6 +256,7 @@ type DiscussionRow = {
   status: string;
   authorUserId: string;
   isHidden: boolean;
+  isDemo: boolean;
   createdAt: Date;
   updatedAt: Date;
   anchor: DiscussionAnchorRow | null;
@@ -270,6 +271,7 @@ type UserDiscussionRow = {
   id: string;
   title: string;
   status: string;
+  isDemo: boolean;
   updatedAt: Date;
   replies: Array<{ authorUserId: string }>;
 };
@@ -295,6 +297,7 @@ type DiscussionReplyRow = {
   body: string;
   authorUserId: string;
   isAuthorResponse: boolean;
+  isDemo: boolean;
   createdAt: Date;
   updatedAt: Date;
   author: {
@@ -324,6 +327,7 @@ export function mapDiscussion(row: DiscussionRow) {
     answerCount,
     commentCount,
     isAuthorResponse: authorResponseCount > 0,
+    isDemo: row.isDemo,
     heat: upVotes + helpfulVotes + answerCount + commentCount + authorResponseCount
   };
 }
@@ -349,6 +353,7 @@ export function mapReply(row: DiscussionReplyRow) {
     authorUserId: row.authorUserId,
     authorName: row.author.displayName,
     isAuthorResponse: row.isAuthorResponse || row.kind === "author_response",
+    isDemo: row.isDemo,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     upCount,

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   sampleAnchors,
@@ -6,6 +8,7 @@ import {
 import { InlineHint } from "./InlineHint";
 import { useLocale } from "./LocaleProvider";
 import type { MessageKey } from "../lib/i18n/messages/en-US";
+import { DemoBadge } from "./DemoBadge";
 
 type SearchParams = {
   q?: string;
@@ -21,6 +24,7 @@ export type SearchPaper = {
   year?: number | null;
   doi?: string | null;
   abstract?: string | null;
+  isDemo?: boolean;
 };
 
 export type SearchDiscussion = {
@@ -30,6 +34,7 @@ export type SearchDiscussion = {
   kind?: string;
   status: string;
   isAuthorResponse?: boolean;
+  isDemo?: boolean;
 };
 
 function anchorText(anchor: AnchorRecord) {
@@ -83,6 +88,7 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
             {papers.map((paper) => (
               <li className="result-row" key={paper.id}>
                 <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
+                {paper.isDemo ? <DemoBadge /> : null}
                 <p className="row-copy">{paper.authors.join(", ")}</p>
                 <div className="meta-row">
                   {paper.venue ? <span>{paper.venue}</span> : null}
@@ -97,6 +103,7 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
             {discussions.map((discussion) => (
               <li className="result-row" key={discussion.id}>
                 <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
+                {discussion.isDemo ? <DemoBadge /> : null}
                 <p className="row-copy">{discussion.body}</p>
                 <div className="meta-row">
                   <span>{discussion.kind ?? "question"}</span>
@@ -120,6 +127,7 @@ export function PaperSearch({ discussions = [], papers = [], q = "" }: SearchPar
             {anchors.map((anchor) => (
               <li className="result-row" key={anchor.id}>
                 <Link href={`/anchors/${anchor.id}`}>{anchor.title}</Link>
+                <DemoBadge />
                 <p className="row-copy">{anchor.quote}</p>
                 <div className="meta-row">
                   <span>{anchor.kind} anchor</span>

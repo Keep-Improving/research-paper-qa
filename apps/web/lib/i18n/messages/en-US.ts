@@ -20,6 +20,7 @@ export const enUS = {
   "language.chinese": "中文",
   "language.english": "EN",
   "common.close": "Dismiss",
+  "common.demo": "Demo",
   "common.loading": "Loading",
   "search.kicker": "Research index",
   "search.title": "Find papers and questions",

@@ -3,8 +3,9 @@
 import Link from "next/link";
 
 import { useLocale } from "./LocaleProvider";
+import { DemoBadge } from "./DemoBadge";
 
-type WorkspaceItem = { id: string; title: string };
+type WorkspaceItem = { id: string; title: string; isDemo?: boolean };
 
 export type MyWorkspaceData = {
   collections: {
@@ -18,6 +19,7 @@ export type MyWorkspaceData = {
     status: string;
     myReplyCount: number;
     updatedAt: string;
+    isDemo?: boolean;
   }>;
   canUseAuthorTools: boolean;
 };
@@ -55,6 +57,7 @@ export function MyWorkspace({ data }: { data: MyWorkspaceData | null }) {
             {data.discussions.map((discussion) => (
               <div className="result-row" key={discussion.id}>
                 <Link href={`/discussions/${discussion.id}`}>{discussion.title}</Link>
+                {discussion.isDemo ? <DemoBadge /> : null}
                 <p className="row-copy">{discussion.status} · {discussion.myReplyCount}</p>
               </div>
             ))}
@@ -98,6 +101,7 @@ function WorkspaceSection({
       {items.map((item) => (
         <div className="result-row" key={item.id}>
           <Link href={hrefPrefix + item.id}>{item.title}</Link>
+          {item.isDemo ? <DemoBadge /> : null}
         </div>
       ))}
     </section>
