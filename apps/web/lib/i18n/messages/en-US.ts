@@ -132,6 +132,8 @@ export const enUS = {
   "auth.createOne": "Create one",
   "auth.alreadyHaveAccount": "Already have an account?",
   "auth.verifyEmail": "Verify email",
+  "auth.openVerificationLink": "Open verification link",
+  "auth.devVerificationHint": "This is a local development environment, so no email is sent. Open the one-time verification link below.",
   "auth.accountCreated": "Account created. Verify this email before author-response privileges can use it.",
   "auth.accountSecurity": "Account security",
   "auth.emailVerification": "Email verification",

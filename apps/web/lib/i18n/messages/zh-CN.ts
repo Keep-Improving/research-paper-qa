@@ -134,6 +134,8 @@ export const zhCN: Record<MessageKey, string> = {
   "auth.createOne": "创建账号",
   "auth.alreadyHaveAccount": "已经有账号？",
   "auth.verifyEmail": "验证邮箱",
+  "auth.openVerificationLink": "打开验证链接",
+  "auth.devVerificationHint": "当前为本地开发环境，不会实际发送邮件；请打开下面的一次性验证链接。",
   "auth.accountCreated": "账号已创建。验证邮箱后才能使用作者回应权限。",
   "auth.accountSecurity": "账号安全",
   "auth.emailVerification": "邮箱验证",

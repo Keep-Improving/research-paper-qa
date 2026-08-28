@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { getDiscussion } from "./sampleData";
 import { useLocale } from "./LocaleProvider";

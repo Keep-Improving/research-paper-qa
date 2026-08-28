@@ -115,8 +115,11 @@ export function RegisterForm() {
           <p className="row-copy">
             {t("auth.accountCreated")}
           </p>
+          <p className="row-copy">
+            {t("auth.devVerificationHint")}
+          </p>
           <a className="button button-primary" href={verificationUrl}>
-            {t("auth.verifyEmail")}
+            {t("auth.openVerificationLink")}
           </a>
         </div>
       ) : null}
