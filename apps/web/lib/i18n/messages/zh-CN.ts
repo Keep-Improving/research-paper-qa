@@ -71,6 +71,7 @@ export const zhCN: Record<MessageKey, string> = {
   "common.notFoundBody": "共享数据库中没有找到这个内容。",
   "common.paperDiscussion": "论文讨论",
   "common.sharedPaperDiscussion": "共享论文讨论",
+  "common.paperLinks": "文献网页入口",
   "common.noAbstract": "这篇论文还没有存储摘要。",
   "common.addToCollection": "加入收藏",
   "common.followPaper": "关注论文",

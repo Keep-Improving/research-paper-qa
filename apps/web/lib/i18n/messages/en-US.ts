@@ -69,6 +69,7 @@ export const enUS = {
   "common.notFoundBody": "We could not find this item in the shared database.",
   "common.paperDiscussion": "Paper discussion",
   "common.sharedPaperDiscussion": "Shared paper discussion",
+  "common.paperLinks": "Paper links",
   "common.noAbstract": "No abstract has been stored for this paper yet.",
   "common.addToCollection": "Add to collection",
   "common.followPaper": "Follow paper",

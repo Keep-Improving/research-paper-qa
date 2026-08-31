@@ -17,7 +17,8 @@ export default async function PaperDetailPage({
   const paper = await prisma.paper.findUnique({
     where: { id: paperId },
     include: {
-      anchors: true
+      anchors: true,
+      links: { orderBy: { lastSeenAt: "desc" } }
     }
   });
 
@@ -61,6 +62,12 @@ export default async function PaperDetailPage({
             <CollectionButton label={t("common.followPaper")} targetId={paper.id} targetType="paper" />
           </div>
           <InlineHint messageKey="hint.anchor" storageKey="paperqa-hint:anchor" />
+          {paper.links.length > 0 ? (
+            <div className="meta-row" aria-label={t("common.paperLinks")}>
+              <strong>{t("common.paperLinks")}</strong>
+              {paper.links.map((link) => <a href={link.url} key={link.id} target="_blank" rel="noreferrer">{new URL(link.url).hostname}</a>)}
+            </div>
+          ) : null}
         </section>
 
         <div className="two-column">
