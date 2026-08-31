@@ -50,7 +50,7 @@ function SidebarApp() {
       remotePaperId.current = null;
       setLoadState("loading");
       setDiscussions([]);
-      return loadRemoteState()
+      return loadRemoteState((valid) => { detectedPaperIsValid.current = valid; })
       .then((state) => {
         remotePaperId.current = state.paper.id;
         detectedPaperIsValid.current = state.paper.id !== fallbackDetectedPaper.id;
@@ -162,9 +162,10 @@ async function handleApiBaseUrlChange(baseUrl: string) {
   await setApiBaseUrl(baseUrl);
 }
 
-async function loadRemoteState() {
+async function loadRemoteState(onDetection?: (valid: boolean) => void) {
   const apiBaseUrl = await getApiBaseUrl();
   const detectedPaper = await getCurrentPaper();
+  onDetection?.(detectedPaper.confidence !== "low");
   if (detectedPaper.confidence === "low") {
     return { apiBaseUrl, paper: fallbackDetectedPaper, discussions: [] };
   }

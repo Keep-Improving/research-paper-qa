@@ -1,5 +1,4 @@
 import { detectPaper } from "./paperDetection";
-import { createImageAnchorFromElement } from "./imageAnchor";
 import { captureSelectionAnchor } from "./selectionAnchor";
 
 export { captureSelectionAnchor, detectPaper };
@@ -57,4 +56,16 @@ function pickImage(): Promise<{ ok: true; anchor: ReturnType<typeof createImageA
       resolve({ ok: false, error: "No image selected." });
     }, 15000);
   });
+}
+
+function createImageAnchorFromElement(img: HTMLImageElement) {
+  const imageUrl = img.currentSrc || img.src || undefined;
+  const captionText = img.closest("figure")?.querySelector("figcaption")?.textContent?.replace(/\s+/g, " ").trim();
+  return {
+    kind: "image" as const,
+    source_url: location.href,
+    ...(imageUrl ? { image_url: imageUrl } : {}),
+    ...(img.alt.trim() ? { alt_text: img.alt.trim() } : {}),
+    ...(captionText ? { caption_text: captionText } : {})
+  };
 }

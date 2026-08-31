@@ -36,8 +36,8 @@ describe("extension sidebar app", () => {
     });
 
     vi.stubGlobal("chrome", {
-      runtime: {
-        sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/" })
+        runtime: {
+        sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/", confidence: "high" })
       },
       storage: {
         local: {
@@ -94,7 +94,7 @@ describe("extension sidebar app", () => {
 
     vi.stubGlobal("chrome", {
       runtime: {
-        sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/" })
+        sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/", confidence: "high" })
       },
       storage: {
         local: {
@@ -130,7 +130,7 @@ describe("extension sidebar app", () => {
     });
 
     vi.stubGlobal("chrome", {
-      runtime: { sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/" }) },
+      runtime: { sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/", confidence: "high" }) },
       storage: { local: { get: vi.fn(async () => ({ "paperqa:apiBaseUrl": "https://api.example.test/api" })) } }
     });
     vi.stubGlobal("fetch", fetch);
