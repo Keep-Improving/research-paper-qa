@@ -49,5 +49,5 @@ function canonicalTitle(title: string, identityTitle?: string | null) {
 }
 
 function isObviousNonPaper(title: string, url?: string | null) {
-  return /163\s*网易|邮箱|登录|sign\s*in|log\s*in/i.test(`${title} ${url ?? ""}`);
+  return /163\s*网易|邮箱|登录|github\.com|sign\s*in|log\s*in/i.test(`${title} ${url ?? ""}`);
 }

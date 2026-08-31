@@ -77,3 +77,14 @@ export function normalizeDoi(value?: string) {
 
   return cleaned || undefined;
 }
+
+export function isBlockedPaperUrl(value?: string | null) {
+  if (!value) return false;
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+    return host === "github.com" || host.endsWith(".github.com") || host === "mail.163.com" || host === "mail.126.com" || host === "gmail.com" || host === "outlook.com" || host === "localhost" || host === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
