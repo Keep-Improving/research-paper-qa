@@ -10,6 +10,7 @@ type DiscussionComposerProps = {
   similarQuestionPrompt?: React.ReactNode;
   onCreateDiscussion?: (input: SidebarCreateDiscussionInput) => void | Promise<void>;
   onRetryAnchorCapture?: () => void;
+  onClearAnchor?: () => void;
 };
 
 export function DiscussionComposer({
@@ -18,7 +19,8 @@ export function DiscussionComposer({
   anchorCaptureError,
   similarQuestionPrompt,
   onCreateDiscussion,
-  onRetryAnchorCapture
+  onRetryAnchorCapture,
+  onClearAnchor
 }: DiscussionComposerProps) {
   const { t } = useSidebarLocale();
   const [body, setBody] = useState("");
@@ -49,7 +51,14 @@ export function DiscussionComposer({
     <section aria-label={t("sidebar.questionComposer")} style={styles.panel}>
       <div style={styles.header}>
         <h2 style={styles.title}>{t("sidebar.questionComposer")}</h2>
-        {anchorDraft ? <span style={styles.anchorState}>{t("sidebar.anchored")}</span> : <span style={styles.anchorState}>{t("sidebar.manual")}</span>}
+        {anchorDraft ? (
+          <span style={styles.anchorActions}>
+            <span style={styles.anchorState}>{t("sidebar.anchored")}</span>
+            <button type="button" onClick={onClearAnchor} style={styles.clearAnchorButton}>
+              {t("sidebar.clearAnchor")}
+            </button>
+          </span>
+        ) : <span style={styles.anchorState}>{t("sidebar.manual")}</span>}
       </div>
 
       {anchorCaptureError && (
@@ -139,6 +148,21 @@ const styles = {
     fontSize: 11,
     fontWeight: 700,
     lineHeight: "18px",
+    padding: "0 6px"
+  },
+  anchorActions: {
+    alignItems: "center",
+    display: "flex",
+    gap: 6
+  },
+  clearAnchorButton: {
+    border: "1px solid #c8ccc5",
+    borderRadius: 4,
+    background: "#ffffff",
+    color: "#505750",
+    cursor: "pointer",
+    fontSize: 11,
+    lineHeight: "20px",
     padding: "0 6px"
   },
   fallback: {

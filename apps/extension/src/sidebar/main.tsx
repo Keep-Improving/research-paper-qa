@@ -44,7 +44,11 @@ function SidebarApp() {
     didLoad.current = true;
     let mounted = true;
 
-    void loadRemoteState()
+    const reload = () => {
+      remotePaperId.current = null;
+      setLoadState("loading");
+      setDiscussions([]);
+      return loadRemoteState()
       .then((state) => {
         remotePaperId.current = state.paper.id;
         if (!mounted) {
@@ -61,9 +65,20 @@ function SidebarApp() {
           setLoadState("error");
         }
       });
+    };
+
+    void reload();
+
+    const tabs = typeof chrome !== "undefined" ? chrome.tabs : undefined;
+    const onActivated = () => { void reload(); };
+    const onUpdated = () => { void reload(); };
+    tabs?.onActivated?.addListener(onActivated);
+    tabs?.onUpdated?.addListener(onUpdated);
 
     return () => {
       mounted = false;
+      tabs?.onActivated?.removeListener(onActivated);
+      tabs?.onUpdated?.removeListener(onUpdated);
     };
   }, []);
 

@@ -119,4 +119,31 @@ describe("extension sidebar app", () => {
       method: "POST"
     }));
   });
+
+  it("clears an anchor draft before submitting", async () => {
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/papers/match")) {
+        return new Response(JSON.stringify({ id: "paper-1", title: "Detected paper" }), { status: 200 });
+      }
+      return new Response("[]", { status: 200 });
+    });
+
+    vi.stubGlobal("chrome", {
+      runtime: { sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/" }) },
+      storage: { local: { get: vi.fn(async () => ({ "paperqa:apiBaseUrl": "https://api.example.test/api" })) } }
+    });
+    vi.stubGlobal("fetch", fetch);
+
+    document.body.innerHTML = '<div id="root"></div>';
+    await import("../src/sidebar/main");
+    await screen.findAllByText("Detected paper");
+
+    fireEvent.change(screen.getByLabelText("Manual anchor note"), { target: { value: "Figure 2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    expect(screen.getByText("Figure 2")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear anchor" }));
+    expect(screen.queryByText("Figure 2")).not.toBeInTheDocument();
+  });
 });

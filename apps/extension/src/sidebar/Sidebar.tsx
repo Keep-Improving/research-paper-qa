@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ImageAnchorDraft } from "../content/imageAnchor";
 import type { TextAnchorDraft } from "../content/selectionAnchor";
@@ -100,6 +100,7 @@ type SidebarProps = {
   onReportDiscussion?: (discussionId: string) => void | Promise<void>;
   onSelectDiscussion?: (discussionId: string) => SidebarDiscussion | Promise<SidebarDiscussion>;
   onRetryAnchorCapture?: () => void;
+  onClearAnchor?: () => void;
   onApiBaseUrlChange?: (baseUrl: string) => void | Promise<void>;
 };
 
@@ -124,6 +125,7 @@ export function Sidebar({
   onReportDiscussion,
   onSelectDiscussion,
   onRetryAnchorCapture,
+  onClearAnchor,
   onApiBaseUrlChange
 }: SidebarProps) {
   const { t } = useSidebarLocale();
@@ -135,6 +137,7 @@ export function Sidebar({
   });
   const [sort, setSort] = useState<DiscussionSortMode>("newest");
   const [draft, setDraft] = useState<SidebarAnchorDraft | null>(anchorDraft);
+  const previousPaperId = useRef(paper.id);
   const [selectionError, setSelectionError] = useState<string | undefined>(anchorCaptureError);
   const [selectedDiscussion, setSelectedDiscussion] = useState<SidebarDiscussion | null>(null);
   const [detailError, setDetailError] = useState<string | undefined>();
@@ -186,6 +189,20 @@ export function Sidebar({
       setSelectionError(error instanceof Error ? error.message : "Selection capture failed.");
     }
   }
+
+  useEffect(() => {
+    if (previousPaperId.current === paper.id) {
+      return;
+    }
+    if (previousPaperId.current === fallbackPaper.id) {
+      previousPaperId.current = paper.id;
+      return;
+    }
+    previousPaperId.current = paper.id;
+    setDraft(null);
+    setSelectionError(undefined);
+    setSelectedDiscussion(null);
+  }, [paper.id]);
 
   async function selectDiscussion(discussion: SidebarDiscussion) {
     setSelectedDiscussion(discussion);
@@ -240,6 +257,7 @@ export function Sidebar({
         similarQuestionPrompt={similarQuestionPrompt}
         onCreateDiscussion={onCreateDiscussion}
         onRetryAnchorCapture={onRetryAnchorCapture}
+        onClearAnchor={onClearAnchor ?? (() => setDraft(null))}
       />
 
       <DiscussionFilters
