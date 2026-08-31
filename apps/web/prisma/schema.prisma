@@ -193,6 +193,7 @@ model PaperLink {
   id        String   @id @default(cuid())
   paperId   String
   url       String   @unique
+  isManual  Boolean  @default(false)
   createdAt DateTime @default(now())
   lastSeenAt DateTime @updatedAt
 

@@ -102,6 +102,7 @@ type SidebarProps = {
   onSelectDiscussion?: (discussionId: string) => SidebarDiscussion | Promise<SidebarDiscussion>;
   onRetryAnchorCapture?: () => void;
   onClearAnchor?: () => void;
+  onManualCreatePaper?: () => void | Promise<void>;
   onApiBaseUrlChange?: (baseUrl: string) => void | Promise<void>;
 };
 
@@ -128,6 +129,7 @@ export function Sidebar({
   onSelectDiscussion,
   onRetryAnchorCapture,
   onClearAnchor,
+  onManualCreatePaper,
   onApiBaseUrlChange
 }: SidebarProps) {
   const { t } = useSidebarLocale();
@@ -277,6 +279,7 @@ export function Sidebar({
         discussions={visibleDiscussions}
         loadState={loadState}
         errorMessage={errorMessage}
+        onManualCreatePaper={onManualCreatePaper}
         onSelectDiscussion={selectDiscussion}
       />
 

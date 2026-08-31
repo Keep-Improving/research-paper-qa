@@ -54,7 +54,7 @@ export async function setApiBaseUrl(baseUrl: string) {
   return trimmed;
 }
 
-export async function matchRemotePaper(baseUrl: string, paper: Partial<SidebarPaper> & { url?: string }, fetchImpl: FetchImpl = fetch): Promise<SidebarPaper> {
+export async function matchRemotePaper(baseUrl: string, paper: Partial<SidebarPaper> & { url?: string; manual?: boolean }, fetchImpl: FetchImpl = fetch): Promise<SidebarPaper> {
   const response = await fetchImpl(`${trimBaseUrl(baseUrl)}/papers/match`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -63,7 +63,8 @@ export async function matchRemotePaper(baseUrl: string, paper: Partial<SidebarPa
       doi: paper.doi,
       arxivId: paper.arxivId,
       pmid: paper.pmid,
-      url: paper.url
+      url: paper.url,
+      manual: paper.manual
     })
   });
 

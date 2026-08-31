@@ -6,10 +6,11 @@ type DiscussionListProps = {
   discussions: SidebarDiscussion[];
   loadState: "loading" | "ready" | "error";
   errorMessage?: string;
+  onManualCreatePaper?: () => void | Promise<void>;
   onSelectDiscussion?: (discussion: SidebarDiscussion) => void;
 };
 
-export function DiscussionList({ discussions, loadState, errorMessage, onSelectDiscussion }: DiscussionListProps) {
+export function DiscussionList({ discussions, loadState, errorMessage, onSelectDiscussion, onManualCreatePaper }: DiscussionListProps) {
   const { locale, t } = useSidebarLocale();
 
   if (loadState === "loading") {
@@ -20,6 +21,7 @@ export function DiscussionList({ discussions, loadState, errorMessage, onSelectD
     return (
       <div role="alert" style={styles.error}>
         {errorMessage || t("sidebar.couldNotLoadDiscussions")}
+        {onManualCreatePaper ? <button type="button" onClick={() => void onManualCreatePaper()} style={styles.manualButton}>{t("sidebar.createManualPaper")}</button> : null}
       </div>
     );
   }
@@ -201,5 +203,15 @@ const styles = {
     fontSize: 13,
     padding: 12,
     background: "#fffafa"
+  },
+  manualButton: {
+    display: "block",
+    marginTop: 8,
+    border: "1px solid #7f6a44",
+    borderRadius: 4,
+    background: "#fffaf0",
+    color: "#453718",
+    cursor: "pointer",
+    padding: "6px 8px"
   }
 };

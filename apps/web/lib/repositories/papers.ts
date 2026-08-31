@@ -5,6 +5,7 @@ type PaperMatchInput = {
   arxiv_id?: string | null;
   pmid?: string | null;
   url?: string | null;
+  manual?: boolean;
 };
 
 type PaperPrisma = {
@@ -22,6 +23,7 @@ export async function matchPaper(prisma: PaperPrisma, input: PaperMatchInput) {
   const arxivId = input.arxivId ?? input.arxiv_id ?? undefined;
   const pmid = input.pmid ?? undefined;
   const url = input.url ?? undefined;
+  const manual = input.manual === true;
   const title = input.title?.trim() || url || doi || arxivId || pmid || "Untitled paper";
   const identityTitle = normalizeTitle(title);
   const identifiers: Array<Record<string, string>> = [];
@@ -35,7 +37,7 @@ export async function matchPaper(prisma: PaperPrisma, input: PaperMatchInput) {
     const existing = await prisma.paper.findFirst({ where });
     if (existing) {
       if (url && prisma.paperLink) {
-        await prisma.paperLink.upsert({ where: { url }, update: {}, create: { url, paperId: (existing as { id: string }).id } });
+        await prisma.paperLink.upsert({ where: { url }, update: { isManual: manual || undefined }, create: { url, paperId: (existing as { id: string }).id, isManual: manual } });
       }
       return existing;
     }
@@ -53,7 +55,7 @@ export async function matchPaper(prisma: PaperPrisma, input: PaperMatchInput) {
     }
   });
   if (url && prisma.paperLink) {
-    await prisma.paperLink.upsert({ where: { url }, update: {}, create: { url, paperId: (created as { id: string }).id } });
+    await prisma.paperLink.upsert({ where: { url }, update: { isManual: manual || undefined }, create: { url, paperId: (created as { id: string }).id, isManual: manual } });
   }
   return created;
 }

@@ -38,6 +38,7 @@ function SidebarApp() {
   const didLoad = useRef(false);
   const remotePaperId = useRef<string | null>(null);
   const detectedPaperIsValid = useRef(false);
+  const detectedPaper = useRef<Awaited<ReturnType<typeof getCurrentPaper>> | null>(null);
 
   useEffect(() => {
     if (didLoad.current) {
@@ -50,8 +51,9 @@ function SidebarApp() {
       remotePaperId.current = null;
       setLoadState("loading");
       setDiscussions([]);
-      return loadRemoteState((valid) => { detectedPaperIsValid.current = valid; })
+      return loadRemoteState((valid, value) => { detectedPaperIsValid.current = valid; detectedPaper.current = value; })
       .then((state) => {
+        detectedPaper.current = state.detectedPaper;
         remotePaperId.current = state.paper.id;
         detectedPaperIsValid.current = state.paper.id !== fallbackDetectedPaper.id;
         if (!mounted) {
@@ -93,6 +95,18 @@ function SidebarApp() {
     const remotePaper = await ensureRemotePaper(baseUrl);
     await createRemoteDiscussion(baseUrl, { ...input, paperId: remotePaper.id });
     setDiscussions(await listRemoteDiscussions(baseUrl, remotePaper.id));
+  }
+
+  async function manualCreatePaper() {
+    const detected = detectedPaper.current;
+    if (!detected) return;
+    const baseUrl = apiBaseUrl ?? await getApiBaseUrl();
+    const manualPaper = await matchRemotePaper(baseUrl, { ...detected, manual: true });
+    remotePaperId.current = manualPaper.id;
+    detectedPaperIsValid.current = true;
+    setPaper(manualPaper);
+    setDiscussions(await listRemoteDiscussions(baseUrl, manualPaper.id));
+    setLoadState("ready");
   }
 
   async function refreshDiscussions(baseUrl: string) {
@@ -154,6 +168,7 @@ function SidebarApp() {
       onReportDiscussion={reportDiscussion}
       onSelectDiscussion={selectDiscussion}
       onApiBaseUrlChange={handleApiBaseUrlChange}
+      onManualCreatePaper={manualCreatePaper}
     />
   );
 }
@@ -162,13 +177,14 @@ async function handleApiBaseUrlChange(baseUrl: string) {
   await setApiBaseUrl(baseUrl);
 }
 
-async function loadRemoteState(onDetection?: (valid: boolean) => void) {
+async function loadRemoteState(onDetection?: (valid: boolean, paper: Awaited<ReturnType<typeof getCurrentPaper>>) => void) {
   const apiBaseUrl = await getApiBaseUrl();
   const detectedPaper = await getCurrentPaper();
-  onDetection?.(detectedPaper.confidence !== "low");
+  onDetection?.(detectedPaper.confidence !== "low", detectedPaper);
   if (detectedPaper.confidence === "low") {
-    return { apiBaseUrl, paper: fallbackDetectedPaper, discussions: [] };
+    return { apiBaseUrl, paper: fallbackDetectedPaper, discussions: [], detectedPaper };
   }
+
   const paper = await matchRemotePaper(apiBaseUrl, {
     title: detectedPaper.title || fallbackDetectedPaper.title,
     doi: detectedPaper.doi,
@@ -178,5 +194,5 @@ async function loadRemoteState(onDetection?: (valid: boolean) => void) {
   });
   const discussions = await listRemoteDiscussions(apiBaseUrl, paper.id);
 
-  return { apiBaseUrl, paper, discussions };
+  return { apiBaseUrl, paper, discussions, detectedPaper };
 }

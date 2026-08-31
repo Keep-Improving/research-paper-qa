@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     return jsonError("Invalid JSON body");
   }
 
-  if (isBlockedPaperUrl(typeof body.url === "string" ? body.url : null)) {
+  if (isBlockedPaperUrl(typeof body.url === "string" ? body.url : null) && body.manual !== true) {
     return jsonError("This page is not a supported paper source.", 422);
   }
 
