@@ -37,6 +37,7 @@ function SidebarApp() {
   const [apiBaseUrl, setApiBaseUrl] = useState<string | null>(null);
   const didLoad = useRef(false);
   const remotePaperId = useRef<string | null>(null);
+  const detectedPaperIsValid = useRef(false);
 
   useEffect(() => {
     if (didLoad.current) {
@@ -52,6 +53,7 @@ function SidebarApp() {
       return loadRemoteState()
       .then((state) => {
         remotePaperId.current = state.paper.id;
+        detectedPaperIsValid.current = state.paper.id !== fallbackDetectedPaper.id;
         if (!mounted) {
           return;
         }
@@ -85,6 +87,9 @@ function SidebarApp() {
 
   async function createDiscussion(input: SidebarCreateDiscussionInput) {
     const baseUrl = apiBaseUrl ?? await getApiBaseUrl();
+    if (!detectedPaperIsValid.current) {
+      throw new Error("当前页面未确认是文献页面，请打开期刊、PubMed 或 PMC 文献页后再提问。");
+    }
     const remotePaper = await ensureRemotePaper(baseUrl);
     await createRemoteDiscussion(baseUrl, { ...input, paperId: remotePaper.id });
     setDiscussions(await listRemoteDiscussions(baseUrl, remotePaper.id));
@@ -160,6 +165,9 @@ async function handleApiBaseUrlChange(baseUrl: string) {
 async function loadRemoteState() {
   const apiBaseUrl = await getApiBaseUrl();
   const detectedPaper = await getCurrentPaper();
+  if (detectedPaper.confidence === "low") {
+    return { apiBaseUrl, paper: fallbackDetectedPaper, discussions: [] };
+  }
   const paper = await matchRemotePaper(apiBaseUrl, {
     title: detectedPaper.title || fallbackDetectedPaper.title,
     doi: detectedPaper.doi,

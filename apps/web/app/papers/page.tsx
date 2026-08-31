@@ -13,7 +13,7 @@ export default async function PapersPage() {
     take: 100
   });
   const uniquePapers = Array.from(
-    new Map(papers.map((paper) => [paper.doi ? `doi:${normalizeDoi(paper.doi)}` : `title:${canonicalTitle(paper.title, paper.identityTitle)}`, paper])).values()
+    new Map(papers.filter((paper) => !isObviousNonPaper(paper.title, paper.url)).map((paper) => [paper.doi ? `doi:${normalizeDoi(paper.doi)}` : `title:${canonicalTitle(paper.title, paper.identityTitle)}`, paper])).values()
   );
 
   return (
@@ -46,4 +46,8 @@ export default async function PapersPage() {
 function canonicalTitle(title: string, identityTitle?: string | null) {
   const value = identityTitle || normalizeTitle(title);
   return value.replace(/\s+(?:nature|pmc|pubmed|arxiv)$/i, "").trim();
+}
+
+function isObviousNonPaper(title: string, url?: string | null) {
+  return /163\s*网易|邮箱|登录|sign\s*in|log\s*in/i.test(`${title} ${url ?? ""}`);
 }
