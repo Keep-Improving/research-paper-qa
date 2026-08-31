@@ -13,6 +13,7 @@ import {
   getRemoteDiscussion,
   listRemoteDiscussions,
   matchRemotePaper,
+  pickActiveTabImage,
   setApiBaseUrl
 } from "./sidebarClient";
 
@@ -141,6 +142,7 @@ function SidebarApp() {
       loadState={loadState}
       errorMessage={errorMessage}
       onUseSelection={captureActiveTabSelection}
+      onPickImage={pickActiveTabImage}
       onCreateDiscussion={createDiscussion}
       onCreateReply={createReply}
       onVoteDiscussion={voteDiscussion}

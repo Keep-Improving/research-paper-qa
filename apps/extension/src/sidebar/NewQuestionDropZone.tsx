@@ -15,11 +15,12 @@ export type ManualAnchorDraft = {
 
 type NewQuestionDropZoneProps = {
   onUseSelection?: () => void | TextAnchorDraft | null | Promise<void | TextAnchorDraft | null>;
+  onPickImage?: () => void | ImageAnchorDraft | null | Promise<void | ImageAnchorDraft | null>;
   onImageAnchor: (anchor: ImageAnchorDraft) => void;
   onManualAnchor: (anchor: ManualAnchorDraft) => void;
 };
 
-export function NewQuestionDropZone({ onUseSelection, onImageAnchor, onManualAnchor }: NewQuestionDropZoneProps) {
+export function NewQuestionDropZone({ onUseSelection, onPickImage, onImageAnchor, onManualAnchor }: NewQuestionDropZoneProps) {
   const { t } = useSidebarLocale();
   const selectionAvailable = Boolean(onUseSelection);
 
@@ -48,6 +49,9 @@ export function NewQuestionDropZone({ onUseSelection, onImageAnchor, onManualAnc
           style={selectionAvailable ? styles.button : styles.disabledButton}
         >
           {selectionAvailable ? t("sidebar.useSelection") : t("sidebar.useSelectionUnavailable")}
+        </button>
+        <button type="button" aria-label={t("sidebar.selectImage")} onClick={() => void onPickImage?.()} style={styles.button}>
+          {t("sidebar.selectImage")}
         </button>
       </div>
       <p style={styles.note}>

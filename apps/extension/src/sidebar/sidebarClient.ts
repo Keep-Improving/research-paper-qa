@@ -177,6 +177,12 @@ function mapRemoteDiscussion(item: Record<string, unknown>): SidebarDiscussion {
 
 }
 
+export async function pickActiveTabImage(): Promise<import("../content/imageAnchor").ImageAnchorDraft | null> {
+  const response = (await chrome.runtime.sendMessage({ type: "paperqa:pick-image" })) as { ok: boolean; anchor?: import("../content/imageAnchor").ImageAnchorDraft; error?: string };
+  if (!response.ok) throw new Error(response.error ?? "Image selection failed.");
+  return response.anchor ?? null;
+}
+
 function mapRemoteReply(item: Record<string, unknown>): SidebarReply {
   return {
     id: String(item.id),

@@ -30,6 +30,10 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "paperqa:pick-image") {
+    void pickImage().then(sendResponse).catch((error) => sendResponse({ ok: false, error: String(error) }));
+    return true;
+  }
   if (message?.type === "paperqa:get-current-paper") {
     void getCurrentPaper().then(sendResponse).catch(() => sendResponse({ title: "Detected paper", url: "", confidence: "low" }));
     return true;
@@ -50,6 +54,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   return true;
 });
+
+async function pickImage() {
+  const tab = await getCaptureTargetTab();
+  if (!tab?.id) {
+    return { ok: false, error: "Open a paper tab, then choose an image." };
+  }
+  return chrome.tabs.sendMessage(tab.id, { type: "paperqa:pick-image" });
+}
 
 async function getCurrentPaper() {
   const tab = await getCaptureTargetTab();

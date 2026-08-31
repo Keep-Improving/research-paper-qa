@@ -94,6 +94,7 @@ type SidebarProps = {
   errorMessage?: string;
   similarQuestionPrompt?: React.ReactNode;
   onUseSelection?: () => SidebarAnchorDraft | null | void | Promise<SidebarAnchorDraft | null | void>;
+  onPickImage?: () => ImageAnchorDraft | null | void | Promise<ImageAnchorDraft | null | void>;
   onCreateDiscussion?: (input: SidebarCreateDiscussionInput) => void | Promise<void>;
   onCreateReply?: (discussionId: string, body: string, kind: "answer", parentReplyId?: string | null) => void | Promise<void>;
   onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
@@ -119,6 +120,7 @@ export function Sidebar({
   errorMessage,
   similarQuestionPrompt,
   onUseSelection,
+  onPickImage,
   onCreateDiscussion,
   onCreateReply,
   onVoteDiscussion,
@@ -246,6 +248,10 @@ export function Sidebar({
 
       <NewQuestionDropZone
         onUseSelection={onUseSelection ? useSelection : undefined}
+        onPickImage={async () => {
+          const anchor = await onPickImage?.();
+          if (anchor) setDraft(normalizeImageAnchor(anchor));
+        }}
         onImageAnchor={(anchor) => setDraft(normalizeImageAnchor(anchor))}
         onManualAnchor={(anchor) => setDraft(normalizeManualAnchor(anchor))}
       />
