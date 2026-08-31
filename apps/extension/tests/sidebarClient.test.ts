@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   captureActiveTabSelection,
+  getCurrentPaper,
   createRemoteDiscussion,
   createRemoteReply,
   getApiBaseUrl,
@@ -11,6 +12,12 @@ import {
 } from "../src/sidebar/sidebarClient";
 
 describe("captureActiveTabSelection", () => {
+  it("requests current paper detection from the extension background", async () => {
+    const sendMessage = vi.fn().mockResolvedValue({ doi: "10.1000/example", title: "Example", url: "https://example.test" });
+    vi.stubGlobal("chrome", { runtime: { sendMessage } });
+    await expect(getCurrentPaper()).resolves.toMatchObject({ doi: "10.1000/example" });
+    expect(sendMessage).toHaveBeenCalledWith({ type: "paperqa:get-current-paper" });
+  });
   it("requests selection capture from the extension background", async () => {
     const sendMessage = vi.fn().mockResolvedValue({
       ok: true,

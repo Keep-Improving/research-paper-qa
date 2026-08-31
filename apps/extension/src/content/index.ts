@@ -19,6 +19,10 @@ window.paperQaContent = {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type !== "paperqa:capture-selection") {
+    if (message?.type === "paperqa:detect-paper") {
+      sendResponse(detectPaper(document, location));
+      return true;
+    }
     return false;
   }
 

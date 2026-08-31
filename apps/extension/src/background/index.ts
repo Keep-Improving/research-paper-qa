@@ -30,6 +30,11 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "paperqa:get-current-paper") {
+    void getCurrentPaper().then(sendResponse).catch(() => sendResponse({ title: "Detected paper", url: "", confidence: "low" }));
+    return true;
+  }
+
   if (message?.type !== "paperqa:capture-active-tab-selection") {
     return false;
   }
@@ -45,6 +50,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   return true;
 });
+
+async function getCurrentPaper() {
+  const tab = await getCaptureTargetTab();
+  if (!tab?.id) {
+    return { title: tab?.title ?? "Detected paper", url: tab?.url ?? "", confidence: "low" as const };
+  }
+
+  try {
+    return await chrome.tabs.sendMessage(tab.id, { type: "paperqa:detect-paper" });
+  } catch {
+    return { title: tab.title ?? "Detected paper", url: tab.url ?? "", confidence: "low" as const };
+  }
+}
 
 async function captureActiveTabSelection(): Promise<CaptureSelectionResponse> {
   const tab = await getCaptureTargetTab();

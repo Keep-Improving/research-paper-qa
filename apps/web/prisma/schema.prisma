@@ -167,6 +167,7 @@ model EmailVerificationToken {
 model Paper {
   id        String   @id @default(cuid())
   title     String
+  identityTitle String  @default("")
   doi       String?  @unique
   arxivId   String?  @unique
   pmid      String?  @unique
@@ -183,8 +184,21 @@ model Paper {
   discussions  Discussion[]
   authorClaims PaperAuthorClaim[]
   authorIdentities PaperAuthorIdentity[]
+  links        PaperLink[]
 
   @@index([title])
+}
+
+model PaperLink {
+  id        String   @id @default(cuid())
+  paperId   String
+  url       String   @unique
+  createdAt DateTime @default(now())
+  lastSeenAt DateTime @updatedAt
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@index([paperId])
 }
 
 model Anchor {

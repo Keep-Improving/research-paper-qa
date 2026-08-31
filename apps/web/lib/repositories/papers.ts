@@ -12,6 +12,9 @@ type PaperPrisma = {
     findFirst: (args: any) => Promise<unknown>;
     create: (args: any) => Promise<unknown>;
   };
+  paperLink?: {
+    upsert: (args: any) => Promise<unknown>;
+  };
 };
 
 export async function matchPaper(prisma: PaperPrisma, input: PaperMatchInput) {
@@ -19,27 +22,29 @@ export async function matchPaper(prisma: PaperPrisma, input: PaperMatchInput) {
   const arxivId = input.arxivId ?? input.arxiv_id ?? undefined;
   const pmid = input.pmid ?? undefined;
   const url = input.url ?? undefined;
+  const title = input.title?.trim() || url || doi || arxivId || pmid || "Untitled paper";
+  const identityTitle = normalizeTitle(title);
   const identifiers: Array<Record<string, string>> = [];
   if (doi) identifiers.push({ doi });
-  if (arxivId) identifiers.push({ arxivId });
+  if (identityTitle) identifiers.push({ identityTitle });
   if (pmid) identifiers.push({ pmid });
+  if (arxivId) identifiers.push({ arxivId });
   if (url) identifiers.push({ url });
 
-  if (identifiers.length > 0) {
-    const existing = await prisma.paper.findFirst({
-      where: {
-        OR: identifiers
-      }
-    });
-
+  for (const where of identifiers) {
+    const existing = await prisma.paper.findFirst({ where });
     if (existing) {
+      if (url && prisma.paperLink) {
+        await prisma.paperLink.upsert({ where: { url }, update: {}, create: { url, paperId: (existing as { id: string }).id } });
+      }
       return existing;
     }
   }
 
-  return prisma.paper.create({
+  const created = await prisma.paper.create({
     data: {
-      title: input.title?.trim() || url || doi || arxivId || pmid || "Untitled paper",
+      title,
+      identityTitle,
       doi,
       arxivId,
       pmid,
@@ -47,6 +52,14 @@ export async function matchPaper(prisma: PaperPrisma, input: PaperMatchInput) {
       authors: []
     }
   });
+  if (url && prisma.paperLink) {
+    await prisma.paperLink.upsert({ where: { url }, update: {}, create: { url, paperId: (created as { id: string }).id } });
+  }
+  return created;
+}
+
+export function normalizeTitle(value: string) {
+  return value.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 }
 
 export function normalizeDoi(value?: string) {

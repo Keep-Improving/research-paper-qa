@@ -9,6 +9,7 @@ import {
   createRemoteReport,
   createRemoteVote,
   getApiBaseUrl,
+  getCurrentPaper,
   getRemoteDiscussion,
   listRemoteDiscussions,
   matchRemotePaper,
@@ -141,9 +142,13 @@ async function handleApiBaseUrlChange(baseUrl: string) {
 
 async function loadRemoteState() {
   const apiBaseUrl = await getApiBaseUrl();
+  const detectedPaper = await getCurrentPaper();
   const paper = await matchRemotePaper(apiBaseUrl, {
-    title: fallbackDetectedPaper.title,
-    url: location.href
+    title: detectedPaper.title || fallbackDetectedPaper.title,
+    doi: detectedPaper.doi,
+    arxivId: detectedPaper.arxivId,
+    pmid: detectedPaper.pmid,
+    url: detectedPaper.url || location.href
   });
   const discussions = await listRemoteDiscussions(apiBaseUrl, paper.id);
 

@@ -3,6 +3,16 @@ import { describe, expect, it, vi } from "vitest";
 import { matchPaper } from "./papers";
 
 describe("matchPaper", () => {
+  it("matches by normalized title before weaker identifiers", async () => {
+    const existingPaper = { id: "paper-title", title: "A Study of Cells", identityTitle: "a study of cells", doi: null };
+    const prisma = { paper: { findFirst: vi.fn().mockResolvedValue(existingPaper), create: vi.fn() } };
+
+    await expect(matchPaper(prisma, { title: " A STUDY OF CELLS! ", pmid: "123" })).resolves.toEqual(existingPaper);
+
+    expect(prisma.paper.findFirst).toHaveBeenCalledWith({ where: { identityTitle: "a study of cells" } });
+    expect(prisma.paper.create).not.toHaveBeenCalled();
+  });
+
   it("reuses an existing paper by normalized DOI before creating", async () => {
     const existingPaper = {
       id: "paper-1",
@@ -33,14 +43,7 @@ describe("matchPaper", () => {
       })
     ).resolves.toEqual(existingPaper);
 
-    expect(prisma.paper.findFirst).toHaveBeenCalledWith({
-      where: {
-        OR: [
-          { doi: "10.1000/example" },
-          { url: "https://example.test/new" }
-        ]
-      }
-    });
+    expect(prisma.paper.findFirst).toHaveBeenCalledWith({ where: { doi: "10.1000/example" } });
     expect(prisma.paper.create).not.toHaveBeenCalled();
   });
 
@@ -69,6 +72,7 @@ describe("matchPaper", () => {
     await expect(
       matchPaper(prisma, {
         title: "New paper",
+        identityTitle: "new paper",
         arxivId: "2401.00001",
         url: "https://arxiv.org/abs/2401.00001"
       })
@@ -77,6 +81,7 @@ describe("matchPaper", () => {
     expect(prisma.paper.create).toHaveBeenCalledWith({
       data: {
         title: "New paper",
+        identityTitle: "new paper",
         doi: undefined,
         arxivId: "2401.00001",
         pmid: undefined,

@@ -5,6 +5,19 @@ const API_BASE_URL_KEY = "paperqa:apiBaseUrl";
 const DEFAULT_API_BASE_URL = "http://localhost:3000/api";
 const DEFAULT_USER_ID = "user-reader";
 
+export type DetectedPaper = {
+  doi?: string;
+  arxivId?: string;
+  pmid?: string;
+  title?: string;
+  url: string;
+  confidence: "high" | "medium" | "low";
+};
+
+export async function getCurrentPaper(): Promise<DetectedPaper> {
+  return (await chrome.runtime.sendMessage({ type: "paperqa:get-current-paper" })) as DetectedPaper;
+}
+
 type CaptureSelectionResponse =
   | {
       ok: true;
@@ -161,6 +174,7 @@ function mapRemoteDiscussion(item: Record<string, unknown>): SidebarDiscussion {
     anchor: item.anchor && typeof item.anchor === "object" ? mapRemoteAnchor(item.anchor as Record<string, unknown>) : undefined,
     replies: Array.isArray(item.replies) ? item.replies.map((reply) => mapRemoteReply(reply as Record<string, unknown>)) : undefined
   };
+
 }
 
 function mapRemoteReply(item: Record<string, unknown>): SidebarReply {

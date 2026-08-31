@@ -90,6 +90,16 @@ describe("background selection capture", () => {
     });
   });
 
+  it("forwards current paper detection to the active normal tab", async () => {
+    query.mockResolvedValue([{ id: 42, url: "https://nature.com/articles/example" }]);
+    sendMessage.mockResolvedValue({ doi: "10.1000/example", title: "Example", url: "https://nature.com/articles/example", confidence: "high" });
+
+    const sendResponse = vi.fn();
+    expect(onMessage({ type: "paperqa:get-current-paper" }, {} as chrome.runtime.MessageSender, sendResponse)).toBe(true);
+    await vi.waitFor(() => expect(sendResponse).toHaveBeenCalledWith(expect.objectContaining({ doi: "10.1000/example" })));
+    expect(sendMessage).toHaveBeenCalledWith(42, { type: "paperqa:detect-paper" });
+  });
+
   it("returns a visible failure when no active page tab is available", async () => {
     query.mockResolvedValue([]);
 

@@ -37,7 +37,7 @@ describe("extension sidebar app", () => {
 
     vi.stubGlobal("chrome", {
       runtime: {
-        sendMessage: vi.fn()
+        sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/" })
       },
       storage: {
         local: {
@@ -94,7 +94,7 @@ describe("extension sidebar app", () => {
 
     vi.stubGlobal("chrome", {
       runtime: {
-        sendMessage: vi.fn()
+        sendMessage: vi.fn().mockResolvedValue({ title: "Detected paper", url: "http://localhost:3000/" })
       },
       storage: {
         local: {
