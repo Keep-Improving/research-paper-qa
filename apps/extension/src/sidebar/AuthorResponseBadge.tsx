@@ -1,5 +1,8 @@
+import { useSidebarLocale } from "./sidebarLocale";
+
 export function AuthorResponseBadge() {
-  return <span style={styles.badge}>Author response</span>;
+  const { t } = useSidebarLocale();
+  return <span style={styles.badge}>{t("sidebar.authorResponseBadge")}</span>;
 }
 
 const styles = {

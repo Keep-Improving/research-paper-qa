@@ -1,5 +1,6 @@
 import { AuthorResponseBadge } from "./AuthorResponseBadge";
 import type { SidebarDiscussion } from "./Sidebar";
+import { useSidebarLocale } from "./sidebarLocale";
 
 type DiscussionListProps = {
   discussions: SidebarDiscussion[];
@@ -9,27 +10,29 @@ type DiscussionListProps = {
 };
 
 export function DiscussionList({ discussions, loadState, errorMessage, onSelectDiscussion }: DiscussionListProps) {
+  const { locale, t } = useSidebarLocale();
+
   if (loadState === "loading") {
-    return <StatusMessage>Loading discussions...</StatusMessage>;
+    return <StatusMessage>{t("sidebar.loadingDiscussions")}</StatusMessage>;
   }
 
   if (loadState === "error") {
     return (
       <div role="alert" style={styles.error}>
-        {errorMessage || "Could not load discussions."}
+        {errorMessage || t("sidebar.couldNotLoadDiscussions")}
       </div>
     );
   }
 
   if (discussions.length === 0) {
-    return <StatusMessage>No discussions yet for this paper.</StatusMessage>;
+    return <StatusMessage>{t("sidebar.noDiscussionsYet")}</StatusMessage>;
   }
 
   return (
-    <section aria-label="Discussion list" style={styles.list}>
+    <section aria-label={t("sidebar.discussionList")} style={styles.list}>
       {discussions.map((discussion) => (
         <article
-          aria-label={onSelectDiscussion ? `Discussion ${discussion.body}` : undefined}
+          aria-label={onSelectDiscussion ? `${t("sidebar.question")} ${discussion.body}` : undefined}
           key={discussion.id}
           onClick={() => onSelectDiscussion?.(discussion)}
           onKeyDown={(event) => {
@@ -49,10 +52,10 @@ export function DiscussionList({ discussions, loadState, errorMessage, onSelectD
               <AuthorResponseBadge />
             )}
             <span style={styles.spacer} />
-            <span style={styles.metric}>{discussion.heat ?? 0} heat</span>
+            <span style={styles.metric}>{discussion.heat ?? 0} {t("sidebar.heatShort")}</span>
             {onSelectDiscussion ? (
               <button
-                aria-label={`Open discussion ${discussion.body}`}
+                aria-label={`${t("sidebar.openDiscussion")} ${discussion.body}`}
                 onClick={(event) => {
                   event.stopPropagation();
                   onSelectDiscussion(discussion);
@@ -60,16 +63,16 @@ export function DiscussionList({ discussions, loadState, errorMessage, onSelectD
                 style={styles.openButton}
                 type="button"
               >
-                Open
+                {t("sidebar.open")}
               </button>
             ) : null}
           </div>
           <p style={styles.body}>{discussion.body}</p>
           <div style={styles.byline}>
             <span>{discussion.authorName}</span>
-            <span>{formatDate(discussion.createdAt)}</span>
-            <span>{discussion.answerCount ?? 0} answers</span>
-            <span>{discussion.commentCount ?? 0} comments</span>
+            <span>{formatDate(discussion.createdAt, locale)}</span>
+            <span>{discussion.answerCount ?? 0} {t("sidebar.responseCount")}</span>
+            <span>{discussion.commentCount ?? 0} {t("sidebar.commentCount")}</span>
           </div>
           {discussion.anchor && (
             <div style={styles.anchor}>
@@ -92,8 +95,8 @@ function formatKind(kind: SidebarDiscussion["kind"]) {
   return kind.replace(/_/g, " ");
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
+function formatDate(value: string, locale: "zh-CN" | "en-US") {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",

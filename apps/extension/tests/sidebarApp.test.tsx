@@ -11,31 +11,29 @@ describe("extension sidebar app", () => {
   });
 
   it("submits a question to the public API and refreshes the discussion list", async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        id: "paper-1",
-        title: "Detected paper"
-      }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
+    let questionCreated = false;
+    const createdDiscussion = {
         id: "discussion-1",
         paperId: "paper-1",
         body: "Does the selected evidence support this conclusion?",
         status: "open",
         authorName: "Reader",
         createdAt: "2026-06-20T00:00:00Z"
-      }), { status: 201 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify([
-        {
-          id: "discussion-1",
-          paperId: "paper-1",
-          body: "Does the selected evidence support this conclusion?",
-          status: "open",
-          authorName: "Reader",
-          createdAt: "2026-06-20T00:00:00Z"
-        }
-      ]), { status: 200 }));
+    };
+    const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/papers/match")) {
+        return new Response(JSON.stringify({ id: "paper-1", title: "Detected paper" }), { status: 200 });
+      }
+      if (url.endsWith("/papers/paper-1/discussions") && init?.method === "POST") {
+        questionCreated = true;
+        return new Response(JSON.stringify(createdDiscussion), { status: 201 });
+      }
+      if (url.endsWith("/papers/paper-1/discussions")) {
+        return new Response(JSON.stringify(questionCreated ? [createdDiscussion] : []), { status: 200 });
+      }
+      throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
+    });
 
     vi.stubGlobal("chrome", {
       runtime: {
@@ -65,31 +63,34 @@ describe("extension sidebar app", () => {
   });
 
   it("recovers from an initial API load failure before submitting", async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response("database not ready", { status: 500 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        id: "paper-2",
-        title: "Detected paper"
-      }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
+    let matchAttempts = 0;
+    let questionCreated = false;
+    const createdDiscussion = {
         id: "discussion-2",
         paperId: "paper-2",
         body: "Retry after backend recovery",
         status: "open",
         authorName: "Reader",
         createdAt: "2026-06-20T00:00:00Z"
-      }), { status: 201 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify([
-        {
-          id: "discussion-2",
-          paperId: "paper-2",
-          body: "Retry after backend recovery",
-          status: "open",
-          authorName: "Reader",
-          createdAt: "2026-06-20T00:00:00Z"
+    };
+    const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/papers/match")) {
+        matchAttempts += 1;
+        if (matchAttempts === 1) {
+          return new Response("database not ready", { status: 500 });
         }
-      ]), { status: 200 }));
+        return new Response(JSON.stringify({ id: "paper-2", title: "Detected paper" }), { status: 200 });
+      }
+      if (url.endsWith("/papers/paper-2/discussions") && init?.method === "POST") {
+        questionCreated = true;
+        return new Response(JSON.stringify(createdDiscussion), { status: 201 });
+      }
+      if (url.endsWith("/papers/paper-2/discussions")) {
+        return new Response(JSON.stringify(questionCreated ? [createdDiscussion] : []), { status: 200 });
+      }
+      throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
+    });
 
     vi.stubGlobal("chrome", {
       runtime: {

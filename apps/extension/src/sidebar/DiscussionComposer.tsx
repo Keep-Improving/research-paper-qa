@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { SidebarAnchorDraft, SidebarCreateDiscussionInput, SidebarPaper } from "./Sidebar";
+import { useSidebarLocale } from "./sidebarLocale";
 
 type DiscussionComposerProps = {
   paper: SidebarPaper;
@@ -19,6 +20,7 @@ export function DiscussionComposer({
   onCreateDiscussion,
   onRetryAnchorCapture
 }: DiscussionComposerProps) {
+  const { t } = useSidebarLocale();
   const [body, setBody] = useState("");
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "error">("idle");
 
@@ -44,17 +46,17 @@ export function DiscussionComposer({
   }
 
   return (
-    <section aria-label="Question composer" style={styles.panel}>
+    <section aria-label={t("sidebar.questionComposer")} style={styles.panel}>
       <div style={styles.header}>
-        <h2 style={styles.title}>Ask on this paper</h2>
-        {anchorDraft ? <span style={styles.anchorState}>Anchored</span> : <span style={styles.anchorState}>Manual</span>}
+        <h2 style={styles.title}>{t("sidebar.questionComposer")}</h2>
+        {anchorDraft ? <span style={styles.anchorState}>{t("sidebar.anchored")}</span> : <span style={styles.anchorState}>{t("sidebar.manual")}</span>}
       </div>
 
       {anchorCaptureError && (
         <div style={styles.fallback}>
           <span>{anchorCaptureError}</span>
           <button type="button" onClick={onRetryAnchorCapture} style={styles.secondaryButton}>
-            Retry capture
+            {t("sidebar.retryCapture")}
           </button>
         </div>
       )}
@@ -65,11 +67,11 @@ export function DiscussionComposer({
 
       <form onSubmit={submitQuestion} style={styles.form}>
         <label htmlFor="question-body" style={styles.label}>
-          Question body
+          {t("sidebar.questionBody")}
         </label>
         <textarea
           id="question-body"
-          aria-label="Question body"
+          aria-label={t("sidebar.questionBody")}
           value={body}
           onChange={(event) => setBody(event.currentTarget.value)}
           rows={4}
@@ -77,7 +79,7 @@ export function DiscussionComposer({
         />
         {submitState === "error" && (
           <div role="alert" style={styles.submitError}>
-            Question could not be submitted.
+            {t("sidebar.questionCouldNotBeSubmitted")}
           </div>
         )}
         <button
@@ -85,7 +87,7 @@ export function DiscussionComposer({
           disabled={submitState === "submitting" || body.trim().length === 0}
           style={styles.primaryButton}
         >
-          {submitState === "submitting" ? "Submitting..." : "Submit question"}
+          {submitState === "submitting" ? t("sidebar.submitting") : t("sidebar.submitQuestion")}
         </button>
       </form>
     </section>

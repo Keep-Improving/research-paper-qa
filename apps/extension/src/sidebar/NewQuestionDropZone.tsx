@@ -5,6 +5,7 @@ import {
   createUrlOnlyImageAnchor
 } from "../content/imageAnchor";
 import type { TextAnchorDraft } from "../content/selectionAnchor";
+import { useSidebarLocale } from "./sidebarLocale";
 
 export type ManualAnchorDraft = {
   kind: "manual";
@@ -18,16 +19,13 @@ type NewQuestionDropZoneProps = {
   onManualAnchor: (anchor: ManualAnchorDraft) => void;
 };
 
-export function NewQuestionDropZone({
-  onUseSelection,
-  onImageAnchor,
-  onManualAnchor
-}: NewQuestionDropZoneProps) {
+export function NewQuestionDropZone({ onUseSelection, onImageAnchor, onManualAnchor }: NewQuestionDropZoneProps) {
+  const { t } = useSidebarLocale();
   const selectionAvailable = Boolean(onUseSelection);
 
   return (
     <section
-      aria-label="New question anchor"
+      aria-label={t("sidebar.anchorDraft")}
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
@@ -39,23 +37,21 @@ export function NewQuestionDropZone({
       style={styles.zone}
     >
       <div style={styles.header}>
-        <span style={styles.label}>Anchor draft</span>
+        <span style={styles.label}>{t("sidebar.anchorDraft")}</span>
         <button
           type="button"
-          aria-label={selectionAvailable ? "Use selection" : "Use selection unavailable"}
+          aria-label={selectionAvailable ? t("sidebar.useSelection") : t("sidebar.useSelectionUnavailable")}
           disabled={!selectionAvailable}
           onClick={() => {
             void onUseSelection?.();
           }}
           style={selectionAvailable ? styles.button : styles.disabledButton}
         >
-          Use selection
+          {selectionAvailable ? t("sidebar.useSelection") : t("sidebar.useSelectionUnavailable")}
         </button>
       </div>
       <p style={styles.note}>
-        {selectionAvailable
-          ? "Drop a paper figure or capture the current passage before asking."
-          : "Selection capture unavailable"}
+        {selectionAvailable ? t("sidebar.useSelectionHintEnabled") : t("sidebar.useSelectionHintDisabled")}
       </p>
       <form
         onSubmit={(event) => {
@@ -71,12 +67,12 @@ export function NewQuestionDropZone({
       >
         <input
           name="manual-anchor"
-          aria-label="Manual anchor note"
-          placeholder="Manual anchor note"
+          aria-label={t("sidebar.manualAnchorNote")}
+          placeholder={t("sidebar.manualAnchorNote")}
           style={styles.input}
         />
         <button type="submit" style={styles.button}>
-          Add
+          {t("sidebar.add")}
         </button>
       </form>
     </section>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Sidebar, type SidebarCreateDiscussionInput, type SidebarDiscussion, type SidebarPaper } from "./Sidebar";
+import { SidebarLocaleProvider, useSidebarLocale } from "./sidebarLocale";
 import {
   captureActiveTabSelection,
   createRemoteDiscussion,
@@ -20,10 +21,13 @@ const fallbackDetectedPaper: SidebarPaper = {
 };
 
 createRoot(document.getElementById("root")!).render(
-  <SidebarApp />
+  <SidebarLocaleProvider>
+    <SidebarApp />
+  </SidebarLocaleProvider>
 );
 
 function SidebarApp() {
+  const { t } = useSidebarLocale();
   const [paper, setPaper] = useState<SidebarPaper>(fallbackDetectedPaper);
   const [discussions, setDiscussions] = useState<SidebarDiscussion[]>([]);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -52,7 +56,7 @@ function SidebarApp() {
       })
       .catch((error) => {
         if (mounted) {
-          setErrorMessage(error instanceof Error ? error.message : "Could not load remote discussions.");
+          setErrorMessage(error instanceof Error ? error.message : t("sidebar.couldNotLoadDiscussions"));
           setLoadState("error");
         }
       });

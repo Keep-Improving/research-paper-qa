@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { ImageAnchorDraft } from "../content/imageAnchor";
 import type { TextAnchorDraft } from "../content/selectionAnchor";
 import { DiscussionComposer } from "./DiscussionComposer";
 import { DiscussionFilters } from "./DiscussionFilters";
 import { DiscussionList } from "./DiscussionList";
+import { LanguageToggle } from "./LanguageToggle";
 import { NewQuestionDropZone, type ManualAnchorDraft } from "./NewQuestionDropZone";
-import { SIDEBAR_TITLE } from "./sidebarTitle";
+import { useSidebarLocale } from "./sidebarLocale";
 
 export type SidebarPaper = {
   id: string;
@@ -125,6 +126,7 @@ export function Sidebar({
   onRetryAnchorCapture,
   onApiBaseUrlChange
 }: SidebarProps) {
+  const { t } = useSidebarLocale();
   const [filters, setFilters] = useState<DiscussionFiltersState>({
     kind: "all",
     status: "all",
@@ -136,6 +138,10 @@ export function Sidebar({
   const [selectionError, setSelectionError] = useState<string | undefined>(anchorCaptureError);
   const [selectedDiscussion, setSelectedDiscussion] = useState<SidebarDiscussion | null>(null);
   const [detailError, setDetailError] = useState<string | undefined>();
+
+  useEffect(() => {
+    document.title = t("sidebar.title");
+  }, [t]);
 
   const visibleDiscussions = useMemo(() => {
     const filtered = initialDiscussions.filter((discussion) => {
@@ -210,10 +216,13 @@ export function Sidebar({
     <main style={styles.shell}>
       <header style={styles.header}>
         <div>
-          <h1 style={styles.title}>{SIDEBAR_TITLE}</h1>
+          <h1 style={styles.title}>{t("sidebar.title")}</h1>
           <p style={styles.paperTitle}>{paper.title}</p>
         </div>
-        <PaperIdentifier paper={paper} />
+        <div style={styles.headerSide}>
+          <LanguageToggle />
+          <PaperIdentifier paper={paper} />
+        </div>
       </header>
 
       <ApiBaseUrlPanel apiBaseUrl={apiBaseUrl} onApiBaseUrlChange={onApiBaseUrlChange} />
@@ -268,6 +277,7 @@ function ApiBaseUrlPanel({
   apiBaseUrl?: string | null;
   onApiBaseUrlChange?: (baseUrl: string) => void | Promise<void>;
 }) {
+  const { t } = useSidebarLocale();
   const [value, setValue] = useState(apiBaseUrl ?? "");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
@@ -287,29 +297,29 @@ function ApiBaseUrlPanel({
   }
 
   return (
-    <section aria-label="API base URL" style={styles.apiPanel}>
+    <section aria-label={t("sidebar.apiBaseUrl")} style={styles.apiPanel}>
       <form onSubmit={save} style={styles.apiForm}>
         <label htmlFor="api-base-url" style={styles.apiLabel}>
-          API base URL
+          {t("sidebar.apiBaseUrl")}
         </label>
         <input
           id="api-base-url"
-          aria-label="API base URL"
+          aria-label={t("sidebar.apiBaseUrl")}
           onChange={(event) => setValue(event.currentTarget.value)}
-          placeholder="https://your-domain.example/api"
+          placeholder={t("sidebar.apiBaseUrlPlaceholder")}
           style={styles.apiInput}
           value={value}
         />
         <button disabled={status === "saving"} style={styles.apiButton} type="submit">
-          {status === "saving" ? "Saving..." : "Save"}
+          {status === "saving" ? t("sidebar.saving") : t("sidebar.save")}
         </button>
       </form>
       <p style={styles.apiHelp}>
         {status === "saved"
-          ? "Saved locally for this browser."
+          ? t("sidebar.savedLocally")
           : status === "error"
-            ? "Could not save API base URL."
-            : "Point this to your public deployment once it is live."}
+            ? t("sidebar.saveFailed")
+            : t("sidebar.apiHelp")}
       </p>
     </section>
   );
@@ -330,6 +340,7 @@ function DiscussionDetail({
   onVoteDiscussion?: (discussionId: string) => void | Promise<void>;
   onReportDiscussion?: (discussionId: string) => void | Promise<void>;
 }) {
+  const { t } = useSidebarLocale();
   const [body, setBody] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
@@ -352,22 +363,22 @@ function DiscussionDetail({
   }
 
   return (
-    <section aria-label="Discussion detail" style={styles.detailPanel}>
+    <section aria-label={t("sidebar.openDiscussion")} style={styles.detailPanel}>
       <button onClick={onBack} style={styles.secondaryButton} type="button">
-        Back to list
+        {t("sidebar.backToList")}
       </button>
       <h2 style={styles.detailTitle}>{discussion.body}</h2>
       {discussion.anchor?.quoteText ? <q style={styles.detailQuote}>{discussion.anchor.quoteText}</q> : null}
       {detailError ? <div role="alert" style={styles.submitError}>{detailError}</div> : null}
       <div style={styles.detailToolbar}>
         <button onClick={() => onVoteDiscussion?.(discussion.id)} style={styles.secondaryButton} type="button">
-          Helpful
+          {t("sidebar.helpful")}
         </button>
         <button onClick={() => onReportDiscussion?.(discussion.id)} style={styles.secondaryButton} type="button">
-          Report
+          {t("sidebar.report")}
         </button>
         <a href={`http://localhost:3000/discussions/${discussion.id}`} style={styles.detailLink} target="_blank">
-          Open web
+          {t("sidebar.openWeb")}
         </a>
       </div>
       <ResponseList
@@ -376,17 +387,17 @@ function DiscussionDetail({
         replyingTo={replyingTo}
       />
       <form onSubmit={submitReply} style={styles.detailForm}>
-        {replyTarget ? <p style={styles.replyEmpty}>Replying to {replyTarget.authorName}</p> : null}
+        {replyTarget ? <p style={styles.replyEmpty}>{t("sidebar.replyingTo")} {replyTarget.authorName}</p> : null}
         <textarea
-          aria-label="Response body"
+          aria-label={t("sidebar.responseBody")}
           onChange={(event) => setBody(event.currentTarget.value)}
           rows={3}
           style={styles.detailTextarea}
           value={body}
         />
-        {status === "error" ? <div role="alert" style={styles.submitError}>Reply could not be submitted.</div> : null}
+        {status === "error" ? <div role="alert" style={styles.submitError}>{t("sidebar.replyCouldNotBeSubmitted")}</div> : null}
         <button disabled={status === "submitting" || body.trim().length === 0} style={styles.primaryButton} type="submit">
-          {status === "submitting" ? "Submitting..." : "Submit reply"}
+          {status === "submitting" ? t("sidebar.submitting") : t("sidebar.submitReply")}
         </button>
       </form>
     </section>
@@ -402,6 +413,7 @@ function ResponseList({
   replies: SidebarReply[];
   replyingTo: string | null;
 }) {
+  const { t } = useSidebarLocale();
   const replyById = new Map(replies.map((reply) => [reply.id, reply]));
   const roots = replies.filter((reply) => !reply.parentReplyId);
 
@@ -414,10 +426,10 @@ function ResponseList({
   }
 
   return (
-    <section aria-label="Responses" style={styles.replySection}>
-      <h3 style={styles.replyTitle}>Responses</h3>
+    <section aria-label={t("sidebar.responses")} style={styles.replySection}>
+      <h3 style={styles.replyTitle}>{t("sidebar.responses")}</h3>
       {roots.length === 0 ? (
-        <p style={styles.replyEmpty}>No responses yet.</p>
+        <p style={styles.replyEmpty}>{t("sidebar.noResponsesYet")}</p>
       ) : (
         <ul style={styles.replyList}>
           {roots.map((reply) => (
@@ -449,6 +461,7 @@ function ResponseItem({
   replyById: Map<string, SidebarReply>;
   replyingTo: string | null;
 }) {
+  const { t } = useSidebarLocale();
   const replyTarget = reply.parentReplyId ? replyById.get(reply.parentReplyId)?.authorName ?? "a response" : null;
 
   return (
@@ -456,7 +469,7 @@ function ResponseItem({
       <div style={styles.replyHeader}>
         <div>
           <strong>{reply.authorName}</strong>
-          {replyTarget ? <p style={styles.replyMeta}>Replying to {replyTarget}</p> : null}
+          {replyTarget ? <p style={styles.replyMeta}>{t("sidebar.replyingTo")} {replyTarget}</p> : null}
         </div>
         <button
           aria-pressed={replyingTo === reply.id}
@@ -464,7 +477,7 @@ function ResponseItem({
           style={styles.replyButton}
           type="button"
         >
-          Reply to response
+          {t("sidebar.replyToResponse")}
         </button>
       </div>
       <p style={styles.replyBody}>{reply.body}</p>
@@ -475,7 +488,9 @@ function ResponseItem({
               <div style={styles.replyHeader}>
                 <div>
                   <strong>{child.authorName}</strong>
-                  <p style={styles.replyMeta}>Replying to {child.parentReplyId ? replyById.get(child.parentReplyId)?.authorName ?? "a response" : "a response"}</p>
+                  <p style={styles.replyMeta}>
+                    {t("sidebar.replyingTo")} {child.parentReplyId ? replyById.get(child.parentReplyId)?.authorName ?? "a response" : "a response"}
+                  </p>
                 </div>
                 <button
                   aria-pressed={replyingTo === child.id}
@@ -483,7 +498,7 @@ function ResponseItem({
                   style={styles.replyButton}
                   type="button"
                 >
-                  Reply to response
+                  {t("sidebar.replyToResponse")}
                 </button>
               </div>
               <p style={styles.replyBody}>{child.body}</p>
@@ -496,7 +511,8 @@ function ResponseItem({
 }
 
 function PaperIdentifier({ paper }: { paper: SidebarPaper }) {
-  const label = paper.doi ? `DOI ${paper.doi}` : paper.arxivId ? `arXiv ${paper.arxivId}` : paper.pmid ? `PMID ${paper.pmid}` : "Local";
+  const { t } = useSidebarLocale();
+  const label = paper.doi ? `DOI ${paper.doi}` : paper.arxivId ? `arXiv ${paper.arxivId}` : paper.pmid ? `PMID ${paper.pmid}` : t("sidebar.detectedPaper");
 
   return <span style={styles.identifier}>{label}</span>;
 }
@@ -518,15 +534,24 @@ function normalizeManualAnchor(anchor: ManualAnchorDraft): SidebarAnchorDraft {
   };
 }
 
-function normalizeSelectionAnchor(anchor: SidebarAnchorDraft | (TextAnchorDraft & Record<string, unknown>)): SidebarAnchorDraft {
+function normalizeSelectionAnchor(anchor: SidebarAnchorDraft | TextAnchorDraft): SidebarAnchorDraft {
+  if ("quote_text" in anchor) {
+    return {
+      kind: anchor.kind,
+      quoteText: anchor.quote_text,
+      contextText: anchor.context_text,
+      sourceUrl: anchor.source_url
+    };
+  }
+
   return {
     kind: anchor.kind,
-    quoteText: "quoteText" in anchor ? anchor.quoteText : anchor.quote_text,
-    contextText: "contextText" in anchor ? anchor.contextText : anchor.context_text,
-    sectionLabel: "sectionLabel" in anchor ? anchor.sectionLabel : undefined,
-    sourceUrl: "sourceUrl" in anchor ? anchor.sourceUrl : anchor.source_url,
-    imageUrl: "imageUrl" in anchor ? anchor.imageUrl : undefined,
-    note: "note" in anchor ? anchor.note : undefined
+    quoteText: anchor.quoteText,
+    contextText: anchor.contextText,
+    sectionLabel: anchor.sectionLabel,
+    sourceUrl: anchor.sourceUrl,
+    imageUrl: anchor.imageUrl,
+    note: anchor.note
   };
 }
 
@@ -548,6 +573,11 @@ const styles = {
     gridTemplateColumns: "minmax(0, 1fr) auto",
     gap: 10,
     paddingBottom: 10
+  },
+  headerSide: {
+    alignItems: "center",
+    display: "flex",
+    gap: 8
   },
   apiPanel: {
     border: "1px solid #d0d2cc",

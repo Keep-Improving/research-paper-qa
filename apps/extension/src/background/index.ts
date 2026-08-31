@@ -116,6 +116,6 @@ function rememberCapturableTab(tab?: chrome.tabs.Tab) {
   }
 }
 
-function isCapturableTab(tab?: chrome.tabs.Tab) {
+function isCapturableTab(tab?: chrome.tabs.Tab): tab is chrome.tabs.Tab & { id: number; url: string } {
   return tab?.id !== undefined && tab.url !== undefined && /^(https?|file):\/\//i.test(tab.url);
 }

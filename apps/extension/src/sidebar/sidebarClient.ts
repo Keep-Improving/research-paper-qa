@@ -178,7 +178,7 @@ function mapRemoteReply(item: Record<string, unknown>): SidebarReply {
 
 function mapRemoteAnchor(anchor: Record<string, unknown>) {
   return {
-    kind: String(anchor.kind ?? "manual") as SidebarDiscussion["anchor"]["kind"],
+    kind: String(anchor.kind ?? "manual") as NonNullable<SidebarDiscussion["anchor"]>["kind"],
     quoteText: typeof anchor.quoteText === "string" ? anchor.quoteText : typeof anchor.quote_text === "string" ? anchor.quote_text : undefined,
     contextText: typeof anchor.contextText === "string" ? anchor.contextText : typeof anchor.context_text === "string" ? anchor.context_text : undefined,
     sectionLabel: typeof anchor.sectionLabel === "string" ? anchor.sectionLabel : typeof anchor.section_label === "string" ? anchor.section_label : undefined,

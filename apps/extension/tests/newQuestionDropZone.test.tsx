@@ -22,7 +22,7 @@ function renderDropZone(onImageAnchor = vi.fn()) {
   return {
     container,
     root,
-    zone: container.querySelector<HTMLElement>("[aria-label='New question anchor']")!,
+    zone: container.querySelector<HTMLElement>("[aria-label='Anchor draft']")!,
     onImageAnchor
   };
 }

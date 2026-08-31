@@ -6,6 +6,7 @@ import type {
   DiscussionSortMode,
   DiscussionStatusFilter
 } from "./Sidebar";
+import { useSidebarLocale } from "./sidebarLocale";
 
 type DiscussionFiltersProps = {
   filters: DiscussionFiltersState;
@@ -20,49 +21,48 @@ export function DiscussionFilters({
   onFiltersChange,
   onSortChange
 }: DiscussionFiltersProps) {
-  function updateFilter<Key extends keyof DiscussionFiltersState>(
-    key: Key,
-    value: DiscussionFiltersState[Key]
-  ) {
+  const { t } = useSidebarLocale();
+
+  function updateFilter<Key extends keyof DiscussionFiltersState>(key: Key, value: DiscussionFiltersState[Key]) {
     onFiltersChange({ ...filters, [key]: value });
   }
 
   return (
-    <section aria-label="Discussion filters" style={styles.panel}>
+    <section aria-label={t("sidebar.discussionFilters")} style={styles.panel}>
       <FilterSelect
         id="discussion-kind"
-        label="Content type"
+        label={t("sidebar.contentType")}
         value={filters.kind}
         onChange={(value) => updateFilter("kind", value)}
-        options={kindOptions}
+        options={kindOptions.map((option) => ({ value: option.value, label: t(option.label) }))}
       />
       <FilterSelect
         id="discussion-status"
-        label="Status"
+        label={t("sidebar.status")}
         value={filters.status}
         onChange={(value) => updateFilter("status", value)}
-        options={statusOptions}
+        options={statusOptions.map((option) => ({ value: option.value, label: t(option.label) }))}
       />
       <FilterSelect
         id="discussion-anchor"
-        label="Anchor type"
+        label={t("sidebar.anchorType")}
         value={filters.anchor}
         onChange={(value) => updateFilter("anchor", value)}
-        options={anchorOptions}
+        options={anchorOptions.map((option) => ({ value: option.value, label: t(option.label) }))}
       />
       <FilterSelect
         id="discussion-participant"
-        label="Participant"
+        label={t("sidebar.participant")}
         value={filters.participant}
         onChange={(value) => updateFilter("participant", value)}
-        options={participantOptions}
+        options={participantOptions.map((option) => ({ value: option.value, label: t(option.label) }))}
       />
       <FilterSelect
         id="discussion-sort"
-        label="Sort discussions"
+        label={t("sidebar.sortDiscussions")}
         value={sort}
         onChange={onSortChange}
-        options={sortOptions}
+        options={sortOptions.map((option) => ({ value: option.value, label: t(option.label) }))}
       />
     </section>
   );
@@ -103,43 +103,43 @@ function FilterSelect<Value extends string>({
   );
 }
 
-const kindOptions: Array<{ value: DiscussionKindFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "question", label: "Question" },
-  { value: "answer", label: "Answer" },
-  { value: "comment", label: "Comment" },
-  { value: "author_response", label: "Author response" }
+const kindOptions: Array<{ value: DiscussionKindFilter; label: "sidebar.all" | "sidebar.question" | "sidebar.answer" | "sidebar.comment" | "sidebar.authorResponse" }> = [
+  { value: "all", label: "sidebar.all" },
+  { value: "question", label: "sidebar.question" },
+  { value: "answer", label: "sidebar.answer" },
+  { value: "comment", label: "sidebar.comment" },
+  { value: "author_response", label: "sidebar.authorResponse" }
 ];
 
-const statusOptions: Array<{ value: DiscussionStatusFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "open", label: "Open" },
-  { value: "answered", label: "Answered" },
-  { value: "resolved", label: "Resolved" },
-  { value: "author_responded", label: "Author responded" },
-  { value: "disputed", label: "Disputed" }
+const statusOptions: Array<{ value: DiscussionStatusFilter; label: "sidebar.all" | "sidebar.open" | "sidebar.answered" | "sidebar.resolved" | "sidebar.authorResponded" | "sidebar.disputed" }> = [
+  { value: "all", label: "sidebar.all" },
+  { value: "open", label: "sidebar.open" },
+  { value: "answered", label: "sidebar.answered" },
+  { value: "resolved", label: "sidebar.resolved" },
+  { value: "author_responded", label: "sidebar.authorResponded" },
+  { value: "disputed", label: "sidebar.disputed" }
 ];
 
-const anchorOptions: Array<{ value: DiscussionAnchorFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "text", label: "Text" },
-  { value: "image", label: "Image" },
-  { value: "screenshot", label: "Screenshot" },
-  { value: "figure", label: "Figure" },
-  { value: "table", label: "Table" },
-  { value: "formula", label: "Formula" },
-  { value: "reference", label: "Reference" },
-  { value: "manual", label: "Manual" }
+const anchorOptions: Array<{ value: DiscussionAnchorFilter; label: "sidebar.all" | "sidebar.text" | "sidebar.image" | "sidebar.screenshot" | "sidebar.figure" | "sidebar.table" | "sidebar.formula" | "sidebar.reference" | "sidebar.manual" }> = [
+  { value: "all", label: "sidebar.all" },
+  { value: "text", label: "sidebar.text" },
+  { value: "image", label: "sidebar.image" },
+  { value: "screenshot", label: "sidebar.screenshot" },
+  { value: "figure", label: "sidebar.figure" },
+  { value: "table", label: "sidebar.table" },
+  { value: "formula", label: "sidebar.formula" },
+  { value: "reference", label: "sidebar.reference" },
+  { value: "manual", label: "sidebar.manual" }
 ];
 
-const participantOptions: Array<{ value: DiscussionParticipantFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "author_response", label: "Author responses" }
+const participantOptions: Array<{ value: DiscussionParticipantFilter; label: "sidebar.all" | "sidebar.authorResponses" }> = [
+  { value: "all", label: "sidebar.all" },
+  { value: "author_response", label: "sidebar.authorResponses" }
 ];
 
-const sortOptions: Array<{ value: DiscussionSortMode; label: string }> = [
-  { value: "newest", label: "Newest" },
-  { value: "heat", label: "Heat" }
+const sortOptions: Array<{ value: DiscussionSortMode; label: "sidebar.newest" | "sidebar.heat" }> = [
+  { value: "newest", label: "sidebar.newest" },
+  { value: "heat", label: "sidebar.heat" }
 ];
 
 const styles = {
