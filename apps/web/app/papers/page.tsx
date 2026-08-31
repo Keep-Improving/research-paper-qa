@@ -13,7 +13,7 @@ export default async function PapersPage() {
     take: 100
   });
   const uniquePapers = Array.from(
-    new Map(papers.map((paper) => [paper.doi ? `doi:${normalizeDoi(paper.doi)}` : `title:${paper.identityTitle || normalizeTitle(paper.title)}`, paper])).values()
+    new Map(papers.map((paper) => [paper.doi ? `doi:${normalizeDoi(paper.doi)}` : `title:${canonicalTitle(paper.title, paper.identityTitle)}`, paper])).values()
   );
 
   return (
@@ -41,4 +41,9 @@ export default async function PapersPage() {
       </section>
     </AcademicShell>
   );
+}
+
+function canonicalTitle(title: string, identityTitle?: string | null) {
+  const value = identityTitle || normalizeTitle(title);
+  return value.replace(/\s+(?:nature|pmc|pubmed|arxiv)$/i, "").trim();
 }
